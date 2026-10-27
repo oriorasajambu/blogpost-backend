@@ -168,7 +168,7 @@ export async function workingFiles(root) {
   }
   return files;
 }
-function committedFiles(root, sha) {
+export function committedFiles(root, sha) {
   const tree = decode(git(root, ['ls-tree', '-rlz', sha]))
     .split('\0')
     .filter(Boolean)

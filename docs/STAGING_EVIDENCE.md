@@ -1,0 +1,29 @@
+# Staging evidence verification
+
+The promotion reader evaluates the PR's actual head RC SHA. It reads the fixed trusted `staging.yml` push run, its latest attempt's jobs and its exact candidate/run/attempt-named artifact. Original repository/owner IDs, event/ref/path, source SHA, conclusions, artifact availability/expiry, archive digest/size and job-attempt identity must agree. A missing, failed, ambiguous, expired or older-attempt record fails. A coincidentally named green check cannot supply this proof.
+
+The artifact bundle contains exactly three root files: canonical `staging-evidence.json`, canonical `backend-staging-artifact.json` and `SHA256SUMS`. The receipt binds the descriptor's filename, exact size and SHA-256. The descriptor records both fixed Staging image digests and safe build identity/digests. It contains no raw environment or credential values. Receipt fields include the actual artifact build SHA, candidate SHA, application/contract pins, serving revision, configuration digest, SQL verification execution/reference hashes and tested counterpart versions/capabilities.
+
+The decoder checks the archive digest before reading ZIP entries, never extracts paths, and bounds archive/member output. It rejects traversal/unexpected/duplicate entries, encrypted/unsupported entries, links, overlaps, conflicting headers, invalid checksums and extra payloads. Canonical JSON rejects hidden duplicate keys. The downloader authenticates only the fixed GitHub API request; the signed storage request receives no GitHub token, cookies or caller headers. API failures do not print response bodies or signed URLs.
+
+Expected inputs are recomputed from immutable candidate Git blobs using the same manifest rules as the builder. Migration IDs/content hashes and desired nonsecret profile references are included. Actual configuration must be recorded in reviewed `config/environments/staging.json`; the `.example.json` file remains synthetic. Planning project/URL information alone is not an operational profile.
+
+For equivalent docs reuse, every prior bundle must remain retrievable and authenticated. The reader walks a bounded acyclic reference chain, verifies exact archived checksums/attempts and proves that each step is a docs-only Git descendant with identical build/configuration/artifact/schema-permission inputs. The original image SHA, deployed revision/time and image digests remain unchanged. Historical receipts need not be newly issued if their artifacts remain available: the current receipt must be fresh and must carry fresh SQL verification from its own trusted run. Missing/expired artifacts require rebuilding/reverification rather than waiving checks. The current RC ref is read before and after verification to catch concurrent advancement. All referenced artifact expiries and current receipt/live/manual freshness are checked again at completion, so slow remote reads cannot preserve an expired result.
+
+Public Staging checks issue bounded GETs only to the profile's `/health/live`, `/health/ready` and `/v1/meta`. They send synthetic required metadata, no staff credentials, refuse redirects and require uncached metadata. They compare the actual build SHA, environment, revision, contract version and runtime/configuration digests with the receipt. Public health/meta does not independently attest the image or SQL permissions; those facts require the trusted rollout/schema execution record. Provider IAM, controlled SQL drift invalidation, real rollout production, backup/recovery and counterpart execution remain separate required work.
+
+The owner validation section uses these delimiters around one JSON fence:
+
+````text
+<!-- blogpost-owner-validation:v1 -->
+```json
+{ ...owner's factual validation record... }
+```
+<!-- /blogpost-owner-validation -->
+````
+
+The record includes current/tested RC SHAs, input/configuration/image digests, actual serving revision, contract pin, date, tested counterparts, all relevant scenarios and any explicit carry-forward reference. Each scenario requires a recorded observation; Google sign-in, membership roles, cross-client editorial work, conflict/recovery, media/withdrawal and environment/share-origin checks cannot be waived. Accessibility/upgrade can be marked unaffected only with an explanation. Duplicate/escaped duplicate JSON keys and missing or unchecked scenarios fail. No function generates a successful manual claim on the owner's behalf.
+
+GitHub's read-only GraphQL result supplies the author or actual last body editor. That actor must be the configured human owner; a self-declared owner ID, author field alone after another editor changed the body, label or self-review cannot replace attribution. A carried-forward test preserves its real tested SHA and must link to authenticated equivalent evidence, including multi-step docs chains. A new deployment or changed inputs invalidates it. Receipt freshness is initially 24 hours, manual validation seven days, with at most five minutes of clock skew; the versioned [policy](../config/ci/evidence-policy.json) controls these bounds.
+
+The promotion job now invokes this reader with read-only GitHub permissions and no cloud/signing identity. It still ends at the explicit delivery-unavailable gate. The trusted staging writer, provider rollout/SQL records, actual-profile provisioning, live counterpart verification and production publication/recovery path must be implemented and exercised before removing that gate. The local synthetic tests and the observed GitHub body-attribution query do not establish a real staging receipt or owner acceptance.

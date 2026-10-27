@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "region": "asia-southeast2",
+  "originPreference": "default-cloud-run-https",
+  "staging": {
+    "projectId": "blogpost-staging",
+    "projectNumber": "393487571647",
+    "plannedServices": { "api": "blogpost-api", "web": "blogpost-web" },
+    "plannedOrigins": {
+      "api": "https://blogpost-api-393487571647.asia-southeast2.run.app",
+      "web": "https://blogpost-web-393487571647.asia-southeast2.run.app"
+    }
+  },
+  "production": {
+    "projectId": "blogpost-512905",
+    "projectNumber": "520873230275",
+    "plannedServices": { "api": "blogpost-api", "web": "blogpost-web" },
+    "plannedOrigins": {
+      "api": "https://blogpost-api-520873230275.asia-southeast2.run.app",
+      "web": "https://blogpost-web-520873230275.asia-southeast2.run.app"
+    }
+  }
+}

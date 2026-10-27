@@ -8,7 +8,7 @@ export function githubReader(config, token, transport = fetch) {
     if (
       typeof suffix !== 'string' ||
       /[\s\u0000-\u001f\u007f]/.test(suffix) ||
-      !/^\/(?:commits\/[a-f0-9]{40}\/pulls\?per_page=100|pulls\/[1-9][0-9]*|git\/ref\/heads\/(?:main|rc))$/.test(
+      !/^\/(?:commits\/[a-f0-9]{40}\/pulls\?per_page=100|pulls\/[1-9][0-9]*|git\/ref\/heads\/(?:main|rc)|actions\/workflows\/staging\.yml\/runs\?branch=rc&event=push&head_sha=[a-f0-9]{40}&per_page=100|actions\/runs\/[1-9][0-9]*(?:\/attempts\/[1-9][0-9]*\/jobs\?per_page=100|\/artifacts\?per_page=100)?|actions\/artifacts\/[1-9][0-9]*)$/.test(
         suffix,
       )
     )

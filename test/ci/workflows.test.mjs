@@ -67,10 +67,12 @@ test('checks pin actions and immutable checkouts; no work/fork or unfinished del
       assert.equal(checkout.with['fetch-depth'], 0);
       assert.equal(checkout.with['persist-credentials'], false);
       if (job.permissions)
-        assert.deepEqual(job.permissions, {
-          contents: 'read',
-          'pull-requests': 'read',
-        });
+        assert.deepEqual(
+          job.permissions,
+          name === 'promotion-evidence'
+            ? { contents: 'read', actions: 'read', 'pull-requests': 'read' }
+            : { contents: 'read', 'pull-requests': 'read' },
+        );
       for (const step of job.steps) {
         if (step.uses && !step.uses.startsWith('./.github/actions/'))
           assert.match(step.uses, /^[a-zA-Z0-9_/-]+@[a-f0-9]{40}$/);

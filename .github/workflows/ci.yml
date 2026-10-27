@@ -149,6 +149,10 @@ jobs:
 
           npm run contract:kotlin:test
   promotion-evidence:
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     needs:
@@ -165,6 +169,10 @@ jobs:
         with:
           node-version-file: .nvmrc
           package-manager-cache: false
+      - run: node scripts/ci/promotion-evidence.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      # Keep promotion closed until the remaining release/recovery path is implemented and verified.
       - run: node scripts/ci/delivery-unavailable.mjs
   ci-gate:
     runs-on: ubuntu-24.04
