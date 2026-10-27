@@ -1,0 +1,15 @@
+{
+  "method": "POST",
+  "path": "/v1/public/posts/availability",
+  "headers": {
+    "X-Device-ID": "8d5ca46a-7f59-4f64-9d91-fedc41b59e7a",
+    "X-Device-OS": "ANDROID",
+    "X-Device-Version": "unknown",
+    "X-App-Version": "0.0.0+fixture.1",
+    "X-App-Language": "en"
+  },
+  "query": {},
+  "body": {
+    "postIds": ["10000000-0000-4000-8000-000000000001"]
+  }
+}

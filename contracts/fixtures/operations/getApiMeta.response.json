@@ -1,0 +1,65 @@
+{
+  "timestamp": "2026-10-25T08:20:30.123Z",
+  "responseKey": "SUCCESS",
+  "statusCode": 200,
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "message": {
+    "title": "Request completed",
+    "descriptions": "The request completed successfully."
+  },
+  "data": {
+    "apiMajor": 1,
+    "contractVersion": "1.0.0",
+    "markdownContractVersion": 1,
+    "buildSha": "local",
+    "features": [],
+    "limits": {
+      "defaultPageSize": 20,
+      "maxPageSize": 50,
+      "defaultTaxonomyPageSize": 50,
+      "maxSearchResults": 1000,
+      "maxMarkdownBytes": 131072,
+      "maxJsonBodyBytes": 1048576,
+      "maxUploadFileBytes": 5242880,
+      "maxMultipartBodyBytes": 6291456,
+      "maxImagePixels": 12000000,
+      "maxTagsPerPost": 5,
+      "maxAvailabilityIds": 50,
+      "maxActivePostsPerMember": 100,
+      "maxPendingUploadBytesPerMember": 104857600,
+      "idempotencyTtlSeconds": 86400,
+      "unattachedMediaTtlSeconds": 86400,
+      "invitationTtlSeconds": 604800
+    },
+    "clients": {
+      "web": {
+        "recommendedVersion": "0.0.0",
+        "minimumSupportedVersion": null
+      },
+      "android": {
+        "recommendedVersion": "0.0.0",
+        "minimumSupportedVersion": null
+      }
+    },
+    "lifecycle": {
+      "status": "ACTIVE",
+      "successorApiMajor": null,
+      "noticePublishedAt": null,
+      "deprecatedAt": null,
+      "sunsetAt": null,
+      "migrationGuidePath": null
+    },
+    "deployment": {
+      "environment": "development",
+      "revision": null,
+      "runtimeInputDigest": "0000000000000000000000000000000000000000000000000000000000000000",
+      "configurationDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  "error": null,
+  "meta": {
+    "contractVersion": "1.0.0",
+    "pagination": null,
+    "idempotency": null
+  }
+}

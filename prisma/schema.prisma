@@ -1,0 +1,335 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  AUTHOR
+  EDITOR
+  ADMIN
+}
+
+enum PublicationState {
+  NEVER_PUBLISHED
+  PUBLISHED
+  WITHDRAWN
+}
+
+enum WorkflowState {
+  DRAFT
+  IN_REVIEW
+  CHANGES_REQUESTED
+  CLEAN
+}
+
+enum MediaState {
+  PROCESSING
+  READY
+  DELETING
+}
+
+model Member {
+  id          String   @id @default(uuid()) @db.Uuid
+  identityUid String   @unique @db.VarChar(128)
+  email       String   @db.VarChar(320)
+  displayName String   @db.VarChar(160)
+  handle      String   @unique @db.VarChar(120)
+  bio         String   @default("")
+  role        Role
+  active      Boolean  @default(true)
+  version     Int      @default(1)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+
+  authoredPosts Post[] @relation("PostAuthor")
+  createdPosts Post[] @relation("PostCreator")
+  createdRevisions Revision[] @relation("RevisionCreator")
+  creditedRevisions Revision[] @relation("RevisionAuthor")
+  invitations Invitation[] @relation("InvitationIssuer")
+  acceptedInvitations Invitation[] @relation("InvitationAcceptor")
+  reviewEvents ReviewEvent[]
+  uploads MediaAsset[]
+  auditEvents AuditEvent[]
+  rateLimits RateLimitBucket[]
+  @@index([active, role])
+}
+
+model Invitation {
+  id          String   @id @default(uuid()) @db.Uuid
+  email       String   @db.VarChar(320)
+  role        Role
+  tokenHash   String   @unique @db.Char(64)
+  issuerId    String   @db.Uuid
+  acceptedById String? @db.Uuid
+  version     Int      @default(1)
+  expiresAt   DateTime @db.Timestamptz(3)
+  acceptedAt  DateTime? @db.Timestamptz(3)
+  revokedAt   DateTime? @db.Timestamptz(3)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  issuer Member @relation("InvitationIssuer", fields: [issuerId], references: [id], onDelete: Restrict)
+  acceptedBy Member? @relation("InvitationAcceptor", fields: [acceptedById], references: [id], onDelete: Restrict)
+  @@index([email, expiresAt])
+  @@index([issuerId])
+  @@index([acceptedById])
+  @@index([expiresAt])
+}
+
+model Post {
+  id                  String @id @default(uuid()) @db.Uuid
+  authorId            String @db.Uuid
+  creatorId           String @db.Uuid
+  clientDraftId       String @db.Uuid
+  canonicalSlug       String? @unique @db.VarChar(120)
+  publicationState    PublicationState @default(NEVER_PUBLISHED)
+  workflowState       WorkflowState @default(DRAFT)
+  workingRevisionId   String? @db.Uuid
+  publishedRevisionId String? @db.Uuid
+  submittedRevisionId String? @db.Uuid
+  submittedAt         DateTime? @db.Timestamptz(3)
+  lockVersion         Int @default(1)
+  firstPublishedAt    DateTime? @db.Timestamptz(3)
+  lastPublishedAt     DateTime? @db.Timestamptz(3)
+  trashedAt           DateTime? @db.Timestamptz(3)
+  purgeAfter          DateTime? @db.Timestamptz(3)
+  purgeStartedAt      DateTime? @db.Timestamptz(3)
+  createdAt           DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime @updatedAt @db.Timestamptz(3)
+  author Member @relation("PostAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  creator Member @relation("PostCreator", fields: [creatorId], references: [id], onDelete: Restrict)
+  revisions Revision[] @relation("PostRevisions")
+  workingRevision Revision? @relation("WorkingRevision", fields: [id, workingRevisionId], references: [postId, id], onDelete: NoAction, onUpdate: NoAction)
+  publishedRevision Revision? @relation("PublishedRevision", fields: [id, publishedRevisionId], references: [postId, id], onDelete: NoAction, onUpdate: NoAction)
+  submittedRevision Revision? @relation("SubmittedRevision", fields: [id, submittedRevisionId], references: [postId, id], onDelete: NoAction, onUpdate: NoAction)
+  slugs SlugHistory[]
+  media MediaAsset[]
+  reviews ReviewEvent[]
+  search PublishedSearch?
+  @@unique([creatorId, clientDraftId])
+  @@index([authorId, trashedAt])
+  @@index([publicationState, firstPublishedAt, id])
+  @@index([workflowState, updatedAt, id])
+  @@index([purgeAfter])
+}
+
+model Revision {
+  id             String @id @default(uuid()) @db.Uuid
+  postId         String @db.Uuid
+  number         Int
+  title          String
+  summary        String
+  markdown       String
+  markdownContractVersion Int @default(1)
+  plainBody      String
+  creditedAuthorId String @db.Uuid
+  creatorId      String @db.Uuid
+  categoryId     String? @db.Uuid
+  coverMediaId   String? @db.Uuid
+  coverAltText   String?
+  coverDecorative Boolean @default(false)
+  restoredFromRevisionId String? @db.Uuid
+  checksum       String @db.Char(64)
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+  post Post @relation("PostRevisions", fields: [postId], references: [id], onDelete: Cascade)
+  creditedAuthor Member @relation("RevisionAuthor", fields: [creditedAuthorId], references: [id], onDelete: Restrict)
+  creator Member @relation("RevisionCreator", fields: [creatorId], references: [id], onDelete: Restrict)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  cover MediaAsset? @relation("RevisionCover", fields: [postId, coverMediaId], references: [postId, id], onDelete: NoAction, onUpdate: NoAction)
+  restoredFrom Revision? @relation("RevisionRestoration", fields: [postId, restoredFromRevisionId], references: [postId, id], onDelete: NoAction, onUpdate: NoAction)
+  restorations Revision[] @relation("RevisionRestoration")
+  workingFor Post[] @relation("WorkingRevision")
+  publishedFor Post[] @relation("PublishedRevision")
+  submittedFor Post[] @relation("SubmittedRevision")
+  tags RevisionTag[]
+  media RevisionMedia[]
+  reviews ReviewEvent[]
+  search PublishedSearch[]
+  @@unique([postId, number])
+  @@unique([postId, id])
+  @@index([categoryId])
+  @@index([creatorId])
+  @@index([creditedAuthorId])
+  @@index([postId, coverMediaId])
+}
+
+model Category {
+  id String @id @default(uuid()) @db.Uuid
+  name String @db.VarChar(160)
+  normalizedName String @unique @db.VarChar(160)
+  slug String @unique @db.VarChar(120)
+  active Boolean @default(true)
+  version Int @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  revisions Revision[]
+}
+
+model Tag {
+  id String @id @default(uuid()) @db.Uuid
+  name String @db.VarChar(160)
+  normalizedName String @unique @db.VarChar(160)
+  slug String @unique @db.VarChar(120)
+  active Boolean @default(true)
+  version Int @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  revisions RevisionTag[]
+}
+
+model RevisionTag {
+  revisionId String @db.Uuid
+  tagId String @db.Uuid
+  position Int
+  revision Revision @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+  tag Tag @relation(fields: [tagId], references: [id], onDelete: Restrict)
+  @@id([revisionId, tagId])
+  @@unique([revisionId, position])
+  @@index([tagId])
+}
+
+model SlugHistory {
+  slug String @id @db.VarChar(120)
+  postId String? @db.Uuid
+  canonical Boolean
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  post Post? @relation(fields: [postId], references: [id], onDelete: SetNull)
+  @@unique([postId, slug])
+  @@index([postId])
+}
+
+model MediaAsset {
+  id String @id @default(uuid()) @db.Uuid
+  postId String @db.Uuid
+  uploaderId String @db.Uuid
+  state MediaState @default(PROCESSING)
+  mimeType String? @db.VarChar(32)
+  byteSize BigInt @default(0)
+  width Int?
+  height Int?
+  variants Json @default("[]")
+  leaseExpiresAt DateTime? @db.Timestamptz(3)
+  unattachedExpiresAt DateTime? @db.Timestamptz(3)
+  uploadOperationId String? @unique @db.Uuid
+  uploadAttemptId String? @db.Uuid
+  deletionAfter DateTime? @db.Timestamptz(3)
+  objectsDeletedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  uploader Member @relation(fields: [uploaderId], references: [id], onDelete: Restrict)
+  references RevisionMedia[]
+  covers Revision[] @relation("RevisionCover")
+  uploadOperation IdempotencyRecord? @relation(fields: [uploadOperationId], references: [id], onDelete: SetNull)
+  attempts MediaUploadAttempt[]
+  @@unique([postId, id])
+  @@index([uploaderId, state])
+  @@index([unattachedExpiresAt])
+  @@index([state, deletionAfter, objectsDeletedAt])
+}
+
+model MediaUploadAttempt {
+  id String @id @db.Uuid
+  mediaId String @db.Uuid
+  objects Json @default("[]")
+  leaseExpiresAt DateTime @db.Timestamptz(3)
+  abandonedAt DateTime? @db.Timestamptz(3)
+  completedAt DateTime? @db.Timestamptz(3)
+  cleanupAfter DateTime @db.Timestamptz(3)
+  cleanedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  media MediaAsset @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  @@index([mediaId])
+  @@index([cleanupAfter, cleanedAt])
+}
+
+model RevisionMedia {
+  postId String @db.Uuid
+  revisionId String @db.Uuid
+  mediaId String @db.Uuid
+  revision Revision @relation(fields: [postId, revisionId], references: [postId, id], onDelete: Cascade)
+  asset MediaAsset @relation(fields: [postId, mediaId], references: [postId, id], onDelete: Restrict)
+  @@id([revisionId, mediaId])
+  @@index([postId, mediaId])
+}
+
+model ReviewEvent {
+  id String @id @default(uuid()) @db.Uuid
+  postId String @db.Uuid
+  revisionId String @db.Uuid
+  actorId String @db.Uuid
+  action String @db.VarChar(40)
+  feedback String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  revision Revision @relation(fields: [postId, revisionId], references: [postId, id], onDelete: NoAction, onUpdate: NoAction)
+  actor Member @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  @@index([postId, createdAt, id])
+  @@index([actorId])
+}
+
+model PublishedSearch {
+  postId String @id @db.Uuid
+  revisionId String @db.Uuid
+  document Unsupported("tsvector")
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  revision Revision @relation(fields: [postId, revisionId], references: [postId, id], onDelete: NoAction, onUpdate: NoAction)
+  @@index([document], type: Gin)
+}
+
+model AuditEvent {
+  id String @id @default(uuid()) @db.Uuid
+  actorId String? @db.Uuid
+  action String @db.VarChar(80)
+  subjectType String @db.VarChar(40)
+  subjectId String @db.Uuid
+  changes Json
+  traceId String @db.Char(32)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  actor Member? @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  @@index([createdAt, id])
+  @@index([actorId])
+  @@index([subjectType, subjectId])
+}
+
+model IdempotencyRecord {
+  id String @id @default(uuid()) @db.Uuid
+  identityUid String @db.VarChar(128)
+  method String @db.VarChar(8)
+  route String @db.VarChar(300)
+  key String @db.Uuid
+  requestHash String @db.Char(64)
+  result Json?
+  statusCode Int?
+  leaseExpiresAt DateTime? @db.Timestamptz(3)
+  expiresAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  upload MediaAsset?
+  @@unique([identityUid, method, route, key])
+  @@index([expiresAt])
+}
+
+model SchemaMeta {
+  id Int @id
+  version Int
+  updatedAt DateTime @default(now()) @db.Timestamptz(3)
+}
+
+model RateLimitBucket {
+  memberId String @db.Uuid
+  action String @db.VarChar(40)
+  windowStart DateTime @db.Timestamptz(3)
+  count Int @default(0)
+  expiresAt DateTime @db.Timestamptz(3)
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  @@id([memberId, action, windowStart])
+  @@index([expiresAt])
+}
+
+model MaintenanceCheckpoint {
+  key String @id @db.VarChar(100)
+  cursor String? @db.VarChar(2048)
+  updatedAt DateTime @default(now()) @db.Timestamptz(3)
+}

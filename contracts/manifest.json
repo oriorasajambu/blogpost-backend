@@ -1,0 +1,1182 @@
+{
+  "contractVersion": "1.0.0",
+  "status": "DRAFT",
+  "files": [
+    {
+      "path": "contracts/CHANGELOG.md",
+      "sha256": "ad5681557148aa604e554f2b38ee2c0cead6acc7f390435d29be43902a07e7c7"
+    },
+    {
+      "path": "contracts/CONTRACT.md",
+      "sha256": "7a60750d11e2e8669149ee87a2186bc1e65535dfecbb64b25cadfcc8377e5056"
+    },
+    {
+      "path": "contracts/README.md",
+      "sha256": "0a79a79f0b5c23a03f376eecf90951aabaddf987c27f0517e7f1b2bb6719d7ea"
+    },
+    {
+      "path": "contracts/compatibility-report.json",
+      "sha256": "5bb031a41a4d17cfaab591592f19c2f489d885418bb157c37c355eddbcea20fd"
+    },
+    {
+      "path": "contracts/consumers/kotlin/README.md",
+      "sha256": "defc594770ee6efbed51ba3f6dd7f4df1482065dfdff68531ac2a2da644c8048"
+    },
+    {
+      "path": "contracts/consumers/kotlin/consumer-rules.pro",
+      "sha256": "86e26d7d9097a53d25efeb4d97da445452df8c4f7c79256860d2cf9155ac9145"
+    },
+    {
+      "path": "contracts/consumers/kotlin/src/main/kotlin/com/blogpost/contract/wire/WireCalls.kt",
+      "sha256": "a898271182eacba9dab372344db1e8f7a12dc8fad34f6e5f4d3ffe9539258b03"
+    },
+    {
+      "path": "contracts/consumers/kotlin/src/main/kotlin/com/blogpost/contract/wire/WireContract.kt",
+      "sha256": "da51b78d8472ef7202eb35effcaecfb67d37db9044764c9affb6ad4d8c0edc05"
+    },
+    {
+      "path": "contracts/consumers/kotlin/src/main/kotlin/com/blogpost/contract/wire/WireConverterFactory.kt",
+      "sha256": "b2f56cecbfa95e944ccd037aa59142a04ba2f0f12d187d07a2729059491f00c1"
+    },
+    {
+      "path": "contracts/consumers/kotlin/src/main/kotlin/com/blogpost/contract/wire/WireGson.kt",
+      "sha256": "bed768d39687207f1242b866284a0415353f1cf929fea37ffad934713701a2db"
+    },
+    {
+      "path": "contracts/consumers/kotlin/src/main/kotlin/com/blogpost/contract/wire/WireJson.kt",
+      "sha256": "f1af531fef24dfd854431c127291b41e193b9df292a42e4545cce34b183ece4d"
+    },
+    {
+      "path": "contracts/consumers/kotlin/src/main/kotlin/com/blogpost/contract/wire/WireTypes.kt",
+      "sha256": "127292bf71828005f88421f719c24697ff495d3cce4400466df03bea0e45e0ac"
+    },
+    {
+      "path": "contracts/fixtures/errors/access-revoked.json",
+      "sha256": "41cdebf81bf1ea86462762543e78ab8f9a5adf7fc1219e9e4401c3b18b2e775f"
+    },
+    {
+      "path": "contracts/fixtures/errors/ambiguous-credentials.json",
+      "sha256": "cd8e0e6f9c09c17f17092de5114ab87582741be51a23fc732805789446c8c2b5"
+    },
+    {
+      "path": "contracts/fixtures/errors/api-version-retired.json",
+      "sha256": "95208bc226524872ddf7cce1084d968cdcf78d44408b209b9087458b854a89b9"
+    },
+    {
+      "path": "contracts/fixtures/errors/authentication-expired.json",
+      "sha256": "3492bf47d2c0ceee0067a73c35fd07752f7a86c945105544dd28cae630b3a01f"
+    },
+    {
+      "path": "contracts/fixtures/errors/authentication-required.json",
+      "sha256": "52cc020fc583bbe46dcb14d1a76001b4b1f3f6488ad89ddec060ce27c517733e"
+    },
+    {
+      "path": "contracts/fixtures/errors/client-draft-already-exists.json",
+      "sha256": "915590de87d1dee10a221424aa0cc5cb446a48616b126484cebaa8d12cfac1af"
+    },
+    {
+      "path": "contracts/fixtures/errors/csrf-validation-failed.json",
+      "sha256": "ccef2e7e65318dcb61dd2545c633c94957afe7e6559f08d0bb8f0fba6f54a836"
+    },
+    {
+      "path": "contracts/fixtures/errors/dependency-unavailable.json",
+      "sha256": "735a92ad1b01b51e1adb061299f112c68d36bc59ed319d93ca9881002bda4ad1"
+    },
+    {
+      "path": "contracts/fixtures/errors/expected-version-required.json",
+      "sha256": "d766687abf9c595f5e0d6d4b0ee0621773c7d9a0de0c14fa63ea34b9372f0d92"
+    },
+    {
+      "path": "contracts/fixtures/errors/idempotency-in-progress.json",
+      "sha256": "bf7d791c27ae82fe22381e00647f2234ccf7c8bf355846f31dd3ee5087e80271"
+    },
+    {
+      "path": "contracts/fixtures/errors/idempotency-key-reused.json",
+      "sha256": "39b15d3d79c0c60c30d155215709811c288bed3a5c9c20271e5891f92bb54999"
+    },
+    {
+      "path": "contracts/fixtures/errors/insufficient-permission.json",
+      "sha256": "ffff4f2c4e2a015be8ca4f5ecbe418fd73d19c435c94b2a455ded029c25a14f4"
+    },
+    {
+      "path": "contracts/fixtures/errors/internal-error.json",
+      "sha256": "96e72f559fc9cca9a73114792ae4e547b27f42d2e1926fc2f80eef5c13d7c9c1"
+    },
+    {
+      "path": "contracts/fixtures/errors/invalid-client-metadata.json",
+      "sha256": "b63ed347ddeca7f71b7e33f4ffe8bf37f6a4e52ad0f98923da4170658beb5a2c"
+    },
+    {
+      "path": "contracts/fixtures/errors/invalid-credential.json",
+      "sha256": "86677ed4631b6c2779dd9b01d0dc98c944401a3edddc81b95746d4c18c8b9647"
+    },
+    {
+      "path": "contracts/fixtures/errors/invalid-cursor.json",
+      "sha256": "22d9d6483208c2d394e0e6e631ef691c77f627565dac76c27d63b786022f19b1"
+    },
+    {
+      "path": "contracts/fixtures/errors/invalid-expected-version.json",
+      "sha256": "3201e011f953edfb388dea7d572db3e70643290ad088742207d009bad00b8cc5"
+    },
+    {
+      "path": "contracts/fixtures/errors/invalid-idempotency-key.json",
+      "sha256": "3ac7e0eff28ebe02a570e049c211b555b4c60f1225baca7f45990562384620e5"
+    },
+    {
+      "path": "contracts/fixtures/errors/invitation-account-mismatch.json",
+      "sha256": "58518558975ec2a40754b6f3304de4519b6551216fc4e0221217f01c17eaaa76"
+    },
+    {
+      "path": "contracts/fixtures/errors/invitation-expired.json",
+      "sha256": "276effc897973cd2853520db4a755216476aeebb5719c510322ee4d9eb82f8a2"
+    },
+    {
+      "path": "contracts/fixtures/errors/invitation-invalid.json",
+      "sha256": "23cedfabdcda4c77111cc6b197f6ce1db3a60a53792f8206c067a1a4b8f77c9d"
+    },
+    {
+      "path": "contracts/fixtures/errors/invitation-revoked.json",
+      "sha256": "fd33a5f60fcf7cfb11251ed40358cc2f02baa097d494bc2bdf53fdabd6968637"
+    },
+    {
+      "path": "contracts/fixtures/errors/invitation-used.json",
+      "sha256": "abc6bd044d1239852b39d3dbb0621264777e9e1e9a3c1cd2483073fd1c0017fb"
+    },
+    {
+      "path": "contracts/fixtures/errors/last-admin-required.json",
+      "sha256": "8ff149bd717be4f089f3d1ef2911d93cc604ab8f89f8eecbcf0d11eec194dc66"
+    },
+    {
+      "path": "contracts/fixtures/errors/malformed-json.json",
+      "sha256": "1543b176fb6d07d085580fe7be1a4084fb1af26bc4ef8b5e5a0712d27e1597d1"
+    },
+    {
+      "path": "contracts/fixtures/errors/markdown-unsupported.json",
+      "sha256": "d6e80ab8c0509d4e7580207b1ba65fa0b0dac2d85cd41018f4d83abb1f653252"
+    },
+    {
+      "path": "contracts/fixtures/errors/member-already-exists.json",
+      "sha256": "81eb02203c69970f3a0676709156def6f6fec608cd95fe18873f278f25d8cf00"
+    },
+    {
+      "path": "contracts/fixtures/errors/method-not-allowed.json",
+      "sha256": "3bbeceaf5c5a5212987d43f2d1832bac488d6b3adfe8df09ce002699f1449f5e"
+    },
+    {
+      "path": "contracts/fixtures/errors/payload-too-large.json",
+      "sha256": "db19ebdeecb721166803682373bb53a569be79b0f6d6f25ec048512b802455f2"
+    },
+    {
+      "path": "contracts/fixtures/errors/rate-limited.json",
+      "sha256": "0cbdac7aa390d2db36ffd2f6573dcf4fef9b855a89578f2a0e7a688139b1ac72"
+    },
+    {
+      "path": "contracts/fixtures/errors/resource-not-found.json",
+      "sha256": "9a50b7ac73b3e609541420d7b87a7587723325c39435a4e8528001c06e10d191"
+    },
+    {
+      "path": "contracts/fixtures/errors/resource-quota-exceeded.json",
+      "sha256": "93e44823b51a9e83a92b9b2897adf18b1931c695b0b8fd3c157a178670c54d31"
+    },
+    {
+      "path": "contracts/fixtures/errors/search-query-not-searchable.json",
+      "sha256": "205f3f5186e89f22745e86cb5f44fbe821622c83a7f1f36b1d6029b874e1e29a"
+    },
+    {
+      "path": "contracts/fixtures/errors/slug-conflict.json",
+      "sha256": "74a817646e23cc3ea6a9fc83304c12f69e8c39ebae7fb92028e8a3f2a56e1c2c"
+    },
+    {
+      "path": "contracts/fixtures/errors/unsupported-media-type.json",
+      "sha256": "7a77ec75950b6662abcb3156dea7ef2a1fab0620984159b8325dad1ea8407164"
+    },
+    {
+      "path": "contracts/fixtures/errors/upload-too-large.json",
+      "sha256": "f396900fd8c6a5541874d2458ced7a9fed93e57bdbd3cd9b8dcc85a7f607bd7d"
+    },
+    {
+      "path": "contracts/fixtures/errors/upstream-timeout.json",
+      "sha256": "02759458c0d075a49da0740b5a8ad0c5f778798c9b9b77611e85cc52c0ebb4b1"
+    },
+    {
+      "path": "contracts/fixtures/errors/validation-failed.json",
+      "sha256": "fa79c1f4e11cceec3f0f21d0c76a1c620f3c286eabebc4f3d07150eb6bb913bc"
+    },
+    {
+      "path": "contracts/fixtures/errors/version-conflict.json",
+      "sha256": "0d3654f0d1a00261fb68951a3d6565a3b2e1c1e008e888cb12b0321f514a37b3"
+    },
+    {
+      "path": "contracts/fixtures/errors/workflow-conflict.json",
+      "sha256": "c3e1236dc3ab0d91f5fac8e7e7a36b72cbb489f726b7e3b7e420eed07f50854b"
+    },
+    {
+      "path": "contracts/fixtures/markdown/cases.json",
+      "sha256": "b894c99e88126ff839ce61718dbb96839292f79164bbdcddf4cb2db475e14148"
+    },
+    {
+      "path": "contracts/fixtures/markdown/unicode-counting.json",
+      "sha256": "27ddf40963d3377a88ffbe3c2036171783052e433bac2a328f6f18d6365b8f05"
+    },
+    {
+      "path": "contracts/fixtures/media/pixel.png",
+      "sha256": "6a34118ba2e0bf5da5ab14cb63b121e2e8b2987a876668a9b2f9c30e1357470b"
+    },
+    {
+      "path": "contracts/fixtures/operations/acceptInvitation.request.json",
+      "sha256": "708ae2ea3131e01659e5a2d79d5a6be36f10af8e05a42d7c8ad4f0e64b4129d7"
+    },
+    {
+      "path": "contracts/fixtures/operations/acceptInvitation.response.json",
+      "sha256": "06a4a7ec7d15c51509cf9b55d67fd21d7a5e9c2f57febe3df3f7b16941514483"
+    },
+    {
+      "path": "contracts/fixtures/operations/changePostSlug.request.json",
+      "sha256": "824c87b96b7ed475a8571b3f7eb50a552985ebf16611b471cc75278bc1b9fb69"
+    },
+    {
+      "path": "contracts/fixtures/operations/changePostSlug.response.json",
+      "sha256": "c9e64f20a50ba8d0917f7de5429e06181c4378f1ad63eaa879d97dab65b58e7e"
+    },
+    {
+      "path": "contracts/fixtures/operations/checkPublicPostAvailability.request.json",
+      "sha256": "3be469ac4d39fece47d2ab82b2a30d94ee148381278bc6222debf9d49f632288"
+    },
+    {
+      "path": "contracts/fixtures/operations/checkPublicPostAvailability.response.json",
+      "sha256": "21afd3ccf9dbc678da208f4d21bc2a2b03789e94ffb8102c4ce736b7ca1d7a9a"
+    },
+    {
+      "path": "contracts/fixtures/operations/createCategory.request.json",
+      "sha256": "8a650976c939a489fe29621972c435cf9f679b6bf4f6fad26db8832770a6691e"
+    },
+    {
+      "path": "contracts/fixtures/operations/createCategory.response.json",
+      "sha256": "5c97142f660c71fb589f96c5a7437b654abbb2219b8bc08769e68f01859000ca"
+    },
+    {
+      "path": "contracts/fixtures/operations/createInvitation.request.json",
+      "sha256": "ed6eef0858c04f635c84fbc85f95aecb4f28fe7d476f0879809798ad3232c047"
+    },
+    {
+      "path": "contracts/fixtures/operations/createInvitation.response.json",
+      "sha256": "0d3510461c5f81c98d3d30c59e823a9d6c847a7b2326cb5e3be4dfa6c42ce722"
+    },
+    {
+      "path": "contracts/fixtures/operations/createPost.request.json",
+      "sha256": "b2fe74a06bf17b4073b3cc4570a7cf80a2fe90d9b51bf89ef2baf00dc3b24e24"
+    },
+    {
+      "path": "contracts/fixtures/operations/createPost.response.json",
+      "sha256": "1617634148f8a7b38c61e9867665803617e99a86ce99bc1358a07de685659d28"
+    },
+    {
+      "path": "contracts/fixtures/operations/createTag.request.json",
+      "sha256": "8b75060edd68049dc8855ddb6e9cdb804db62fe4fee204ddbe2e5bd00b93b12c"
+    },
+    {
+      "path": "contracts/fixtures/operations/createTag.response.json",
+      "sha256": "cc67736881314f9c0fe84b47020bb6c1188d6836140e130a23c3bdd6cdcafb19"
+    },
+    {
+      "path": "contracts/fixtures/operations/createWebSession.request.json",
+      "sha256": "9dcc5a21a09ef8febd0af389f1f0ba89194a3caedfec1920bd4d77215f4ecfbd"
+    },
+    {
+      "path": "contracts/fixtures/operations/createWebSession.response.json",
+      "sha256": "a4dcd9486e1ed02c3ae3b1abb41f32b5f0c61c6331cc5df283c780fcb0ed6748"
+    },
+    {
+      "path": "contracts/fixtures/operations/getApiMeta.request.json",
+      "sha256": "1bc64d771131cc98f8d57d53ecb4f5ec72ba1a0bffa437a4e54ceed708d6bde4"
+    },
+    {
+      "path": "contracts/fixtures/operations/getApiMeta.response.json",
+      "sha256": "6cfbd444c6d542bd68dc40066ec852213eddc9756554875e055f3ab43382a0b4"
+    },
+    {
+      "path": "contracts/fixtures/operations/getInvitation.request.json",
+      "sha256": "140a5a48a5ded88764e46f3b6ccecb7b99a776060395ae3a943cf8a9e86b1b1f"
+    },
+    {
+      "path": "contracts/fixtures/operations/getInvitation.response.json",
+      "sha256": "f4242c31618db9c3a65fbb7900b836e7e3d319f1eafc06551b54615ff4bd6686"
+    },
+    {
+      "path": "contracts/fixtures/operations/getManagedCategory.request.json",
+      "sha256": "7053eba18f5f8eedc2406b1e58534fbc702e703c52c0aec7aee2fddfafae0b7d"
+    },
+    {
+      "path": "contracts/fixtures/operations/getManagedCategory.response.json",
+      "sha256": "15ea6bc15b8cdf3bc849210b3494f2db1ae35b8561345cb70726fb6aaca7d5ec"
+    },
+    {
+      "path": "contracts/fixtures/operations/getManagedTag.request.json",
+      "sha256": "33fd67220523c1145d7a1d9958b7776d2492c9bed04efe293dd8f8201bd76c14"
+    },
+    {
+      "path": "contracts/fixtures/operations/getManagedTag.response.json",
+      "sha256": "2bad571d2d0cfca41eace865426876bbc673e4ba16f2cb143b2b26a7eb89baa3"
+    },
+    {
+      "path": "contracts/fixtures/operations/getMe.request.json",
+      "sha256": "51c631f0d00b544a354f241f46d226584f512c893d7f5c82f2a53222e8d45416"
+    },
+    {
+      "path": "contracts/fixtures/operations/getMe.response.json",
+      "sha256": "e0d3558fc30a016103ac174185a40f11cef5c1107f3d91dc78743796c738ac48"
+    },
+    {
+      "path": "contracts/fixtures/operations/getMember.request.json",
+      "sha256": "cdc22f98365f71a09276bbdc0d0eb4a694f7143af185a4b4a64023258a6d814c"
+    },
+    {
+      "path": "contracts/fixtures/operations/getMember.response.json",
+      "sha256": "cb5572c058dbd69baabdb125a1bf5f69bd60757b61714b9cb3f477141362b164"
+    },
+    {
+      "path": "contracts/fixtures/operations/getPostByClientDraftId.request.json",
+      "sha256": "977532b62244b554fe9e101fdb555a96663a682721779a79c9b5701c0551288b"
+    },
+    {
+      "path": "contracts/fixtures/operations/getPostByClientDraftId.response.json",
+      "sha256": "89698e23a35a9810891ac0a82790e13a49c7e52dd003197120faae36064b54f4"
+    },
+    {
+      "path": "contracts/fixtures/operations/getPostMediaMetadata.request.json",
+      "sha256": "6e8629b2181390ecf95f9c6a512da64990b844689f456abdcb541c37bc511fcb"
+    },
+    {
+      "path": "contracts/fixtures/operations/getPostMediaMetadata.response.json",
+      "sha256": "2dfb17bd25974c4a48fcdf3e4281de9fa1439c8a6193524a0949eec8979b9e42"
+    },
+    {
+      "path": "contracts/fixtures/operations/getPostRevision.request.json",
+      "sha256": "f86616f75eb8595314a8d0e7287f2ed2383918ca6ca6758f5f32d5f3bb5ff955"
+    },
+    {
+      "path": "contracts/fixtures/operations/getPostRevision.response.json",
+      "sha256": "846a5164cdeee0f656fcd0b45c457f086648e98c99e3e36e819c368c60a3c710"
+    },
+    {
+      "path": "contracts/fixtures/operations/getPrivatePostMedia.request.json",
+      "sha256": "c260d2988f5208eb8d9da9a99e977ef411f1bbc026066811aa80c5dc472ac82e"
+    },
+    {
+      "path": "contracts/fixtures/operations/getPublicAuthor.request.json",
+      "sha256": "f06ca1b03681084b9e149d031fc39a017b6de59700b8129444a2c78304213a07"
+    },
+    {
+      "path": "contracts/fixtures/operations/getPublicAuthor.response.json",
+      "sha256": "d641d980608d642f614669620478b559690e927208540b2bd324adf4b348b1c7"
+    },
+    {
+      "path": "contracts/fixtures/operations/getPublicPost.request.json",
+      "sha256": "5bc67c983bcec96594b42c3f3f0222681b8cd65ae66d8c01e22796e773f10cf3"
+    },
+    {
+      "path": "contracts/fixtures/operations/getPublicPost.response.json",
+      "sha256": "8763bdbb2b21d95bcfc3addcd536907d861e57b9ccc725994c2a853b9e0947c2"
+    },
+    {
+      "path": "contracts/fixtures/operations/getPublicPostMedia.request.json",
+      "sha256": "94808b978fb33c055f0f337dc67586942a75b7f4bae8f3de7e8f48626dbb3ec6"
+    },
+    {
+      "path": "contracts/fixtures/operations/getWorkspacePost.request.json",
+      "sha256": "6eb5abd784087b40be3c0f959503b9d6d413b7bc2d3cceba4df281f2b3aa839f"
+    },
+    {
+      "path": "contracts/fixtures/operations/getWorkspacePost.response.json",
+      "sha256": "89698e23a35a9810891ac0a82790e13a49c7e52dd003197120faae36064b54f4"
+    },
+    {
+      "path": "contracts/fixtures/operations/listAuditEvents.request.json",
+      "sha256": "eabfc277ba98cb05af28fd65bed5fac37b00b42586d5c3f6380148c95d1f4757"
+    },
+    {
+      "path": "contracts/fixtures/operations/listAuditEvents.response.json",
+      "sha256": "c252107c96e9645f7e7f66b1dc09d9dd38fda7c94b0e8f5c7797b07b2c5f7c6e"
+    },
+    {
+      "path": "contracts/fixtures/operations/listInvitations.request.json",
+      "sha256": "1049ee0939f9fc5b5093d030a396ffcd96024ab25825c063ad7f614c710cc392"
+    },
+    {
+      "path": "contracts/fixtures/operations/listInvitations.response.json",
+      "sha256": "e447ccfbb689f72add37055f032122213b8a155f00b429f9b17273553b8ff78d"
+    },
+    {
+      "path": "contracts/fixtures/operations/listManagedCategories.request.json",
+      "sha256": "16f6876dcf71f1c78d456b525c8f31836bd9a4434ea686d0eac4e40862e83831"
+    },
+    {
+      "path": "contracts/fixtures/operations/listManagedCategories.response.json",
+      "sha256": "41d3ac4750887cd2ef77c580ee081102bdb8b48939a6ffc12964a06c54400666"
+    },
+    {
+      "path": "contracts/fixtures/operations/listManagedTags.request.json",
+      "sha256": "dacc341f63cfb41c99743250cca41005f4d18eb5c35ccadda4350e71a06538a9"
+    },
+    {
+      "path": "contracts/fixtures/operations/listManagedTags.response.json",
+      "sha256": "25bda1d41e833ac670a4a2883ffe5ef9e7b8462b950b621397c6b2d6f153b552"
+    },
+    {
+      "path": "contracts/fixtures/operations/listMembers.request.json",
+      "sha256": "65b026a4a255957af39649cbc23399ba30aeb88e128ce30bcfc257373f96e30f"
+    },
+    {
+      "path": "contracts/fixtures/operations/listMembers.response.json",
+      "sha256": "fa56c7acad3e346623e6bc80928a0721af2b7fab263efb1107aefa35af9aad5b"
+    },
+    {
+      "path": "contracts/fixtures/operations/listPostReviewEvents.request.json",
+      "sha256": "2d895d7493a4923b3689dfe5507f84c1ff3f08a07e16c2d80234282110279ed1"
+    },
+    {
+      "path": "contracts/fixtures/operations/listPostReviewEvents.response.json",
+      "sha256": "7e0717861de58882af717fc9b1578d5a2b30fa006bf5ce756f0c14f0492c9cbd"
+    },
+    {
+      "path": "contracts/fixtures/operations/listPostRevisions.request.json",
+      "sha256": "eb1cb7b2ac07812accaa73ec709b1c77ad4a52770408c303831eefcaae437734"
+    },
+    {
+      "path": "contracts/fixtures/operations/listPostRevisions.response.json",
+      "sha256": "08fbf22fa73f9b90c55f78fa9aceb4b6208058aa5e0179f5066ab23617642f6a"
+    },
+    {
+      "path": "contracts/fixtures/operations/listPublicCategories.request.json",
+      "sha256": "7d9b07a319436be88c85e67feda713bdb24ce72843783ee12438ffc070beb5fb"
+    },
+    {
+      "path": "contracts/fixtures/operations/listPublicCategories.response.json",
+      "sha256": "16b454e3c052aa7db319da347f849883ac5d5aadd233d0982e9fccae2a31fc10"
+    },
+    {
+      "path": "contracts/fixtures/operations/listPublicPosts.request.json",
+      "sha256": "c6aa27301b034f12339af9dfa9fe5af964cd66800587145b1f2078ef12764532"
+    },
+    {
+      "path": "contracts/fixtures/operations/listPublicPosts.response.json",
+      "sha256": "0c169cd0b98f6bfeca8333efd99680007900fb200a2d33b171f9fdd50ca436ce"
+    },
+    {
+      "path": "contracts/fixtures/operations/listPublicTags.request.json",
+      "sha256": "007cdb25e89663ed77bcf13304e6283d7954dd1fa7c0148a08219a467987f95e"
+    },
+    {
+      "path": "contracts/fixtures/operations/listPublicTags.response.json",
+      "sha256": "75bfa2d10c4bbe9a1cb504ec7ba307aa841d864007b5ae1d3816825f0b4ede05"
+    },
+    {
+      "path": "contracts/fixtures/operations/listWorkspacePosts.request.json",
+      "sha256": "c23fa34b7bc1e1c559c39e72fe5f024ea70ca6f5b13218d5267ec4c84597fa16"
+    },
+    {
+      "path": "contracts/fixtures/operations/listWorkspacePosts.response.json",
+      "sha256": "1f03691fa1baaeae409bf3671abc6ed1def07b0940782dc006d3e0cafbdd2f70"
+    },
+    {
+      "path": "contracts/fixtures/operations/publishPostRevision.request.json",
+      "sha256": "0f12e9a64cb3ea671f49d76f6127f3754d1a05b74aead75c945c120e242d1924"
+    },
+    {
+      "path": "contracts/fixtures/operations/publishPostRevision.response.json",
+      "sha256": "ec34f71400243074ee0ca9e6b3def871ab87a037f43fabe7bb4799d0e599f608"
+    },
+    {
+      "path": "contracts/fixtures/operations/reassignPostAuthor.request.json",
+      "sha256": "d17cb8cb7c44d038087b8746a624192f0350a942eb46761576c567ad6d3ad46f"
+    },
+    {
+      "path": "contracts/fixtures/operations/reassignPostAuthor.response.json",
+      "sha256": "f1e2c5819b8c351ea31db2d928b13af9fff43b2be706dedb67f9aa4487444813"
+    },
+    {
+      "path": "contracts/fixtures/operations/reissueInvitation.request.json",
+      "sha256": "c8b807954545f8fc90b4fab9f727a2f318093349c7816ee7e4f10f06cfb685e2"
+    },
+    {
+      "path": "contracts/fixtures/operations/reissueInvitation.response.json",
+      "sha256": "2ee04afa601314809c7f72a21e2217f20e2365807b21fedc9c0c92cbf2f2001d"
+    },
+    {
+      "path": "contracts/fixtures/operations/rejectPostRevision.request.json",
+      "sha256": "9e287fedcf14d38708d5393a14ee30669fe4712db75dde5c5bc0e1ea1de8c8b1"
+    },
+    {
+      "path": "contracts/fixtures/operations/rejectPostRevision.response.json",
+      "sha256": "707ac929b84df2d133a232442f9fcb84ae80301dd48d21ae5829a8aaac43f216"
+    },
+    {
+      "path": "contracts/fixtures/operations/resolvePublicPostSlug.request.json",
+      "sha256": "ce7741575b4c9f62c4f9ca9b04559021d0c0c96ca2f5991ff0dc78356cea26d3"
+    },
+    {
+      "path": "contracts/fixtures/operations/resolvePublicPostSlug.response.json",
+      "sha256": "28c5b96bae9ad8c3bebb3af1dacc17bf6e698ce41baeef53ebbcf2c405745efb"
+    },
+    {
+      "path": "contracts/fixtures/operations/restorePostRevision.request.json",
+      "sha256": "1a2137a98ddd82fbb78b1f66cdc91e9022da4de15ac2f445d7783f18c0e94569"
+    },
+    {
+      "path": "contracts/fixtures/operations/restorePostRevision.response.json",
+      "sha256": "cc8edb9d3d01a29be5bce201f0d45c0474233cf4fa47df70830a045f053f3c78"
+    },
+    {
+      "path": "contracts/fixtures/operations/restoreTrashedPost.request.json",
+      "sha256": "9439c1261b5af6feea25579d55245d3bf93dcca930f0ca528f0939d22d8c7a4b"
+    },
+    {
+      "path": "contracts/fixtures/operations/restoreTrashedPost.response.json",
+      "sha256": "6ef790fc9bfb1e39d38d65ed95365bcd90b5c1fdf06adb039ca1a75b9c95b785"
+    },
+    {
+      "path": "contracts/fixtures/operations/revokeInvitation.request.json",
+      "sha256": "bcf091bb7d0e7de6f78ddef0f979e2f1c8c6fe3aa2917ce066728caed0b44eea"
+    },
+    {
+      "path": "contracts/fixtures/operations/revokeInvitation.response.json",
+      "sha256": "685a71d8e47f4fda8f50652a83f43b855a504cddd7f230f099b6c516f02c9dd2"
+    },
+    {
+      "path": "contracts/fixtures/operations/savePostDraft.request.json",
+      "sha256": "15de14fb4e82faa34b7cff31e649b45396887f99d0cfc769567979c52a05b74f"
+    },
+    {
+      "path": "contracts/fixtures/operations/savePostDraft.response.json",
+      "sha256": "50f8e7dc0ae2c0c06ccc050b39ce0da944515e801cff997138af833f19fde654"
+    },
+    {
+      "path": "contracts/fixtures/operations/searchPublicPosts.request.json",
+      "sha256": "add545fc2c8279c2cd79bfa68401e6908e90ea0c15ef75d828a502a838acdfca"
+    },
+    {
+      "path": "contracts/fixtures/operations/searchPublicPosts.response.json",
+      "sha256": "2c9f048bc1410c0700d6828081a5090c7fe995b00b225ca077a9fed268c1aa41"
+    },
+    {
+      "path": "contracts/fixtures/operations/stagePostMedia.request.json",
+      "sha256": "baf5a1fb0b76291c0f9556fafb4333bf44ceeedeab4f3cb528a18fddd9c9309f"
+    },
+    {
+      "path": "contracts/fixtures/operations/stagePostMedia.response.json",
+      "sha256": "13ee903f6e86cf6e86ac50387a7b7546e3555fae7b924d92058780f53f8db594"
+    },
+    {
+      "path": "contracts/fixtures/operations/submitPostForReview.request.json",
+      "sha256": "2b010bce0d54fa89ce23e21de2409dc40d20bfa1482258958cc651c9a622ed29"
+    },
+    {
+      "path": "contracts/fixtures/operations/submitPostForReview.response.json",
+      "sha256": "7d9ac450ee93e79de232e1ba3535b2a53afe70130aee76260cea554146fa5180"
+    },
+    {
+      "path": "contracts/fixtures/operations/trashPost.request.json",
+      "sha256": "6945f40942accac77be97f0d9143f65e46bff70101766bad9b48b073c44aef7a"
+    },
+    {
+      "path": "contracts/fixtures/operations/trashPost.response.json",
+      "sha256": "b0a3854f5145c5826e9548819817f5c8d74218a9317ef89bef21300141168f9f"
+    },
+    {
+      "path": "contracts/fixtures/operations/unpublishPost.request.json",
+      "sha256": "ba7c3c6538e56050ebafef4d98731b7f8d132826639184bc79d129732b4962ba"
+    },
+    {
+      "path": "contracts/fixtures/operations/unpublishPost.response.json",
+      "sha256": "f5aa94371ff20dbde1d522321d1fb20ed9bdd38daa7214ac5eb1100bcc2f1bb7"
+    },
+    {
+      "path": "contracts/fixtures/operations/updateCategory.request.json",
+      "sha256": "4c74d1460b110b703b673e6021c5478b52675ac42467055db9b0205e14755890"
+    },
+    {
+      "path": "contracts/fixtures/operations/updateCategory.response.json",
+      "sha256": "00f8dcef4e1bc9a0edbd9f404563e8c71c7a7b7c83389f749b7e3fc24d0720a1"
+    },
+    {
+      "path": "contracts/fixtures/operations/updateMe.request.json",
+      "sha256": "211445a835432218b676f6692f802824b0191b28c5b9e7519944f06b0ebfac40"
+    },
+    {
+      "path": "contracts/fixtures/operations/updateMe.response.json",
+      "sha256": "82c77b8fbc66f042dd6425e0dd4a0f88c0de2700393f5ed156f89795c985e5d9"
+    },
+    {
+      "path": "contracts/fixtures/operations/updateMember.request.json",
+      "sha256": "3edbbacf46747697118fa5936fc588704c664087df73c485cd8d1fb7a5ef7463"
+    },
+    {
+      "path": "contracts/fixtures/operations/updateMember.response.json",
+      "sha256": "14ae83d01cd5cda801d5f21ed81d9e00799890298da93e5ec3d276912c35ee04"
+    },
+    {
+      "path": "contracts/fixtures/operations/updateTag.request.json",
+      "sha256": "9ffe861b3b0936ec3ef461d3c8f47b654aa6c71fd097128e6b6960da31b285fc"
+    },
+    {
+      "path": "contracts/fixtures/operations/updateTag.response.json",
+      "sha256": "561e7ff237ae31870e7b3d9d06063c8778892b46ff23575a3943df78eb65cdea"
+    },
+    {
+      "path": "contracts/fixtures/operations/withdrawPostReview.request.json",
+      "sha256": "fc77ff4c1a721a445a17c75646e3f63fe8511d10ce2cf0f80df6d32cdace3362"
+    },
+    {
+      "path": "contracts/fixtures/operations/withdrawPostReview.response.json",
+      "sha256": "1b1d025ff989c37ed694253c405985205706a9e52b3d7edafd3ab46761cea363"
+    },
+    {
+      "path": "contracts/generated/kotlin/generation.json",
+      "sha256": "5570aa45f17feb191833cf8f54c1ed479ac315c3c56ba9aa3dafd63c68d4c3b6"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/AdminApi.kt",
+      "sha256": "6fa4a2a038f25c668ef4fe65b91c5827b2047c5edee4e12a3ed80d3fe56a7ba6"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/AuthApi.kt",
+      "sha256": "ed6daf24c5ec8b532d8533ca7be77a492abcd889b855a9653646c718b64bdc13"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/CategoriesApi.kt",
+      "sha256": "d29c507c7c8471deb771865f5d2238a1b63cc2669e7362ceda95c4595779d990"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/InvitationsApi.kt",
+      "sha256": "ae956fe8a52c38cecbaf05e7d48ca8322852946f61a42f6c0ac6cd7645c6b4b6"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/MeApi.kt",
+      "sha256": "5c9df190e717e8d303358b4d0641af476aee0d70d024b71081371312f90f4c8d"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/MetaApi.kt",
+      "sha256": "a3dab402dc4b2d5b24da4619c99d0c03925be6c6efd70ef92439dcf86197d74b"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/PostsApi.kt",
+      "sha256": "1d08d69958bd7cd8cef94344c499d047a375a34d62fbf9539555494433662f63"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/PublicApi.kt",
+      "sha256": "355f55829b84c55a9149ae39b59b971905ee4c131f32fc6049918894a0d6509a"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/TagsApi.kt",
+      "sha256": "fabcbcfe90c112db67d718dd45d951c9818b829ed8bda389430d33c51b70cb8f"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/infrastructure/CollectionFormats.kt",
+      "sha256": "39d20cd5e4c05bb313027dab88e054982953025e5f92e5a2f29c306d58b5d962"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/AcceptInvitationEnvelope.kt",
+      "sha256": "dde9e3579c909d3b64bc1be6afdb982240956b5a53a642e38a28a1d36d6db734"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/AcceptInvitationInput.kt",
+      "sha256": "547cc684979bc274c0faba590ebbcabfd3e9b1b8e8ef1d87ee7300c2c67d7bf9"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/AdminMember.kt",
+      "sha256": "7ed0c10ceaf9c7df37a4a76f87cc6dee3659c73c42bd9021f5ec2cb9c15b364f"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ApiError.kt",
+      "sha256": "4f5e52817179db3122363d8c87e47f3d267886d0b19b14f7b7db345cd4e5e442"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ApiLimits.kt",
+      "sha256": "b18bac2e6060bf37a188df2ef922add733c78e3e0e74176991c7fcbb8bd1f08a"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ApiMeta.kt",
+      "sha256": "017f26b6bf127002eecb4db3d2f2f36337dd53c7ab72e86afe1d87e17ae6e106"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ApiMetaClients.kt",
+      "sha256": "b3810705aaf44f26f0770b501d978b4fd11c68b72890ed2ee099992696e62488"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ApiMetaClientsWeb.kt",
+      "sha256": "d96fc4a77941c526c732e648564b90018bb6abb7ae4d635b3e82eb1a96234e40"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ApiMetaDeployment.kt",
+      "sha256": "58e736f280a83a6883b03c56859fe2270d8aff2d37baf6e275420315bea8b17d"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ApiMetaLifecycle.kt",
+      "sha256": "81a57557c8006cf4f39b6b45a4cd1eb33b0b5a8ec71abb64a080394aaa1083fc"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/AuditEvent.kt",
+      "sha256": "410e6c2217680f159717980bf5b3828bfc09510ec68a7995eeca0c66a7451f1b"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/AuthorSummary.kt",
+      "sha256": "def95d5f6e6cd8d8543580d53b97b8841a3cd546499e7f9dbb4ae0645a17a23e"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/AvailabilityInput.kt",
+      "sha256": "4b2adc014012cd76a48584df51ffea850b47c646b8f6bfc71b0c2b7dd586e1bc"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/AvailabilityItem.kt",
+      "sha256": "095ad886e924cc78e127af6cd6a2c1186eaf078c6e0d382d1cb56fd4044d744d"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ChangePostSlugEnvelope.kt",
+      "sha256": "a045d839579318b39369dc4c711b9080b1362bfb37e91274b2b6bece65a20878"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ChangeSlugInput.kt",
+      "sha256": "76b20493a64d5091991ff922e610f2b025cee30c79464223f0a5bc043bb80394"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/CheckPublicPostAvailabilityEnvelope.kt",
+      "sha256": "cc766c5e832440ed9d74cdd0794ca5b708eb46e1f9e36d12d9061210b8a1b9b5"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/CreateCategoryEnvelope.kt",
+      "sha256": "9d325971e61cc233034afb9a0cb4deed3def37c15a63df2ab8238be2963f2a04"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/CreateInvitationEnvelope.kt",
+      "sha256": "6fe28e76858dc3f9c15e3dad20adeea70e488f29531ec73e52f9a267f0513e23"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/CreateInvitationInput.kt",
+      "sha256": "e7ce064df6d64dc4876dd218fcbe812c8675dbf7d515ca4b6bc8f436b70adab0"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/CreatePostEnvelope.kt",
+      "sha256": "32b6540c98f86630f58b425be9104044e8e1a2479e3b0c93719675b1ce251b31"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/CreatePostInput.kt",
+      "sha256": "59bf5f25fb1259cd912ffc166b3a37f7b22ff270cfb1d3094d3f797135a2a2fe"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/CreateTagEnvelope.kt",
+      "sha256": "23cffc8af48a4a26b5ebd243a180a8b9ebbe8ef81ad1ee78191b140e9a6a03c6"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/CreateTaxonInput.kt",
+      "sha256": "3a00f507426e2a03a7299cd00e8d0f6671235dd48e38258667e83611f9cca23a"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/CreateWebSessionEnvelope.kt",
+      "sha256": "8f1225986e11cb310376768167c87ff782490431cdaa71fdf2d406d3580f2625"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/CursorPagination.kt",
+      "sha256": "3a51103049e5054cfea9514d505be4de61cea0a00875ee5dbba02cea6a83200e"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/DraftContent.kt",
+      "sha256": "2e0b1d4550297ba563d2ab51b3728869ed0eda9edc17442a7442be839e2424fe"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/DraftContentInput.kt",
+      "sha256": "621311c6270ec0a77548eaba81b513d9623196e0a2c4f4223a7f5125e3e236a7"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ErrorEnvelope.kt",
+      "sha256": "c1d5a7ec3ce1aac4facd841db637b8cefaf4344d4b4b9925e27896ccfa66d92c"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ErrorEnvelopeMeta.kt",
+      "sha256": "92fe3f71d3bc8dad04044abcf67bca9755ef10f621aaf92a947e6c2f255cd524"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/FieldIssue.kt",
+      "sha256": "d881fde4d0e104175e279d98ea4afdc85b7857c176aa208191cc28b79d88dc65"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/GetInvitationEnvelope.kt",
+      "sha256": "7cf17a08230e13265550328f23b7eb818c894f6cfabf38d48e46199496eab4f3"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/GetManagedCategoryEnvelope.kt",
+      "sha256": "631c7c44168701517348abdf11c6c7034cd5982ca781c87845a5315bead7481d"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/GetManagedTagEnvelope.kt",
+      "sha256": "46f7bfbef6c30ec84e3e555b4d08ec2fe61ac4e37fe9c696963f8dda6aeccdcb"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/GetMeEnvelope.kt",
+      "sha256": "1371dde7b556940827993a7531f4ff3e6a01350711b7e7e5bd8b03e736479a50"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/GetMemberEnvelope.kt",
+      "sha256": "8e187317be58924f3c403e834f13800a44dccdd0d5855fb2499d91eae881ccf1"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/GetPostByClientDraftIdEnvelope.kt",
+      "sha256": "bea77a9e74be762217e3d1faa67b6ce7540c27fa7548534b0941c2d9fed46991"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/GetPostMediaMetadataEnvelope.kt",
+      "sha256": "fffc1ad6cd6d83aa70acabc7daee333f1ac4f8dca700c6a59f9364fb4e78c33a"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/GetPostRevisionEnvelope.kt",
+      "sha256": "25cd13be3ed9fdc6a7c50163a35435e0ee99f2175d4dc85c39bac8db33236c48"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/GetPublicAuthorEnvelope.kt",
+      "sha256": "9d10846b7cd12673725c450e80e2f4a8237684ca851fb8079b311d4ba5ee3799"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/GetPublicPostEnvelope.kt",
+      "sha256": "f0605003e73252c8f828c263aebbbdff187a501735a9ca77cb14ecb53ca30d65"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/GetWorkspacePostEnvelope.kt",
+      "sha256": "7bf67bc6904b937991e8393121298a6de5f294d3aca3dbdb8733508d6b3ab662"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/Health.kt",
+      "sha256": "8add55bc29afc4e7b7b46e73d23ead0053e969a32107ac067f7a5b8a9de384cb"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/IdempotencyMeta.kt",
+      "sha256": "c41bb41837d65e5ad3db73b07c798f544757b5d67dd0c6b3b85a59a585fff5c2"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ImageReference.kt",
+      "sha256": "f9dfea76164c1bacbd46af85ceb57092d4fed9b081ab605e0d01bc8c87c09917"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/Invitation.kt",
+      "sha256": "7c242850619adba7c43e4ebfeb828d25810bceb19b4293f91e264e1fc6f832cb"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/InvitationIssueResult.kt",
+      "sha256": "f0e36870a3e2653e112da620d193cd0bb8a2fdeade6c1a05a806e134690657df"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/InvitationStatus.kt",
+      "sha256": "e3356f81f04c6464c35cdf32adeee24b5f23992e721a3d76e3f56d9dbb5dc550"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ListAuditEventsEnvelope.kt",
+      "sha256": "26c8057f94a745b001cf25c9f5cb47c91e9b4f8c752e056379eb8901346229a7"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ListInvitationsEnvelope.kt",
+      "sha256": "919d3bf251e0b70581f3fa642099e7d55f0f612a0d0b724b33faed95d91b6211"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ListManagedCategoriesEnvelope.kt",
+      "sha256": "e2d844c5353c451021db407a87862339d460861d8446816ec916b62d896bcccf"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ListManagedTagsEnvelope.kt",
+      "sha256": "6da27191a392c425e8cf7101051168cdb3a966eb92c7f9c5a08db59979c072a6"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ListMembersEnvelope.kt",
+      "sha256": "93f5e38d30bf5eba5ebabf0f7202f71434ae723be1c1a2dabba2be16a292112d"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ListPostReviewEventsEnvelope.kt",
+      "sha256": "7f88b3a431f7851ab96956cd85cd4de7e5f2d2d96e52771e7b3f96ed18b48510"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ListPostRevisionsEnvelope.kt",
+      "sha256": "5bd86e6483dfd0dfd41892e613bbf1069cc1f7288db02874533439334298381d"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ListPublicCategoriesEnvelope.kt",
+      "sha256": "c0d451a56c19db67f074e6dfee55625503c4a2c446fe2664046a0fd31618fdba"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ListPublicPostsEnvelope.kt",
+      "sha256": "6615a353bc253ac36517141224568cd7394e9b54d03db69214d5319f4e1341e1"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ListPublicPostsEnvelopeMeta.kt",
+      "sha256": "ca475b480fcd755f5e8647eedac7975f234b0ea0ef6ad41d11e3c17f81ab579c"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ListPublicTagsEnvelope.kt",
+      "sha256": "3eb9cd6ba85af7f6350dc03c120af8501b146193eb08d49213181cff2213dddd"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ListWorkspacePostsEnvelope.kt",
+      "sha256": "f8b83ff7366593336401c7d25113704d6c69b2c0f59b5bc8929e17f56a9aa3d2"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ManagedTaxon.kt",
+      "sha256": "326dc9e43658bcc186861a72c37fd43243075ffee2e1d4512f5eaf70d3ae1ebf"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ManagedTaxonUsage.kt",
+      "sha256": "fc9500154a17c86f88ec66059b3f6e201fe2b04cdad89506d99d4a30ec66b4d6"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/Me.kt",
+      "sha256": "80e52072f98738af57f3737054c8a3fadb19cac9ec5c8968685d50f13587444e"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/MediaAsset.kt",
+      "sha256": "ae1da7919415166ccf6a51ca9012746f11a397ac29f2411a94abd9a141d51a8e"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/MediaDescriptor.kt",
+      "sha256": "2df8147dd41f51c8df6c19fdf7d3d058184ea3f7397baa0bc797f74f4b814091"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/MediaVariant.kt",
+      "sha256": "7c7c0ee99d5517afa43631a5caf7fd3cf05bcad121888a8759366d1aeee2835b"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/MetaEnvelope.kt",
+      "sha256": "9a052b9726d42f87b9fbb5a4bb7699c2717f5cbd683ad220e6a1271bc269cc18"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/MetaEnvelopeMessage.kt",
+      "sha256": "866f25cc928dbd24a54904a2115db33b58d192e24a053262a4c8526c21cd3c43"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/MetaEnvelopeMeta.kt",
+      "sha256": "ace4330ffa215b89b238771a8a98379549f05f96ae474f78ec6d3f09aa8674d7"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/PagePagination.kt",
+      "sha256": "0f33ef711c5bac09493e40a65aafcd1b0f361dc18cb16e857637d5c7b5de25cf"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/PublicAuthor.kt",
+      "sha256": "d7f7019481c8947d052d7bcab4dd571b90390ac7223a342c348e1a945f0fdcd0"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/PublicPost.kt",
+      "sha256": "bd2a23ce1943a46d072baa7ba27056b179c9435f959828f3cce8adc3bdba17dc"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/PublicPostSummary.kt",
+      "sha256": "642453fe6d8759b5a2d54f4b193a31ccd6bbb020c61a1587e96f0719e6863be0"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/PublicationState.kt",
+      "sha256": "f291487aeed59ea56e80e3becbc81df63d96f7be59d79db903b62c7a3fe9850a"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/PublishPostRevisionEnvelope.kt",
+      "sha256": "c55299e592b0ef80d2408749c35edff48e34f68816cef7b5cf0b536f47b3c80e"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ReassignAuthorInput.kt",
+      "sha256": "35aa31c5c537b91e3c97558c2bd87bc9e01daddb35b3d80b9ea55943989de008"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ReassignPostAuthorEnvelope.kt",
+      "sha256": "8dd17237ab784b345a279ec8f0e9d41d76a0202d0bdd64146936e1f03709cf98"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ReissueInvitationEnvelope.kt",
+      "sha256": "0df9344a76c53cdb52b74a39e24467fbcfed443fa2e9d01982373ee84ef5af54"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/RejectPostRevisionEnvelope.kt",
+      "sha256": "a1ae484f57dd68fc2ae34a7908e6a738544dc1c68295d86de72e38c45a8a80da"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/RejectRevisionInput.kt",
+      "sha256": "26a1df698f4fcd1dd95e8c76aec174a21783e548629b0b937f6d3c0e3e568bdb"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ResolvePublicPostSlugEnvelope.kt",
+      "sha256": "779805d70fca895e685a0fb005316a9e7294e89af4cb04313cad5770cf4e43c7"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ResponseMeta.kt",
+      "sha256": "e610669c92a303f13d5ed6545f00b03d608cf2012425f92ede3177e17eb39e39"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/RestorePostRevisionEnvelope.kt",
+      "sha256": "37e431deaeb28db50c626ec6a8fb219d0655264c95632406b8b96147640424a1"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/RestoreTrashedPostEnvelope.kt",
+      "sha256": "4774265eb4985cc4a493863d3da649cb10e22a7137e3a5cee36a4f77cc0019e7"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ReviewEvent.kt",
+      "sha256": "351af4cb351d8712852e3ee3effc5deb7059f9f0ab3eb3d0068bbb9de79fce45"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ReviewFeedback.kt",
+      "sha256": "61a419a8edb9c5f36004e2e21535b6dc8b5303058da0b55e4b7828ee6988a51a"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ReviewState.kt",
+      "sha256": "e8e6dcff562fa0610349aed9850b1d81b5f3d8bc12dcea1a10e150ac98df2704"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/Revision.kt",
+      "sha256": "7a26cfa73534a60de6579ad0393dcbbf2444ab84a00f106a14470e55b5281652"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/RevisionActionInput.kt",
+      "sha256": "d910e7cfcdfb6d79cd438df4b873135baef32477da3c5b3754c78c59ba4049f2"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/RevisionSummary.kt",
+      "sha256": "ade8b9de4664cda0f72b770b5429eddbde6d3c8e2b072d4fd2a790b0f4c6aa23"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/RevokeInvitationEnvelope.kt",
+      "sha256": "a9c1157d210d9b1c557ea965e26d8ba6ca58f957aded3439ef4fee3913dbd22e"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/Role.kt",
+      "sha256": "ba44a529c8c0021b7cafed495ab5dd4e0d87e3b6dc06b47c3f7d8eaab9dcb33a"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/SavePostDraftEnvelope.kt",
+      "sha256": "1d1518babdb2350f13a82fb354dbd1ed7612039ed73ffb0d71465a307d70dd68"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/SearchPublicPostsEnvelope.kt",
+      "sha256": "1af852a00b62feb0eefa8d05e6b37ef5fd0999ef0a4f458495b33515c89c09e1"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/SearchPublicPostsEnvelopeMeta.kt",
+      "sha256": "cbf0959d24c1d6e1b7cb7a5a822466174e26382577f9deae2cd90ad2ee409a7f"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/SlugResolution.kt",
+      "sha256": "cc2ce05602928eb12e116e79b5779b5807f573c715fee9f143045e14e282ec75"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/StagePostMediaEnvelope.kt",
+      "sha256": "f9f7ef9360655469caf2ca93b512a71e5cdb4a9d1f6f0f366160b1276566237e"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/SubmitPostForReviewEnvelope.kt",
+      "sha256": "2ec162f8a970ef01929ef022dff79cfc6a5eaa0cb18449f8d0e300945d47ed88"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/Taxon.kt",
+      "sha256": "f1f6876852fae136310817d4b20fa87777e1e15d909faa6e5a3a47b70fa53a39"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/TrashPostEnvelope.kt",
+      "sha256": "32bcbdaf321ab2c625579f84b8f002eee5121cbb67ab437acbc447005094f3c0"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/UnpublishPostEnvelope.kt",
+      "sha256": "860ce880712e9aed93c3633522e189c3d8e3705f50f0b285129e19496731371f"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/UpdateCategoryEnvelope.kt",
+      "sha256": "3eb9588b89d5680a7fe6ba6a3ec8fad65eec7b673761fa7cbc568710ef4d9443"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/UpdateMeEnvelope.kt",
+      "sha256": "77224bfe03e1823b830eb05b743bd97fb0dfa8c155d2bdb04d028feddf16be57"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/UpdateMeEnvelopeMeta.kt",
+      "sha256": "3251936af7cd7ddb2fa48c858057c0da56b8603242b0c17dc2eb2aeb853da8a4"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/UpdateMeInput.kt",
+      "sha256": "8c6ba1e29144d6fbd83904b770534bb0fd358e7ae2801367caec0bedf01f9e64"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/UpdateMemberEnvelope.kt",
+      "sha256": "98a8a17bbcc41e48bceaf371bdf9cfa24f8215d685e262d05d200fef0b003dfd"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/UpdateMemberInput.kt",
+      "sha256": "3033dc800879d81d4af2526b06a4c39bebf1401b99f76ad78dd47d1501e13fea"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/UpdateTagEnvelope.kt",
+      "sha256": "67132a63131df7b3681d86fe4f193f21ffcee475f282f9502b345288ea5eb53f"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/UpdateTaxonInput.kt",
+      "sha256": "ea3cfac1db0763ec90ef27a8576f04a7ee15a4998dc41d397b7de67128a24eb0"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/VariantName.kt",
+      "sha256": "6b2ec0ee8dd959015bf79e1023222800fed066fcbbecadaf48f6213ad66c8edb"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/WebSession.kt",
+      "sha256": "881a75bd0028e4917151f0d5ce1b8d282604f4cd9f9850f56a20e61e5402ffed"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/WebSessionInput.kt",
+      "sha256": "2c4f2472cdd89bb04c3ce1d354be6b04ed45a87985cc68b29a791d990482086f"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/WirePagination.kt",
+      "sha256": "29f5c858fed05bbb47798a297f30b079616b17233a9380b7fa8e661711d5ef6c"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/WithdrawPostReviewEnvelope.kt",
+      "sha256": "56d613f52c741cf72d9ff89d2beee7534e5bb85d427a4a4c3b2d3cf602324499"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/WorkflowState.kt",
+      "sha256": "c9ebf5ae1cda82d4ede885fac3742ff7abf33d5101851e22460f7aabcede6ffe"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/WorkspacePost.kt",
+      "sha256": "55bfa7bfda3ee566673d6ce1e525b7327cb4b56510606d8ad7309757a249b256"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/WorkspacePostSummary.kt",
+      "sha256": "34b05866f2553e69abf870918d431d268cb93231921d424da37b9b946349c4b5"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/resources/blogpost-wire-v1.json",
+      "sha256": "09a8a11614dfca882b3989e6e4a23892f46546a16f0330da448d48cb0516f01e"
+    },
+    {
+      "path": "contracts/generated/typescript/api-v1.d.ts",
+      "sha256": "d7fbc412ab3444fe4e95b6e51496494ebc815a15be951a2be2f0a1bc6f383f04"
+    },
+    {
+      "path": "contracts/openapi-v1.json",
+      "sha256": "24c9e216afdd6335d4a242af55a6388d44a9d8d6624a22868ff02db71dd3d753"
+    },
+    {
+      "path": "contracts/openapi-v1.yaml",
+      "sha256": "3d2dc6c869fffdd48a87d80652a0b7b9646d007ccbdbc5db724db59e44907c54"
+    },
+    {
+      "path": "contracts/operation-inventory.json",
+      "sha256": "42ba3feb3df6ecefb945a30e14a1bc1048bf69331abefcd9015fd51bda747539"
+    },
+    {
+      "path": "contracts/src/examples.mjs",
+      "sha256": "e9193ab0f265c5a8c330542613eee3b8b7c45b69fe116665b9aaf3d2cf189041"
+    },
+    {
+      "path": "contracts/src/operations.mjs",
+      "sha256": "ae20a86becbc6f12b1890d7d4d36f06e4b494a76ef9b441f5f08591e97144714"
+    },
+    {
+      "path": "contracts/src/schemas.mjs",
+      "sha256": "c0a88a91587aede9086fa731b86e1956c3d48c9994d49a2fb360d81669510220"
+    },
+    {
+      "path": "contracts/src/spec.mjs",
+      "sha256": "47e207f374f2c43790f46b5be8cc38a2a1aef71a610d3769e2963de28d2906ff"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+node_modules
+dist
+.local
+src/generated
+package-lock.json
+contracts/manifest.json
+tools/kotlin/consumer/.gradle
+tools/kotlin/consumer/.kotlin
+tools/kotlin/consumer/build

@@ -1,0 +1,171 @@
+{
+  "timestamp": "2026-10-25T08:20:30.123Z",
+  "responseKey": "SUCCESS",
+  "statusCode": 200,
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "message": {
+    "title": "Request completed",
+    "descriptions": "The request completed successfully."
+  },
+  "data": {
+    "id": "10000000-0000-4000-8000-000000000001",
+    "clientDraftId": "10000000-0000-4000-8000-000000000002",
+    "author": {
+      "id": "40000000-0000-4000-8000-000000000001",
+      "handle": "synthetic-author",
+      "displayName": "Synthetic author"
+    },
+    "slug": "a-reviewed-article",
+    "publicationState": "PUBLISHED",
+    "workflowState": "CLEAN",
+    "version": 4,
+    "workingRevisionId": "20000000-0000-4000-8000-000000000002",
+    "publishedRevisionId": "20000000-0000-4000-8000-000000000002",
+    "createdAt": "2026-10-25T08:20:30.123Z",
+    "updatedAt": "2026-10-25T08:20:30.123Z",
+    "trashedAt": null,
+    "purgeAfter": null,
+    "allowedActions": [
+      "EDIT_DRAFT",
+      "UNPUBLISH",
+      "TRASH",
+      "CHANGE_SLUG",
+      "REASSIGN_AUTHOR"
+    ],
+    "workingRevision": {
+      "id": "20000000-0000-4000-8000-000000000002",
+      "postId": "10000000-0000-4000-8000-000000000001",
+      "number": 2,
+      "createdBy": {
+        "id": "40000000-0000-4000-8000-000000000001",
+        "handle": "synthetic-author",
+        "displayName": "Synthetic author"
+      },
+      "createdAt": "2026-10-25T08:20:30.123Z",
+      "creditedAuthor": {
+        "id": "40000000-0000-4000-8000-000000000001",
+        "handle": "synthetic-author",
+        "displayName": "Synthetic author"
+      },
+      "content": {
+        "title": "A reviewed article",
+        "summary": "A useful summary.",
+        "markdown": "# Hello\n\nBody text.\n\n![A single test pixel](media://50000000-0000-4000-8000-000000000001)",
+        "categoryId": "30000000-0000-4000-8000-000000000001",
+        "tagIds": ["30000000-0000-4000-8000-000000000002"],
+        "coverMediaId": "50000000-0000-4000-8000-000000000001",
+        "markdownContractVersion": 1,
+        "coverAltText": "A single test pixel",
+        "coverDecorative": false
+      },
+      "media": [
+        {
+          "mediaId": "50000000-0000-4000-8000-000000000001",
+          "width": 1,
+          "height": 1,
+          "mimeType": "image/png",
+          "variants": [
+            {
+              "name": "w480",
+              "apiPath": "/v1/posts/10000000-0000-4000-8000-000000000001/media/50000000-0000-4000-8000-000000000001/w480",
+              "width": 1,
+              "height": 1,
+              "mimeType": "image/png",
+              "byteSize": 70
+            },
+            {
+              "name": "w960",
+              "apiPath": "/v1/posts/10000000-0000-4000-8000-000000000001/media/50000000-0000-4000-8000-000000000001/w960",
+              "width": 1,
+              "height": 1,
+              "mimeType": "image/png",
+              "byteSize": 70
+            },
+            {
+              "name": "w1600",
+              "apiPath": "/v1/posts/10000000-0000-4000-8000-000000000001/media/50000000-0000-4000-8000-000000000001/w1600",
+              "width": 1,
+              "height": 1,
+              "mimeType": "image/png",
+              "byteSize": 70
+            }
+          ]
+        }
+      ],
+      "restoredFromRevisionId": null
+    },
+    "publishedRevision": {
+      "id": "20000000-0000-4000-8000-000000000002",
+      "postId": "10000000-0000-4000-8000-000000000001",
+      "number": 2,
+      "createdBy": {
+        "id": "40000000-0000-4000-8000-000000000001",
+        "handle": "synthetic-author",
+        "displayName": "Synthetic author"
+      },
+      "createdAt": "2026-10-25T08:20:30.123Z",
+      "creditedAuthor": {
+        "id": "40000000-0000-4000-8000-000000000001",
+        "handle": "synthetic-author",
+        "displayName": "Synthetic author"
+      },
+      "content": {
+        "title": "A reviewed article",
+        "summary": "A useful summary.",
+        "markdown": "# Hello\n\nBody text.\n\n![A single test pixel](media://50000000-0000-4000-8000-000000000001)",
+        "categoryId": "30000000-0000-4000-8000-000000000001",
+        "tagIds": ["30000000-0000-4000-8000-000000000002"],
+        "coverMediaId": "50000000-0000-4000-8000-000000000001",
+        "markdownContractVersion": 1,
+        "coverAltText": "A single test pixel",
+        "coverDecorative": false
+      },
+      "media": [
+        {
+          "mediaId": "50000000-0000-4000-8000-000000000001",
+          "width": 1,
+          "height": 1,
+          "mimeType": "image/png",
+          "variants": [
+            {
+              "name": "w480",
+              "apiPath": "/v1/posts/10000000-0000-4000-8000-000000000001/media/50000000-0000-4000-8000-000000000001/w480",
+              "width": 1,
+              "height": 1,
+              "mimeType": "image/png",
+              "byteSize": 70
+            },
+            {
+              "name": "w960",
+              "apiPath": "/v1/posts/10000000-0000-4000-8000-000000000001/media/50000000-0000-4000-8000-000000000001/w960",
+              "width": 1,
+              "height": 1,
+              "mimeType": "image/png",
+              "byteSize": 70
+            },
+            {
+              "name": "w1600",
+              "apiPath": "/v1/posts/10000000-0000-4000-8000-000000000001/media/50000000-0000-4000-8000-000000000001/w1600",
+              "width": 1,
+              "height": 1,
+              "mimeType": "image/png",
+              "byteSize": 70
+            }
+          ]
+        }
+      ],
+      "restoredFromRevisionId": null
+    },
+    "review": {
+      "submittedRevisionId": null,
+      "submittedAt": null,
+      "lastFeedback": null
+    }
+  },
+  "error": null,
+  "meta": {
+    "contractVersion": "1.0.0",
+    "pagination": null,
+    "idempotency": null
+  }
+}

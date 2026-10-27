@@ -1,0 +1,14 @@
+{
+  "version": "1.34.1",
+  "source": "https://github.com/oasdiff/oasdiff/releases/tag/v1.34.1",
+  "assets": {
+    "linux-x64": {
+      "url": "https://github.com/oasdiff/oasdiff/releases/download/v1.34.1/oasdiff_1.34.1_linux_amd64.tar.gz",
+      "sha256": "75775f65b0adebd26a8e013af51a799342dfdc6262d89efa9e3b7bdf89657d90"
+    },
+    "win32-x64": {
+      "url": "https://github.com/oasdiff/oasdiff/releases/download/v1.34.1/oasdiff_1.34.1_windows_amd64.tar.gz",
+      "sha256": "15e6f32ece94244534a61ce4fb1d60912e51e67e363a05bb6561d89b28df73bb"
+    }
+  }
+}

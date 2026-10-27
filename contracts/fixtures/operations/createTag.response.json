@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-10-25T08:20:30.123Z",
+  "responseKey": "SUCCESS",
+  "statusCode": 201,
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "message": {
+    "title": "Request completed",
+    "descriptions": "The request completed successfully."
+  },
+  "data": {
+    "id": "30000000-0000-4000-8000-000000000002",
+    "name": "Learning",
+    "slug": "learning",
+    "active": true,
+    "version": 1,
+    "usage": {
+      "publishedCount": 1,
+      "draftCount": 1
+    },
+    "createdAt": "2026-10-25T08:20:30.123Z",
+    "updatedAt": "2026-10-25T08:20:30.123Z"
+  },
+  "error": null,
+  "meta": {
+    "contractVersion": "1.0.0",
+    "pagination": null,
+    "idempotency": {
+      "replayed": false,
+      "expiresAt": "2026-10-26T08:20:30.123Z"
+    }
+  }
+}

@@ -1,0 +1,68 @@
+/**
+ * Real-backend scenarios remain separate from immutable wire contract assets.
+ * Add a fixture adapter and observed success checks when implementing each operation.
+ * Full-scope coverage requires every operation in the canonical catalog.
+ */
+export const backendScenarios = new Map<
+  string,
+  'ANONYMOUS_READ_FIXTURE' | 'ISOLATED_IDENTITY_SQL_FIXTURE'
+>([
+  ['getApiMeta', 'ANONYMOUS_READ_FIXTURE'],
+  ['createWebSession', 'ISOLATED_IDENTITY_SQL_FIXTURE'],
+  ['getMe', 'ISOLATED_IDENTITY_SQL_FIXTURE'],
+  ['updateMe', 'ISOLATED_IDENTITY_SQL_FIXTURE'],
+  ...[
+    'acceptInvitation',
+    'listMembers',
+    'getMember',
+    'updateMember',
+    'listInvitations',
+    'getInvitation',
+    'createInvitation',
+    'revokeInvitation',
+    'reissueInvitation',
+    'listAuditEvents',
+    'listWorkspacePosts',
+    'createPost',
+    'getPostByClientDraftId',
+    'getWorkspacePost',
+    'savePostDraft',
+    'submitPostForReview',
+    'withdrawPostReview',
+    'rejectPostRevision',
+    'publishPostRevision',
+    'unpublishPost',
+    'listPostRevisions',
+    'getPostRevision',
+    'listPostReviewEvents',
+    'restorePostRevision',
+    'trashPost',
+    'restoreTrashedPost',
+    'changePostSlug',
+    'reassignPostAuthor',
+  ].map((id) => [id, 'ISOLATED_IDENTITY_SQL_FIXTURE'] as const),
+  ...[
+    'listPublicPosts',
+    'searchPublicPosts',
+    'listPublicCategories',
+    'listPublicTags',
+  ].map((id) => [id, 'ANONYMOUS_READ_FIXTURE'] as const),
+  ...[
+    'getPublicPost',
+    'resolvePublicPostSlug',
+    'getPublicAuthor',
+    'checkPublicPostAvailability',
+    'listManagedCategories',
+    'getManagedCategory',
+    'createCategory',
+    'updateCategory',
+    'listManagedTags',
+    'getManagedTag',
+    'createTag',
+    'updateTag',
+    'getPublicPostMedia',
+    'stagePostMedia',
+    'getPostMediaMetadata',
+    'getPrivatePostMedia',
+  ].map((id) => [id, 'ISOLATED_IDENTITY_SQL_FIXTURE'] as const),
+]);

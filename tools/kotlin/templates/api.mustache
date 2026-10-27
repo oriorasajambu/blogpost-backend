@@ -1,0 +1,38 @@
+package {{apiPackage}}
+
+{{#imports}}import {{{import}}}
+{{/imports}}
+import com.google.gson.annotations.SerializedName
+import com.blogpost.contract.wire.WireOperation
+import com.blogpost.contract.wire.WirePayload
+import com.blogpost.contract.wire.WireRequest
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.ResponseBody
+import retrofit2.Response
+import retrofit2.http.*
+
+{{#operations}}
+/** Generated v1 signatures. Create this interface from the application's existing Retrofit. */
+interface {{classname}} {
+{{#operation}}
+{{#allParams}}{{#isEnum}}
+    /** Supported values for {{paramName}}. Unknown values are never selected for a write. */
+    enum class {{enumName}}{{operationIdCamelCase}}(val value: {{^isContainer}}{{dataType}}{{/isContainer}}{{#isContainer}}kotlin.String{{/isContainer}}) {
+{{#allowableValues}}{{#enumVars}}
+        @SerializedName(value = {{^isString}}"{{/isString}}{{{value}}}{{^isString}}"{{/isString}}) {{&name}}({{{value}}}){{^-last}},{{/-last}}{{#-last}};{{/-last}}
+{{/enumVars}}{{/allowableValues}}
+        override fun toString(): String = value.toString()
+    }
+{{/isEnum}}{{/allParams}}
+    /** {{httpMethod}} {{path}}; decode through the validated wire boundary. */
+    @WireOperation("{{operationId}}")
+{{#isResponseFile}}    @Streaming
+{{/isResponseFile}}{{#formParams}}{{#-first}}    {{#isMultipart}}@Multipart{{/isMultipart}}{{^isMultipart}}@FormUrlEncoded{{/isMultipart}}
+{{/-first}}{{/formParams}}
+    @{{httpMethod}}("{{{path}}}")
+    suspend fun {{operationId}}({{#allParams}}{{>queryParams}}{{>pathParams}}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{^-last}}, {{/-last}}{{/allParams}}): Response<{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}WirePayload<{{{returnType}}}{{^returnType}}Unit{{/returnType}}>{{/isResponseFile}}>
+
+{{/operation}}
+}
+{{/operations}}

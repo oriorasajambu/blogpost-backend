@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "environment": "production",
+  "projectId": "example-blogpost-production",
+  "apiOrigin": "https://api.example.test",
+  "webOrigin": "https://www.example.test",
+  "identity": {
+    "audience": "example-blogpost-production",
+    "idTokenIssuer": "https://securetoken.google.com/example-blogpost-production",
+    "sessionIssuer": "https://session.firebase.google.com/example-blogpost-production"
+  },
+  "sql": {
+    "instanceConnectionName": "example-blogpost-production:asia-southeast2:example-sql",
+    "database": "blogpost",
+    "schema": "blogpost"
+  },
+  "media": {
+    "adapter": "gcs",
+    "bucket": "example-blogpost-production-media",
+    "projectId": "example-blogpost-production"
+  },
+  "serviceAccounts": {
+    "api": "blogpost-api@example-blogpost-production.iam.gserviceaccount.com",
+    "migrator": "blogpost-migrator@example-blogpost-production.iam.gserviceaccount.com",
+    "ops": "blogpost-ops@example-blogpost-production.iam.gserviceaccount.com",
+    "bootstrap": "blogpost-bootstrap@example-blogpost-production.iam.gserviceaccount.com"
+  },
+  "secretVersions": {
+    "SQL_APP_PASSWORD": "projects/example-blogpost-production/secrets/example-sql-app/versions/1",
+    "SQL_MIGRATOR_PASSWORD": "projects/example-blogpost-production/secrets/example-sql-migrator/versions/1",
+    "SQL_ROOT_PASSWORD": "projects/example-blogpost-production/secrets/example-sql-root/versions/1",
+    "CURSOR_SIGNING_KEY": "projects/example-blogpost-production/secrets/example-cursor/versions/1"
+  }
+}
