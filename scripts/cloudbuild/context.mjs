@@ -90,14 +90,15 @@ function serviceAccount(value, plan) {
   );
   if (!accepted.includes(value)) fail('WRONG_CLOUD_BUILD_ACCOUNT');
 }
-export function inspectCloudBuild(request, projects, build, now = Date.now()) {
+function inspectBuild(request, projects, build, now, completed) {
+  if (!Number.isFinite(now)) fail('INVALID_CLOUD_BUILD_TIME');
   const plan = cloudBuildRequest(request, projects);
   record(build);
   if (
     build.projectId !== plan.projectId ||
     build.id !== plan.buildId ||
-    build.status !== 'WORKING' ||
-    build.finishTime ||
+    build.status !== (completed ? 'SUCCESS' : 'WORKING') ||
+    (!completed && build.finishTime) ||
     resourceName(build.name, plan, /^builds\/[a-f0-9-]{36}$/) !==
       'projects/' +
         plan.projectId +
@@ -106,16 +107,29 @@ export function inspectCloudBuild(request, projects, build, now = Date.now()) {
         '/builds/' +
         plan.buildId
   )
-    fail('CLOUD_BUILD_NOT_CURRENTLY_RUNNING');
+    fail(
+      completed
+        ? 'CLOUD_BUILD_NOT_SUCCESSFUL'
+        : 'CLOUD_BUILD_NOT_CURRENTLY_RUNNING',
+    );
   serviceAccount(build.serviceAccount, plan);
   const created = cloudBuildTime(build.createTime),
     started = cloudBuildTime(build.startTime);
   if (
     created > started + 300000 ||
     started > now + 300000 ||
-    started < now - 86400000
+    (!completed && started < now - 86400000)
   )
     fail('CLOUD_BUILD_TIME_DISAGREES');
+  if (completed) {
+    const finished = cloudBuildTime(build.finishTime);
+    if (
+      finished < started ||
+      finished > now + 300000 ||
+      finished - started > 3900000
+    )
+      fail('CLOUD_BUILD_TIME_DISAGREES');
+  }
   if (
     build.options?.logging !== 'CLOUD_LOGGING_ONLY' ||
     build.options?.pool?.name ||
@@ -210,18 +224,31 @@ export function inspectCloudBuild(request, projects, build, now = Date.now()) {
       triggerId,
   };
 }
-export function verifyCloudBuildContext({
+export function inspectCloudBuild(request, projects, build, now = Date.now()) {
+  return inspectBuild(request, projects, build, now, false);
+}
+export function inspectCompletedCloudBuild(
   request,
   projects,
-  repositoryConfig,
-  metadataEmail,
-  project,
   build,
-  trigger,
-  repository,
   now = Date.now(),
-}) {
-  const inspected = inspectCloudBuild(request, projects, build, now),
+) {
+  return inspectBuild(request, projects, build, now, true);
+}
+function verifyBuildResources(
+  {
+    request,
+    projects,
+    repositoryConfig,
+    project,
+    build,
+    trigger,
+    repository,
+    now = Date.now(),
+  },
+  completed,
+) {
+  const inspected = inspectBuild(request, projects, build, now, completed),
     { plan } = inspected;
   record(repositoryConfig);
   record(project);
@@ -236,8 +263,6 @@ export function verifyCloudBuildContext({
     project.lifecycleState !== 'ACTIVE'
   )
     fail('CLOUD_BUILD_PROJECT_IDENTITY_DISAGREES');
-  if (metadataEmail !== plan.serviceAccount)
-    fail('CLOUD_BUILD_METADATA_ACCOUNT_DISAGREES');
   if (
     trigger.id !== inspected.triggerId ||
     trigger.name !== 'blogpost-backend-manual' ||
@@ -272,7 +297,7 @@ export function verifyCloudBuildContext({
   const source = record(trigger.sourceToBuild);
   if (
     source.repoType !== 'GITHUB' ||
-    source.ref !== 'refs/heads/' + plan.branch ||
+    !['refs/heads/' + plan.branch, inspected.sourceSha].includes(source.ref) ||
     source.uri ||
     source.githubEnterpriseConfig ||
     source.bitbucketServerConfig ||
@@ -283,10 +308,48 @@ export function verifyCloudBuildContext({
     ) !== inspected.connectedRepository
   )
     fail('CLOUD_BUILD_TRIGGER_SOURCE_DISAGREES');
-  if (
-    trigger.filename !== 'cloudbuild.yaml' ||
-    trigger.gitFileSource !== undefined
-  )
+  const configurationSource = {
+    kind: 'source-root',
+    repository: inspected.connectedRepository,
+    ref: source.ref,
+    path: 'cloudbuild.yaml',
+  };
+  if (trigger.gitFileSource !== undefined) {
+    const file = record(trigger.gitFileSource);
+    if (
+      trigger.filename !== undefined ||
+      file.repoType !== 'GITHUB' ||
+      !['cloudbuild.yaml', '/cloudbuild.yaml'].includes(file.path) ||
+      (file.revision !== undefined &&
+        file.revision !== '' &&
+        !['refs/heads/' + plan.branch, inspected.sourceSha].includes(
+          file.revision,
+        )) ||
+      file.uri ||
+      file.githubEnterpriseConfig ||
+      file.bitbucketServerConfig ||
+      Object.keys(file).some(
+        (key) =>
+          ![
+            'path',
+            'repository',
+            'repoType',
+            'revision',
+            'uri',
+            'githubEnterpriseConfig',
+            'bitbucketServerConfig',
+          ].includes(key),
+      ) ||
+      resourceName(
+        file.repository,
+        plan,
+        /^connections\/[A-Za-z0-9._-]{1,128}\/repositories\/[A-Za-z0-9._-]{1,128}$/,
+      ) !== inspected.connectedRepository
+    )
+      fail('CLOUD_BUILD_REPOSITORY_RECIPE_REQUIRED');
+    configurationSource.kind = 'git-file';
+    configurationSource.ref = file.revision || source.ref;
+  } else if (trigger.filename !== 'cloudbuild.yaml')
     fail('CLOUD_BUILD_REPOSITORY_RECIPE_REQUIRED');
   const created = cloudBuildTime(trigger.createTime);
   if (created > cloudBuildTime(build.startTime) + 300000)
@@ -307,7 +370,7 @@ export function verifyCloudBuildContext({
   return {
     schemaVersion: 1,
     status: 'VERIFIED',
-    scope: 'cloud-build-context',
+    scope: completed ? 'cloud-build-completed-context' : 'cloud-build-context',
     evidenceSource: 'provided-json',
     environment: plan.environment,
     projectId: plan.projectId,
@@ -325,11 +388,14 @@ export function verifyCloudBuildContext({
         id: plan.buildId,
         createTime: build.createTime,
         startTime: build.startTime,
+        ...(completed ? { finishTime: build.finishTime } : {}),
       },
       trigger: {
         name: inspected.triggerName,
         id: inspected.triggerId,
         createTime: trigger.createTime,
+        sourceRef: source.ref,
+        configurationSource,
       },
       repository: {
         name: inspected.connectedRepository,
@@ -343,9 +409,21 @@ export function verifyCloudBuildContext({
       connectedRepository: inspected.connectedRepository,
       recipe: 'cloudbuild.yaml',
       triggerType: 'MANUAL',
+      configurationSource,
     }),
     limitations: [
-      'Verifies running build/source/trigger context, not human invocation, reviewed Git ancestry, recipe execution, image provenance, IAM or deployment.',
+      completed
+        ? 'Verifies completed build/source and current trigger context, not human invocation, reviewed Git ancestry, registry outputs, signed provenance, IAM or deployment.'
+        : 'Verifies running build/source/trigger context, not human invocation, reviewed Git ancestry, recipe execution, image provenance, IAM or deployment.',
     ],
   };
+}
+export function verifyCloudBuildContext(input) {
+  const plan = cloudBuildRequest(input.request, input.projects);
+  if (input.metadataEmail !== plan.serviceAccount)
+    fail('CLOUD_BUILD_METADATA_ACCOUNT_DISAGREES');
+  return verifyBuildResources(input, false);
+}
+export function verifyCompletedCloudBuildContext(input) {
+  return verifyBuildResources(input, true);
 }

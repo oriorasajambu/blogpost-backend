@@ -283,6 +283,7 @@ export async function runRecovery({
   });
   if (
     context.sourceSha !== first.context.sourceSha ||
+    context.configurationDigest !== first.context.configurationDigest ||
     recipe.recipeDigest !== first.recipe.recipeDigest
   )
     fail('RECOVERY_CAPTURE_DISAGREES');
@@ -330,6 +331,7 @@ export async function runRecovery({
     runtimeInputDigest: build.provenance.runtimeInputDigest,
     configurationDigest: digest(profile),
     recipeDigest: recipe.recipeDigest,
+    contextDigest: context.configurationDigest,
     cloudBuild: context.observation.build.name,
   };
   if (phase === 'capture') {
@@ -481,6 +483,7 @@ export async function runRecovery({
   const frozen = await prepareBuild(source, plan.environment, profile, {});
   if (
     final.context.sourceSha !== identity.sourceSha ||
+    final.context.configurationDigest !== identity.contextDigest ||
     final.recipe.recipeDigest !== identity.recipeDigest ||
     canonical(frozen.provenance) !== canonical(build.provenance)
   )

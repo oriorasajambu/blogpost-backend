@@ -10,12 +10,28 @@ import { expectedDatabaseSql } from './database-inputs.mjs';
 
 // Expectations are computed from immutable Git blobs; this does not build or attest an image.
 export async function expectedCandidateInputs(root, candidateSha, profile) {
+  return expectedArtifactInputs(root, candidateSha, 'staging', profile);
+}
+export async function expectedArtifactInputs(
+  root,
+  candidateSha,
+  environment,
+  profile,
+) {
   sha(candidateSha);
   profile = normalizeCloudProfile(profile);
-  if (profile.environment !== 'staging') fail('STAGING_PROFILE_REQUIRED');
+  if (
+    !['staging', 'production'].includes(environment) ||
+    profile.environment !== environment
+  )
+    fail(
+      environment === 'staging'
+        ? 'STAGING_PROFILE_REQUIRED'
+        : 'ARTIFACT_PROFILE_REQUIRED',
+    );
   const marker = metadata(root, candidateSha);
   const files = committedFiles(root, candidateSha);
-  const manifest = await inputManifest(root, 'staging', profile, files);
+  const manifest = await inputManifest(root, environment, profile, files);
   const contract = files.find(
     (file) => file.path === 'contracts/openapi-v1.json',
   );
@@ -35,9 +51,10 @@ export async function expectedCandidateInputs(root, candidateSha, profile) {
       schemaVersion: 1,
       application: 'backend',
       kind: 'ARTIFACT',
-      environment: 'staging',
+      environment,
       sourceSha: candidateSha,
-      sourceRef: 'refs/heads/rc',
+      sourceRef:
+        environment === 'staging' ? 'refs/heads/rc' : 'refs/heads/main',
       dirty: false,
       applicationVersion: marker.version,
       contractVersion: marker.apiContractVersion,
