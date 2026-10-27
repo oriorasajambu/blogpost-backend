@@ -69,8 +69,9 @@ CMD ["node", "dist/main.js"]
 
 # Migration tooling is used by short-lived jobs, not by the API service.
 FROM runtime AS operations
+COPY --chown=root:root config/database/schema-baseline.json ./config/database/schema-baseline.json
 COPY --from=operations-dependencies --chown=node:node /opt/prisma ./operations-tooling
 RUN ln -sT /app/operations-tooling/node_modules/prisma /app/node_modules/prisma
-COPY --from=build --chown=node:node /app/prisma ./prisma
+COPY --from=build --chown=root:root /app/prisma ./prisma
 COPY --from=build --chown=node:node /app/prisma.config.ts ./prisma.config.ts
 CMD ["node", "dist/ops/verify-db.js"]

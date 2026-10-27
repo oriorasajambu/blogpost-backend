@@ -21,6 +21,6 @@ npm run security:check
 npm run docs:check
 ```
 
-The Git/scanner regressions use disposable local repositories. Scanner binaries live in ignored `.local/tools/`; they add no Docker images. The SDK/SQL suite continues to use disposable tmpfs data and the shared Development image.
+The Git/scanner regressions use disposable local repositories. Scanner binaries live in ignored `.local/tools/`; they add no Docker images. The SDK/SQL suite continues to use disposable tmpfs data and the shared Development image. Its [database operator checks](DATABASE_VERIFICATION.md) cover history/schema/privilege drift and migration/maintenance coordination; CI also verifies the compiled production-dependency operations jobs with an invocation-owned temporary image.
 
 Promotion now invokes the [staging-evidence reader](STAGING_EVIDENCE.md) with read-only GitHub access before the explicit closed delivery gate. Delivery remains unavailable: trusted provider rollout/SQL receipts, actual profiles/federation, live counterpart checks, immutable release assets, stale-deployment guards and backup/rollout/recovery orchestration still require implementation and evidence. Passing work CI does not enable or prove deployment. See [implementation status](IMPLEMENTATION_STATUS.md), [cloud worksheet](CLOUD_ENVIRONMENTS.md) and [repository setup](REPOSITORY_SETUP.md).

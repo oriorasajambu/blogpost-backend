@@ -9,8 +9,10 @@ import { prepareBuild } from '../build/prepare.mjs';
 // No saved stack env file, published port or persistent volume is used.
 const root = resolve(import.meta.dirname, '../..');
 const args = process.argv.slice(2);
-if (args.some((arg) => arg !== '--build'))
-  throw new Error('Usage: npm run test:identity [-- --build]');
+if (args.some((arg) => !['--build', '--compiled-operations'].includes(arg)))
+  throw new Error(
+    'Usage: npm run test:identity [-- --build] [--compiled-operations]',
+  );
 const hash = createHash('sha256')
   .update(root.toLowerCase())
   .digest('hex')
@@ -22,6 +24,8 @@ let authArtifact = authImage;
 const postgres =
   'postgres:17.11-bookworm@sha256:858bb5e98eed02eb8cafbcdc007f9a65d1b613972028944a8ec2133ccaf80d27';
 const suffix = randomBytes(6).toString('hex');
+const operationsTag = 'blogpost-database-operations-' + suffix + ':check';
+let operationsArtifact = null;
 const network = `blogpost-identity-${suffix}`;
 const project = `demo-blogpost-identity-${suffix}`;
 const db = `${network}-db`;
@@ -39,6 +43,7 @@ const editorialPath = resolve(reportDirectory, `editorial-${suffix}.json`);
 const publicPath = resolve(reportDirectory, `public-taxonomy-${suffix}.json`);
 const mediaPath = resolve(reportDirectory, `media-${suffix}.json`);
 const maintenancePath = resolve(reportDirectory, `maintenance-${suffix}.json`);
+const databasePath = resolve(reportDirectory, `database-${suffix}.json`);
 // Only this nonsecret, random evidence file needs container write access on Linux CI hosts.
 await writeFile(observedPath, '{}\n', { flag: 'wx' });
 await chmod(observedPath, 0o666);
@@ -52,6 +57,8 @@ await writeFile(mediaPath, '{}\n', { flag: 'wx' });
 await chmod(mediaPath, 0o666);
 await writeFile(maintenancePath, '{}\n', { flag: 'wx' });
 await chmod(maintenancePath, 0o666);
+await writeFile(databasePath, '{}\n', { flag: 'wx' });
+await chmod(databasePath, 0o666);
 await writeFile(
   reportPath,
   JSON.stringify(
@@ -106,7 +113,7 @@ const logs = [
   '--log-opt',
   'max-file=2',
 ];
-const run = (command, extraEnv = {}) =>
+const run = (command, extraEnv = {}, artifact = backendArtifact) =>
   docker([
     'run',
     '--rm',
@@ -121,7 +128,7 @@ const run = (command, extraEnv = {}) =>
     '/data/media:rw,size=160m,uid=1000,gid=1000,mode=0700',
     ...envArgs({ ...appEnv, ...extraEnv }),
     ...mounts,
-    backendArtifact,
+    artifact,
     ...command,
   ]);
 let networkCreated = false;
@@ -153,6 +160,31 @@ try {
     ['image', 'inspect', '--format', '{{.Id}}', authImage],
     { capture: true },
   );
+  if (args.includes('--compiled-operations')) {
+    if (
+      docker(['image', 'inspect', operationsTag], {
+        capture: true,
+        optional: true,
+      }) !== null
+    )
+      throw new Error('Temporary operations image unexpectedly exists');
+    docker([
+      'build',
+      '--platform',
+      'linux/amd64',
+      '--target',
+      'operations',
+      '--tag',
+      operationsTag,
+      '--build-context',
+      'blogpost_metadata=' + build.metadataDirectory,
+      build.sourceDirectory,
+    ]);
+    operationsArtifact = docker(
+      ['image', 'inspect', '--format', '{{.Id}}', operationsTag],
+      { capture: true },
+    );
+  }
   const baked = JSON.parse(
     docker(
       [
@@ -276,6 +308,49 @@ try {
     SQL_MIGRATOR_PASSWORD: 'disposable-identity-migrator',
   });
   run(['npm', 'run', 'db:verify']);
+  if (operationsArtifact) {
+    run(
+      ['node', 'dist/ops/bootstrap-db.js'],
+      {
+        SQL_ROOT_PASSWORD: 'disposable-identity-root',
+        SQL_MIGRATOR_PASSWORD: 'disposable-identity-migrator',
+      },
+      operationsArtifact,
+    );
+    for (let attempt = 0; attempt < 2; attempt++)
+      run(
+        ['node', 'dist/ops/migrate.js'],
+        { SQL_MIGRATOR_PASSWORD: 'disposable-identity-migrator' },
+        operationsArtifact,
+      );
+    run(['node', 'dist/ops/verify-db.js'], {}, operationsArtifact);
+    run(['node', 'dist/ops/maintenance.js'], {}, operationsArtifact);
+  }
+  run(
+    [
+      'node',
+      'node_modules/tsx/dist/cli.mjs',
+      '--test',
+      'test/operations/database.test.ts',
+    ],
+    {
+      BLOGPOST_DISPOSABLE_DATABASE: '1',
+      BLOGPOST_IDENTITY_RUN_ID: suffix,
+      SQL_ROOT_PASSWORD: 'disposable-identity-root',
+      SQL_MIGRATOR_PASSWORD: 'disposable-identity-migrator',
+    },
+  );
+  const database = JSON.parse(await readFile(databasePath, 'utf8'));
+  if (
+    database.status !== 'PASSED' ||
+    database.runId !== suffix ||
+    database.runtimeInputDigest !== baked.runtimeInputDigest ||
+    database.contractSha256 !== baked.contractSha256 ||
+    database.operatorTests !== 10
+  )
+    throw new Error(
+      'Database operator evidence is stale, incomplete or mismatched',
+    );
   run(
     [
       'node',
@@ -464,6 +539,9 @@ try {
         publicTaxonomySuitePassed: true,
         mediaSuitePassed: true,
         maintenanceSuitePassed: true,
+        databaseOperatorSuitePassed: true,
+        databaseOperatorTests: database.operatorTests,
+        compiledOperationsSuitePassed: operationsArtifact !== null,
       },
       null,
       2,
@@ -475,6 +553,7 @@ try {
   await unlink(publicPath);
   await unlink(mediaPath);
   await unlink(maintenancePath);
+  await unlink(databasePath);
   console.log(
     `Isolated backend conformance: ${executed.size}/${observed.total}; ${pending.length} operations pending.`,
   );
@@ -502,4 +581,6 @@ try {
     }
     docker(['network', 'rm', network], { capture: true });
   }
+  if (operationsArtifact)
+    docker(['image', 'rm', operationsTag], { capture: true });
 }

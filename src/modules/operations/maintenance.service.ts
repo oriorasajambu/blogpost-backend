@@ -1,5 +1,6 @@
 import type { Pool, PoolClient } from 'pg';
 import type { Prisma } from '../../generated/prisma/client.js';
+import { schemaLock, releaseSchemaLock } from '../../ops/database-lock.js';
 import { objects, type VariantObject } from '../media/media.repository.js';
 import {
   storageFailure,
@@ -100,6 +101,7 @@ export class MaintenanceService {
       return allowed;
     };
     const client = await this.pool.connect();
+    let schemaAcquired = false;
     const tx = async <T>(work: () => Promise<T>) => {
       await client.query('BEGIN');
       try {
@@ -187,6 +189,18 @@ export class MaintenanceService {
       }
     };
     try {
+      try {
+        await schemaLock(client, true);
+        schemaAcquired = true;
+      } catch (error) {
+        if ((error as { code?: string }).code === 'SCHEMA_OPERATION_BUSY')
+          return result;
+        throw error;
+      }
+      const migration = await client.query<{ active: boolean }>(`SELECT EXISTS(
+        SELECT 1 FROM pg_stat_activity WHERE datname=current_database()
+        AND usename='blogpost_migrator') AS active`);
+      if (migration.rows[0]?.active) return result;
       result.acquired = (
         await client.query<{ acquired: boolean }>(
           'SELECT pg_try_advisory_lock($1::bigint) AS acquired',
@@ -487,6 +501,7 @@ export class MaintenanceService {
         await client
           .query('SELECT pg_advisory_unlock($1::bigint)', [MAINTENANCE_LOCK])
           .catch(() => {});
+      if (schemaAcquired) await releaseSchemaLock(client, true).catch(() => {});
       client.release(true);
     }
   }

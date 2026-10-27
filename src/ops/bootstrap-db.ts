@@ -30,7 +30,7 @@ await runJob(async () => {
         [role],
       );
       const attributes = await client.query(
-        'SELECT rolsuper, rolcreatedb, rolcreaterole, rolbypassrls FROM pg_roles WHERE rolname = $1',
+        'SELECT rolsuper, rolcreatedb, rolcreaterole, rolbypassrls, rolreplication, rolinherit, NOT rolcanlogin AS cannot_login FROM pg_roles WHERE rolname = $1',
         [role],
       );
       if (
@@ -44,6 +44,20 @@ await runJob(async () => {
     );
     await client.query('REVOKE ALL ON SCHEMA blogpost FROM PUBLIC');
     await client.query('REVOKE CREATE ON SCHEMA public FROM PUBLIC');
+    const database = pg.escapeIdentifier(connection('root').database!);
+    await client.query(
+      `REVOKE CREATE, TEMPORARY ON DATABASE ${database} FROM PUBLIC`,
+    );
+    for (const role of ['blogpost_migrator', 'blogpost_app'])
+      await client.query(
+        `REVOKE CREATE, TEMPORARY ON DATABASE ${database} FROM ${role}`,
+      );
+    await client.query(
+      `ALTER ROLE blogpost_migrator IN DATABASE ${database} SET lock_timeout='4s'`,
+    );
+    await client.query(
+      `ALTER ROLE blogpost_migrator IN DATABASE ${database} SET statement_timeout='60s'`,
+    );
     await client.query('GRANT USAGE ON SCHEMA blogpost TO blogpost_app');
     await client.query('COMMIT');
   } catch (error) {

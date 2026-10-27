@@ -7,6 +7,9 @@ import { promisify } from 'node:util';
 import { once } from 'node:events';
 import { readProvenance } from '../dist/platform/config/provenance.js';
 import { readConfig } from '../dist/platform/config/config.js';
+import { digest } from '../dist/platform/config/build-model.js';
+import { migrationManifest } from '../dist/ops/database-model.js';
+import { expectedSchema } from '../dist/ops/database-verification.js';
 
 assert.equal(process.getuid(), 1000);
 await assert.rejects(access('/app/.build/provenance.json', constants.W_OK));
@@ -20,7 +23,22 @@ for (const path of [
   await assert.rejects(access(path));
 const operations = process.argv.includes('--operations');
 if (!operations) await assert.rejects(access('/app/node_modules/prisma'));
-else await access('/app/operations-tooling/node_modules/prisma');
+else {
+  await access('/app/operations-tooling/node_modules/prisma');
+  await assert.rejects(
+    access('/app/config/database/schema-baseline.json', constants.W_OK),
+  );
+  const manifest = await migrationManifest();
+  const baseline = await expectedSchema();
+  assert.equal(baseline.migrationDigest, digest(manifest));
+  for (const migration of manifest)
+    await assert.rejects(
+      access(
+        '/app/prisma/migrations/' + migration.id + '/migration.sql',
+        constants.W_OK,
+      ),
+    );
+}
 const build = readProvenance();
 const expectedIndex = process.argv.indexOf('--expected');
 assert.ok(expectedIndex >= 0);

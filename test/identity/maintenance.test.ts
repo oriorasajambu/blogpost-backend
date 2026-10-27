@@ -10,6 +10,7 @@ import { identityFixture, type DTO, type Body } from './fixture.js';
 import { metadata } from '../helpers.js';
 import { assertConforms, coverage } from '../conformance/verify.js';
 import { connection } from '../../src/platform/database/connection.js';
+import { SCHEMA_LOCK } from '../../src/ops/database-model.js';
 import {
   StorageAdapter,
   hashBytes,
@@ -363,6 +364,15 @@ test(
           await entered;
           assert.equal(
             (
+              await otherPool.query(
+                'SELECT pg_try_advisory_lock($1::bigint) AS acquired',
+                [SCHEMA_LOCK],
+              )
+            ).rows[0].acquired,
+            false,
+          );
+          assert.equal(
+            (
               await new MaintenanceService(
                 otherPool,
                 storage,
@@ -383,6 +393,18 @@ test(
           assert.equal(rejected.body.error.code, 'WORKFLOW_CONFLICT');
           release();
           assert.equal((await pending).failures, 0);
+          assert.equal(
+            (
+              await otherPool.query(
+                'SELECT pg_try_advisory_lock($1::bigint) AS acquired',
+                [SCHEMA_LOCK],
+              )
+            ).rows[0].acquired,
+            true,
+          );
+          await otherPool.query('SELECT pg_advisory_unlock($1::bigint)', [
+            SCHEMA_LOCK,
+          ]);
         } finally {
           release();
           storage.remove = original;

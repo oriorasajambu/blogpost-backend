@@ -1,0 +1,4784 @@
+{
+  "definitions": {
+    "columns": [
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": "''::text",
+        "generated": "",
+        "identity": "",
+        "name": "bio",
+        "position": 6,
+        "relation": "Member",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "action",
+        "position": 2,
+        "relation": "RateLimitBucket",
+        "required": true,
+        "type": "character varying(40)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "action",
+        "position": 3,
+        "relation": "AuditEvent",
+        "required": true,
+        "type": "character varying(80)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "action",
+        "position": 5,
+        "relation": "ReviewEvent",
+        "required": true,
+        "type": "character varying(40)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "canonicalSlug",
+        "position": 5,
+        "relation": "Post",
+        "required": false,
+        "type": "character varying(120)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "checksum",
+        "position": 16,
+        "relation": "Revision",
+        "required": true,
+        "type": "character(64)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "checksum",
+        "position": 2,
+        "relation": "_prisma_migrations",
+        "required": true,
+        "type": "character varying(64)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "coverAltText",
+        "position": 13,
+        "relation": "Revision",
+        "required": false,
+        "type": "text"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "cursor",
+        "position": 2,
+        "relation": "MaintenanceCheckpoint",
+        "required": false,
+        "type": "character varying(2048)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "displayName",
+        "position": 4,
+        "relation": "Member",
+        "required": true,
+        "type": "character varying(160)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "email",
+        "position": 2,
+        "relation": "Invitation",
+        "required": true,
+        "type": "character varying(320)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "email",
+        "position": 3,
+        "relation": "Member",
+        "required": true,
+        "type": "character varying(320)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "feedback",
+        "position": 6,
+        "relation": "ReviewEvent",
+        "required": false,
+        "type": "text"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "handle",
+        "position": 5,
+        "relation": "Member",
+        "required": true,
+        "type": "character varying(120)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "id",
+        "position": 1,
+        "relation": "_prisma_migrations",
+        "required": true,
+        "type": "character varying(36)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "identityUid",
+        "position": 2,
+        "relation": "IdempotencyRecord",
+        "required": true,
+        "type": "character varying(128)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "identityUid",
+        "position": 2,
+        "relation": "Member",
+        "required": true,
+        "type": "character varying(128)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "key",
+        "position": 1,
+        "relation": "MaintenanceCheckpoint",
+        "required": true,
+        "type": "character varying(100)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "logs",
+        "position": 5,
+        "relation": "_prisma_migrations",
+        "required": false,
+        "type": "text"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "markdown",
+        "position": 6,
+        "relation": "Revision",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "method",
+        "position": 3,
+        "relation": "IdempotencyRecord",
+        "required": true,
+        "type": "character varying(8)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "migration_name",
+        "position": 4,
+        "relation": "_prisma_migrations",
+        "required": true,
+        "type": "character varying(255)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "mimeType",
+        "position": 5,
+        "relation": "MediaAsset",
+        "required": false,
+        "type": "character varying(32)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "name",
+        "position": 2,
+        "relation": "Category",
+        "required": true,
+        "type": "character varying(160)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "name",
+        "position": 2,
+        "relation": "Tag",
+        "required": true,
+        "type": "character varying(160)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "normalizedName",
+        "position": 3,
+        "relation": "Category",
+        "required": true,
+        "type": "character varying(160)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "normalizedName",
+        "position": 3,
+        "relation": "Tag",
+        "required": true,
+        "type": "character varying(160)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "plainBody",
+        "position": 8,
+        "relation": "Revision",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "requestHash",
+        "position": 6,
+        "relation": "IdempotencyRecord",
+        "required": true,
+        "type": "character(64)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "route",
+        "position": 4,
+        "relation": "IdempotencyRecord",
+        "required": true,
+        "type": "character varying(300)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "slug",
+        "position": 1,
+        "relation": "SlugHistory",
+        "required": true,
+        "type": "character varying(120)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "slug",
+        "position": 4,
+        "relation": "Category",
+        "required": true,
+        "type": "character varying(120)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "slug",
+        "position": 4,
+        "relation": "Tag",
+        "required": true,
+        "type": "character varying(120)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "subjectType",
+        "position": 4,
+        "relation": "AuditEvent",
+        "required": true,
+        "type": "character varying(40)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "summary",
+        "position": 5,
+        "relation": "Revision",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "title",
+        "position": 4,
+        "relation": "Revision",
+        "required": true,
+        "type": "text"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "tokenHash",
+        "position": 4,
+        "relation": "Invitation",
+        "required": true,
+        "type": "character(64)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "traceId",
+        "position": 7,
+        "relation": "AuditEvent",
+        "required": true,
+        "type": "character(32)"
+      },
+      {
+        "collation": null,
+        "default_expression": "'DRAFT'::blogpost.\"WorkflowState\"",
+        "generated": "",
+        "identity": "",
+        "name": "workflowState",
+        "position": 7,
+        "relation": "Post",
+        "required": true,
+        "type": "blogpost.\"WorkflowState\""
+      },
+      {
+        "collation": null,
+        "default_expression": "'NEVER_PUBLISHED'::blogpost.\"PublicationState\"",
+        "generated": "",
+        "identity": "",
+        "name": "publicationState",
+        "position": 6,
+        "relation": "Post",
+        "required": true,
+        "type": "blogpost.\"PublicationState\""
+      },
+      {
+        "collation": null,
+        "default_expression": "'PROCESSING'::blogpost.\"MediaState\"",
+        "generated": "",
+        "identity": "",
+        "name": "state",
+        "position": 4,
+        "relation": "MediaAsset",
+        "required": true,
+        "type": "blogpost.\"MediaState\""
+      },
+      {
+        "collation": null,
+        "default_expression": "'[]'::jsonb",
+        "generated": "",
+        "identity": "",
+        "name": "objects",
+        "position": 3,
+        "relation": "MediaUploadAttempt",
+        "required": true,
+        "type": "jsonb"
+      },
+      {
+        "collation": null,
+        "default_expression": "'[]'::jsonb",
+        "generated": "",
+        "identity": "",
+        "name": "variants",
+        "position": 9,
+        "relation": "MediaAsset",
+        "required": true,
+        "type": "jsonb"
+      },
+      {
+        "collation": null,
+        "default_expression": "0",
+        "generated": "",
+        "identity": "",
+        "name": "applied_steps_count",
+        "position": 8,
+        "relation": "_prisma_migrations",
+        "required": true,
+        "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": "0",
+        "generated": "",
+        "identity": "",
+        "name": "byteSize",
+        "position": 6,
+        "relation": "MediaAsset",
+        "required": true,
+        "type": "bigint"
+      },
+      {
+        "collation": null,
+        "default_expression": "0",
+        "generated": "",
+        "identity": "",
+        "name": "count",
+        "position": 4,
+        "relation": "RateLimitBucket",
+        "required": true,
+        "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": "1",
+        "generated": "",
+        "identity": "",
+        "name": "lockVersion",
+        "position": 12,
+        "relation": "Post",
+        "required": true,
+        "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": "1",
+        "generated": "",
+        "identity": "",
+        "name": "markdownContractVersion",
+        "position": 7,
+        "relation": "Revision",
+        "required": true,
+        "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": "1",
+        "generated": "",
+        "identity": "",
+        "name": "version",
+        "position": 6,
+        "relation": "Category",
+        "required": true,
+        "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": "1",
+        "generated": "",
+        "identity": "",
+        "name": "version",
+        "position": 6,
+        "relation": "Tag",
+        "required": true,
+        "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": "1",
+        "generated": "",
+        "identity": "",
+        "name": "version",
+        "position": 7,
+        "relation": "Invitation",
+        "required": true,
+        "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": "1",
+        "generated": "",
+        "identity": "",
+        "name": "version",
+        "position": 9,
+        "relation": "Member",
+        "required": true,
+        "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": "CURRENT_TIMESTAMP",
+        "generated": "",
+        "identity": "",
+        "name": "createdAt",
+        "position": 10,
+        "relation": "Member",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "CURRENT_TIMESTAMP",
+        "generated": "",
+        "identity": "",
+        "name": "createdAt",
+        "position": 11,
+        "relation": "IdempotencyRecord",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "CURRENT_TIMESTAMP",
+        "generated": "",
+        "identity": "",
+        "name": "createdAt",
+        "position": 11,
+        "relation": "Invitation",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "CURRENT_TIMESTAMP",
+        "generated": "",
+        "identity": "",
+        "name": "createdAt",
+        "position": 12,
+        "relation": "MediaAsset",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "CURRENT_TIMESTAMP",
+        "generated": "",
+        "identity": "",
+        "name": "createdAt",
+        "position": 17,
+        "relation": "Revision",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "CURRENT_TIMESTAMP",
+        "generated": "",
+        "identity": "",
+        "name": "createdAt",
+        "position": 18,
+        "relation": "Post",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "CURRENT_TIMESTAMP",
+        "generated": "",
+        "identity": "",
+        "name": "createdAt",
+        "position": 4,
+        "relation": "SlugHistory",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "CURRENT_TIMESTAMP",
+        "generated": "",
+        "identity": "",
+        "name": "createdAt",
+        "position": 7,
+        "relation": "Category",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "CURRENT_TIMESTAMP",
+        "generated": "",
+        "identity": "",
+        "name": "createdAt",
+        "position": 7,
+        "relation": "ReviewEvent",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "CURRENT_TIMESTAMP",
+        "generated": "",
+        "identity": "",
+        "name": "createdAt",
+        "position": 7,
+        "relation": "Tag",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "CURRENT_TIMESTAMP",
+        "generated": "",
+        "identity": "",
+        "name": "createdAt",
+        "position": 8,
+        "relation": "AuditEvent",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "CURRENT_TIMESTAMP",
+        "generated": "",
+        "identity": "",
+        "name": "createdAt",
+        "position": 9,
+        "relation": "MediaUploadAttempt",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "CURRENT_TIMESTAMP",
+        "generated": "",
+        "identity": "",
+        "name": "updatedAt",
+        "position": 3,
+        "relation": "MaintenanceCheckpoint",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "CURRENT_TIMESTAMP",
+        "generated": "",
+        "identity": "",
+        "name": "updatedAt",
+        "position": 3,
+        "relation": "SchemaMeta",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "false",
+        "generated": "",
+        "identity": "",
+        "name": "coverDecorative",
+        "position": 14,
+        "relation": "Revision",
+        "required": true,
+        "type": "boolean"
+      },
+      {
+        "collation": null,
+        "default_expression": "now()",
+        "generated": "",
+        "identity": "",
+        "name": "started_at",
+        "position": 7,
+        "relation": "_prisma_migrations",
+        "required": true,
+        "type": "timestamp with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "true",
+        "generated": "",
+        "identity": "",
+        "name": "active",
+        "position": 5,
+        "relation": "Category",
+        "required": true,
+        "type": "boolean"
+      },
+      {
+        "collation": null,
+        "default_expression": "true",
+        "generated": "",
+        "identity": "",
+        "name": "active",
+        "position": 5,
+        "relation": "Tag",
+        "required": true,
+        "type": "boolean"
+      },
+      {
+        "collation": null,
+        "default_expression": "true",
+        "generated": "",
+        "identity": "",
+        "name": "active",
+        "position": 8,
+        "relation": "Member",
+        "required": true,
+        "type": "boolean"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "abandonedAt",
+        "position": 5,
+        "relation": "MediaUploadAttempt",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "acceptedAt",
+        "position": 9,
+        "relation": "Invitation",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "acceptedById",
+        "position": 6,
+        "relation": "Invitation",
+        "required": false,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "actorId",
+        "position": 2,
+        "relation": "AuditEvent",
+        "required": false,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "actorId",
+        "position": 4,
+        "relation": "ReviewEvent",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "authorId",
+        "position": 2,
+        "relation": "Post",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "canonical",
+        "position": 3,
+        "relation": "SlugHistory",
+        "required": true,
+        "type": "boolean"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "categoryId",
+        "position": 11,
+        "relation": "Revision",
+        "required": false,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "changes",
+        "position": 6,
+        "relation": "AuditEvent",
+        "required": true,
+        "type": "jsonb"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "cleanedAt",
+        "position": 8,
+        "relation": "MediaUploadAttempt",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "cleanupAfter",
+        "position": 7,
+        "relation": "MediaUploadAttempt",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "clientDraftId",
+        "position": 4,
+        "relation": "Post",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "completedAt",
+        "position": 6,
+        "relation": "MediaUploadAttempt",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "coverMediaId",
+        "position": 12,
+        "relation": "Revision",
+        "required": false,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "creatorId",
+        "position": 10,
+        "relation": "Revision",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "creatorId",
+        "position": 3,
+        "relation": "Post",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "creditedAuthorId",
+        "position": 9,
+        "relation": "Revision",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "deletionAfter",
+        "position": 15,
+        "relation": "MediaAsset",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "document",
+        "position": 3,
+        "relation": "PublishedSearch",
+        "required": true,
+        "type": "tsvector"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "expiresAt",
+        "position": 10,
+        "relation": "IdempotencyRecord",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "expiresAt",
+        "position": 5,
+        "relation": "RateLimitBucket",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "expiresAt",
+        "position": 8,
+        "relation": "Invitation",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "finished_at",
+        "position": 3,
+        "relation": "_prisma_migrations",
+        "required": false,
+        "type": "timestamp with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "firstPublishedAt",
+        "position": 13,
+        "relation": "Post",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "height",
+        "position": 8,
+        "relation": "MediaAsset",
+        "required": false,
+        "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "id",
+        "position": 1,
+        "relation": "AuditEvent",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "id",
+        "position": 1,
+        "relation": "Category",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "id",
+        "position": 1,
+        "relation": "IdempotencyRecord",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "id",
+        "position": 1,
+        "relation": "Invitation",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "id",
+        "position": 1,
+        "relation": "MediaAsset",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "id",
+        "position": 1,
+        "relation": "MediaUploadAttempt",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "id",
+        "position": 1,
+        "relation": "Member",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "id",
+        "position": 1,
+        "relation": "Post",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "id",
+        "position": 1,
+        "relation": "ReviewEvent",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "id",
+        "position": 1,
+        "relation": "Revision",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "id",
+        "position": 1,
+        "relation": "SchemaMeta",
+        "required": true,
+        "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "id",
+        "position": 1,
+        "relation": "Tag",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "issuerId",
+        "position": 5,
+        "relation": "Invitation",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "key",
+        "position": 5,
+        "relation": "IdempotencyRecord",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "lastPublishedAt",
+        "position": 14,
+        "relation": "Post",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "leaseExpiresAt",
+        "position": 10,
+        "relation": "MediaAsset",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "leaseExpiresAt",
+        "position": 4,
+        "relation": "MediaUploadAttempt",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "leaseExpiresAt",
+        "position": 9,
+        "relation": "IdempotencyRecord",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "mediaId",
+        "position": 2,
+        "relation": "MediaUploadAttempt",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "mediaId",
+        "position": 3,
+        "relation": "RevisionMedia",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "memberId",
+        "position": 1,
+        "relation": "RateLimitBucket",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "number",
+        "position": 3,
+        "relation": "Revision",
+        "required": true,
+        "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "objectsDeletedAt",
+        "position": 16,
+        "relation": "MediaAsset",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "position",
+        "position": 3,
+        "relation": "RevisionTag",
+        "required": true,
+        "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "postId",
+        "position": 1,
+        "relation": "PublishedSearch",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "postId",
+        "position": 1,
+        "relation": "RevisionMedia",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "postId",
+        "position": 2,
+        "relation": "MediaAsset",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "postId",
+        "position": 2,
+        "relation": "ReviewEvent",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "postId",
+        "position": 2,
+        "relation": "Revision",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "postId",
+        "position": 2,
+        "relation": "SlugHistory",
+        "required": false,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "publishedRevisionId",
+        "position": 9,
+        "relation": "Post",
+        "required": false,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "purgeAfter",
+        "position": 16,
+        "relation": "Post",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "purgeStartedAt",
+        "position": 17,
+        "relation": "Post",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "restoredFromRevisionId",
+        "position": 15,
+        "relation": "Revision",
+        "required": false,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "result",
+        "position": 7,
+        "relation": "IdempotencyRecord",
+        "required": false,
+        "type": "jsonb"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "revisionId",
+        "position": 1,
+        "relation": "RevisionTag",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "revisionId",
+        "position": 2,
+        "relation": "PublishedSearch",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "revisionId",
+        "position": 2,
+        "relation": "RevisionMedia",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "revisionId",
+        "position": 3,
+        "relation": "ReviewEvent",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "revokedAt",
+        "position": 10,
+        "relation": "Invitation",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "role",
+        "position": 3,
+        "relation": "Invitation",
+        "required": true,
+        "type": "blogpost.\"Role\""
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "role",
+        "position": 7,
+        "relation": "Member",
+        "required": true,
+        "type": "blogpost.\"Role\""
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "rolled_back_at",
+        "position": 6,
+        "relation": "_prisma_migrations",
+        "required": false,
+        "type": "timestamp with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "statusCode",
+        "position": 8,
+        "relation": "IdempotencyRecord",
+        "required": false,
+        "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "subjectId",
+        "position": 5,
+        "relation": "AuditEvent",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "submittedAt",
+        "position": 11,
+        "relation": "Post",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "submittedRevisionId",
+        "position": 10,
+        "relation": "Post",
+        "required": false,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "tagId",
+        "position": 2,
+        "relation": "RevisionTag",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "trashedAt",
+        "position": 15,
+        "relation": "Post",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "unattachedExpiresAt",
+        "position": 11,
+        "relation": "MediaAsset",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "updatedAt",
+        "position": 11,
+        "relation": "Member",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "updatedAt",
+        "position": 19,
+        "relation": "Post",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "updatedAt",
+        "position": 8,
+        "relation": "Category",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "updatedAt",
+        "position": 8,
+        "relation": "Tag",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "uploadAttemptId",
+        "position": 14,
+        "relation": "MediaAsset",
+        "required": false,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "uploadOperationId",
+        "position": 13,
+        "relation": "MediaAsset",
+        "required": false,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "uploaderId",
+        "position": 3,
+        "relation": "MediaAsset",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "version",
+        "position": 2,
+        "relation": "SchemaMeta",
+        "required": true,
+        "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "width",
+        "position": 7,
+        "relation": "MediaAsset",
+        "required": false,
+        "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "windowStart",
+        "position": 3,
+        "relation": "RateLimitBucket",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "workingRevisionId",
+        "position": 8,
+        "relation": "Post",
+        "required": false,
+        "type": "uuid"
+      }
+    ],
+    "constraints": [
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK ((\"acceptedAt\" IS NULL) = (\"acceptedById\" IS NULL))",
+        "kind": "c",
+        "name": "invitation_consumption",
+        "relation": "Invitation",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (NOT (\"acceptedAt\" IS NOT NULL AND \"revokedAt\" IS NOT NULL))",
+        "kind": "c",
+        "name": "invitation_terminal_state",
+        "relation": "Invitation",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (\"byteSize\" >= 0 AND (width IS NULL OR width > 0) AND (height IS NULL OR height > 0) AND (width IS NULL OR height IS NULL OR (width::bigint * height) <= 12000000))",
+        "kind": "c",
+        "name": "media_bounds",
+        "relation": "MediaAsset",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (\"canonicalSlug\" IS NULL OR \"canonicalSlug\"::text ~ '^[a-z0-9]+(-[a-z0-9]+)*$'::text)",
+        "kind": "c",
+        "name": "post_slug",
+        "relation": "Post",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (\"cleanupAfter\" >= \"leaseExpiresAt\")",
+        "kind": "c",
+        "name": "media_attempt_lease",
+        "relation": "MediaUploadAttempt",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (\"lockVersion\" > 0)",
+        "kind": "c",
+        "name": "post_version",
+        "relation": "Post",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (\"position\" >= 0 AND \"position\" <= 4)",
+        "kind": "c",
+        "name": "revision_tag_position",
+        "relation": "RevisionTag",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (\"publicationState\" = 'NEVER_PUBLISHED'::blogpost.\"PublicationState\" AND \"publishedRevisionId\" IS NULL AND \"firstPublishedAt\" IS NULL AND \"lastPublishedAt\" IS NULL OR \"publicationState\" <> 'NEVER_PUBLISHED'::blogpost.\"PublicationState\" AND \"publishedRevisionId\" IS NOT NULL AND \"canonicalSlug\" IS NOT NULL AND \"firstPublishedAt\" IS NOT NULL AND \"lastPublishedAt\" IS NOT NULL)",
+        "kind": "c",
+        "name": "post_publication",
+        "relation": "Post",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (\"requestHash\" ~ '^[a-f0-9]{64}$'::text)",
+        "kind": "c",
+        "name": "idempotency_hash",
+        "relation": "IdempotencyRecord",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (\"tokenHash\" ~ '^[a-f0-9]{64}$'::text)",
+        "kind": "c",
+        "name": "invitation_hash",
+        "relation": "Invitation",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (\"traceId\" ~ '^[a-f0-9]{32}$'::text)",
+        "kind": "c",
+        "name": "audit_trace",
+        "relation": "AuditEvent",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (\"trashedAt\" IS NULL AND \"purgeAfter\" IS NULL OR \"trashedAt\" IS NOT NULL AND \"purgeAfter\" IS NOT NULL AND \"purgeAfter\" >= (\"trashedAt\" + '30 days'::interval) AND \"publicationState\" <> 'PUBLISHED'::blogpost.\"PublicationState\")",
+        "kind": "c",
+        "name": "post_trash",
+        "relation": "Post",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (\"workflowState\" = 'IN_REVIEW'::blogpost.\"WorkflowState\" AND \"submittedRevisionId\" IS NOT NULL AND \"submittedRevisionId\" = \"workingRevisionId\" AND \"submittedAt\" IS NOT NULL OR \"workflowState\" <> 'IN_REVIEW'::blogpost.\"WorkflowState\" AND \"submittedRevisionId\" IS NULL AND \"submittedAt\" IS NULL)",
+        "kind": "c",
+        "name": "post_review",
+        "relation": "Post",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (char_length(\"displayName\"::text) >= 1 AND char_length(\"displayName\"::text) <= 80 AND char_length(bio) <= 500)",
+        "kind": "c",
+        "name": "member_profile",
+        "relation": "Member",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (checksum ~ '^[a-f0-9]{64}$'::text)",
+        "kind": "c",
+        "name": "revision_checksum",
+        "relation": "Revision",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (count >= 0)",
+        "kind": "c",
+        "name": "rate_limit_count",
+        "relation": "RateLimitBucket",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (feedback IS NULL OR char_length(feedback) >= 1 AND char_length(feedback) <= 2000)",
+        "kind": "c",
+        "name": "review_feedback",
+        "relation": "ReviewEvent",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (handle::text ~ '^[a-z0-9]+(-[a-z0-9]+)*$'::text)",
+        "kind": "c",
+        "name": "member_handle",
+        "relation": "Member",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (id = 1 AND version > 0)",
+        "kind": "c",
+        "name": "schema_singleton",
+        "relation": "SchemaMeta",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (jsonb_typeof(objects) = 'array'::text AND jsonb_array_length(objects) <= 3)",
+        "kind": "c",
+        "name": "media_attempt_objects",
+        "relation": "MediaUploadAttempt",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (number > 0 AND char_length(title) <= 160 AND char_length(summary) <= 320 AND octet_length(markdown) <= 131072 AND \"markdownContractVersion\" = 1 AND (\"coverAltText\" IS NULL OR char_length(\"coverAltText\") <= 300))",
+        "kind": "c",
+        "name": "revision_bounds",
+        "relation": "Revision",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (result IS NULL AND \"statusCode\" IS NULL OR result IS NOT NULL AND \"statusCode\" >= 200 AND \"statusCode\" <= 299)",
+        "kind": "c",
+        "name": "idempotency_completion",
+        "relation": "IdempotencyRecord",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (slug::text ~ '^[a-z0-9]+(-[a-z0-9]+)*$'::text)",
+        "kind": "c",
+        "name": "category_slug",
+        "relation": "Category",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (slug::text ~ '^[a-z0-9]+(-[a-z0-9]+)*$'::text)",
+        "kind": "c",
+        "name": "history_slug",
+        "relation": "SlugHistory",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (slug::text ~ '^[a-z0-9]+(-[a-z0-9]+)*$'::text)",
+        "kind": "c",
+        "name": "tag_slug",
+        "relation": "Tag",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (state <> 'READY'::blogpost.\"MediaState\" OR width IS NOT NULL AND height IS NOT NULL AND \"mimeType\" IS NOT NULL AND (\"mimeType\"::text = ANY (ARRAY['image/jpeg'::character varying, 'image/png'::character varying, 'image/webp'::character varying]::text[])) AND jsonb_array_length(variants) = 3)",
+        "kind": "c",
+        "name": "media_ready",
+        "relation": "MediaAsset",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (version > 0)",
+        "kind": "c",
+        "name": "category_version",
+        "relation": "Category",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (version > 0)",
+        "kind": "c",
+        "name": "invitation_version",
+        "relation": "Invitation",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (version > 0)",
+        "kind": "c",
+        "name": "member_version",
+        "relation": "Member",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (version > 0)",
+        "kind": "c",
+        "name": "tag_version",
+        "relation": "Tag",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"acceptedById\") REFERENCES blogpost.\"Member\"(id) ON UPDATE CASCADE ON DELETE RESTRICT",
+        "kind": "f",
+        "name": "Invitation_acceptedById_fkey",
+        "relation": "Invitation",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"actorId\") REFERENCES blogpost.\"Member\"(id) ON UPDATE CASCADE ON DELETE RESTRICT",
+        "kind": "f",
+        "name": "AuditEvent_actorId_fkey",
+        "relation": "AuditEvent",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"actorId\") REFERENCES blogpost.\"Member\"(id) ON UPDATE CASCADE ON DELETE RESTRICT",
+        "kind": "f",
+        "name": "ReviewEvent_actorId_fkey",
+        "relation": "ReviewEvent",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"authorId\") REFERENCES blogpost.\"Member\"(id) ON UPDATE CASCADE ON DELETE RESTRICT",
+        "kind": "f",
+        "name": "Post_authorId_fkey",
+        "relation": "Post",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"categoryId\") REFERENCES blogpost.\"Category\"(id) ON UPDATE CASCADE ON DELETE RESTRICT",
+        "kind": "f",
+        "name": "Revision_categoryId_fkey",
+        "relation": "Revision",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"creatorId\") REFERENCES blogpost.\"Member\"(id) ON UPDATE CASCADE ON DELETE RESTRICT",
+        "kind": "f",
+        "name": "Post_creatorId_fkey",
+        "relation": "Post",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"creatorId\") REFERENCES blogpost.\"Member\"(id) ON UPDATE CASCADE ON DELETE RESTRICT",
+        "kind": "f",
+        "name": "Revision_creatorId_fkey",
+        "relation": "Revision",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"creditedAuthorId\") REFERENCES blogpost.\"Member\"(id) ON UPDATE CASCADE ON DELETE RESTRICT",
+        "kind": "f",
+        "name": "Revision_creditedAuthorId_fkey",
+        "relation": "Revision",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"issuerId\") REFERENCES blogpost.\"Member\"(id) ON UPDATE CASCADE ON DELETE RESTRICT",
+        "kind": "f",
+        "name": "Invitation_issuerId_fkey",
+        "relation": "Invitation",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"mediaId\") REFERENCES blogpost.\"MediaAsset\"(id) ON UPDATE CASCADE ON DELETE CASCADE",
+        "kind": "f",
+        "name": "MediaUploadAttempt_mediaId_fkey",
+        "relation": "MediaUploadAttempt",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"memberId\") REFERENCES blogpost.\"Member\"(id) ON UPDATE CASCADE ON DELETE CASCADE",
+        "kind": "f",
+        "name": "RateLimitBucket_memberId_fkey",
+        "relation": "RateLimitBucket",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"postId\") REFERENCES blogpost.\"Post\"(id) ON UPDATE CASCADE ON DELETE CASCADE",
+        "kind": "f",
+        "name": "MediaAsset_postId_fkey",
+        "relation": "MediaAsset",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"postId\") REFERENCES blogpost.\"Post\"(id) ON UPDATE CASCADE ON DELETE CASCADE",
+        "kind": "f",
+        "name": "PublishedSearch_postId_fkey",
+        "relation": "PublishedSearch",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"postId\") REFERENCES blogpost.\"Post\"(id) ON UPDATE CASCADE ON DELETE CASCADE",
+        "kind": "f",
+        "name": "ReviewEvent_postId_fkey",
+        "relation": "ReviewEvent",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"postId\") REFERENCES blogpost.\"Post\"(id) ON UPDATE CASCADE ON DELETE CASCADE",
+        "kind": "f",
+        "name": "Revision_postId_fkey",
+        "relation": "Revision",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"postId\") REFERENCES blogpost.\"Post\"(id) ON UPDATE CASCADE ON DELETE SET NULL",
+        "kind": "f",
+        "name": "SlugHistory_postId_fkey",
+        "relation": "SlugHistory",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"postId\", \"coverMediaId\") REFERENCES blogpost.\"MediaAsset\"(\"postId\", id)",
+        "kind": "f",
+        "name": "Revision_postId_coverMediaId_fkey",
+        "relation": "Revision",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"postId\", \"mediaId\") REFERENCES blogpost.\"MediaAsset\"(\"postId\", id) ON UPDATE CASCADE ON DELETE RESTRICT",
+        "kind": "f",
+        "name": "RevisionMedia_postId_mediaId_fkey",
+        "relation": "RevisionMedia",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"postId\", \"restoredFromRevisionId\") REFERENCES blogpost.\"Revision\"(\"postId\", id)",
+        "kind": "f",
+        "name": "Revision_postId_restoredFromRevisionId_fkey",
+        "relation": "Revision",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"postId\", \"revisionId\") REFERENCES blogpost.\"Revision\"(\"postId\", id) ON UPDATE CASCADE ON DELETE CASCADE",
+        "kind": "f",
+        "name": "RevisionMedia_postId_revisionId_fkey",
+        "relation": "RevisionMedia",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"postId\", \"revisionId\") REFERENCES blogpost.\"Revision\"(\"postId\", id)",
+        "kind": "f",
+        "name": "PublishedSearch_postId_revisionId_fkey",
+        "relation": "PublishedSearch",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"postId\", \"revisionId\") REFERENCES blogpost.\"Revision\"(\"postId\", id)",
+        "kind": "f",
+        "name": "ReviewEvent_postId_revisionId_fkey",
+        "relation": "ReviewEvent",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"revisionId\") REFERENCES blogpost.\"Revision\"(id) ON UPDATE CASCADE ON DELETE CASCADE",
+        "kind": "f",
+        "name": "RevisionTag_revisionId_fkey",
+        "relation": "RevisionTag",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"tagId\") REFERENCES blogpost.\"Tag\"(id) ON UPDATE CASCADE ON DELETE RESTRICT",
+        "kind": "f",
+        "name": "RevisionTag_tagId_fkey",
+        "relation": "RevisionTag",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"uploadOperationId\") REFERENCES blogpost.\"IdempotencyRecord\"(id) ON UPDATE CASCADE ON DELETE SET NULL",
+        "kind": "f",
+        "name": "MediaAsset_uploadOperationId_fkey",
+        "relation": "MediaAsset",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"uploaderId\") REFERENCES blogpost.\"Member\"(id) ON UPDATE CASCADE ON DELETE RESTRICT",
+        "kind": "f",
+        "name": "MediaAsset_uploaderId_fkey",
+        "relation": "MediaAsset",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (id, \"publishedRevisionId\") REFERENCES blogpost.\"Revision\"(\"postId\", id)",
+        "kind": "f",
+        "name": "Post_id_publishedRevisionId_fkey",
+        "relation": "Post",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (id, \"submittedRevisionId\") REFERENCES blogpost.\"Revision\"(\"postId\", id)",
+        "kind": "f",
+        "name": "Post_id_submittedRevisionId_fkey",
+        "relation": "Post",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (id, \"workingRevisionId\") REFERENCES blogpost.\"Revision\"(\"postId\", id)",
+        "kind": "f",
+        "name": "Post_id_workingRevisionId_fkey",
+        "relation": "Post",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (\"memberId\", action, \"windowStart\")",
+        "kind": "p",
+        "name": "RateLimitBucket_pkey",
+        "relation": "RateLimitBucket",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (\"postId\")",
+        "kind": "p",
+        "name": "PublishedSearch_pkey",
+        "relation": "PublishedSearch",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (\"revisionId\", \"mediaId\")",
+        "kind": "p",
+        "name": "RevisionMedia_pkey",
+        "relation": "RevisionMedia",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (\"revisionId\", \"tagId\")",
+        "kind": "p",
+        "name": "RevisionTag_pkey",
+        "relation": "RevisionTag",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (id)",
+        "kind": "p",
+        "name": "AuditEvent_pkey",
+        "relation": "AuditEvent",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (id)",
+        "kind": "p",
+        "name": "Category_pkey",
+        "relation": "Category",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (id)",
+        "kind": "p",
+        "name": "IdempotencyRecord_pkey",
+        "relation": "IdempotencyRecord",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (id)",
+        "kind": "p",
+        "name": "Invitation_pkey",
+        "relation": "Invitation",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (id)",
+        "kind": "p",
+        "name": "MediaAsset_pkey",
+        "relation": "MediaAsset",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (id)",
+        "kind": "p",
+        "name": "MediaUploadAttempt_pkey",
+        "relation": "MediaUploadAttempt",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (id)",
+        "kind": "p",
+        "name": "Member_pkey",
+        "relation": "Member",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (id)",
+        "kind": "p",
+        "name": "Post_pkey",
+        "relation": "Post",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (id)",
+        "kind": "p",
+        "name": "ReviewEvent_pkey",
+        "relation": "ReviewEvent",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (id)",
+        "kind": "p",
+        "name": "Revision_pkey",
+        "relation": "Revision",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (id)",
+        "kind": "p",
+        "name": "SchemaMeta_pkey",
+        "relation": "SchemaMeta",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (id)",
+        "kind": "p",
+        "name": "Tag_pkey",
+        "relation": "Tag",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (id)",
+        "kind": "p",
+        "name": "_prisma_migrations_pkey",
+        "relation": "_prisma_migrations",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (key)",
+        "kind": "p",
+        "name": "MaintenanceCheckpoint_pkey",
+        "relation": "MaintenanceCheckpoint",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (slug)",
+        "kind": "p",
+        "name": "SlugHistory_pkey",
+        "relation": "SlugHistory",
+        "validated": true
+      },
+      {
+        "deferrable": true,
+        "deferred": true,
+        "definition": "FOREIGN KEY (id, \"canonicalSlug\") REFERENCES blogpost.\"SlugHistory\"(\"postId\", slug) DEFERRABLE INITIALLY DEFERRED",
+        "kind": "f",
+        "name": "post_reserved_slug",
+        "relation": "Post",
+        "validated": true
+      }
+    ],
+    "functions": [
+      {
+        "arguments": "",
+        "configuration": [],
+        "definition": "CREATE OR REPLACE FUNCTION blogpost.preserve_slug_reservation()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n  IF NEW.slug IS DISTINCT FROM OLD.slug OR\n    (NEW.\"postId\" IS DISTINCT FROM OLD.\"postId\" AND\n      (NEW.\"postId\" IS NOT NULL OR EXISTS(SELECT 1 FROM blogpost.\"Post\" WHERE id=OLD.\"postId\"))) THEN\n    RAISE EXCEPTION USING ERRCODE='23514', MESSAGE='Slug reservations are permanent';\n  END IF;\n  IF NEW.\"postId\" IS NULL THEN NEW.canonical := false; END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "kind": "f",
+        "leakproof": false,
+        "name": "preserve_slug_reservation",
+        "owner": "blogpost_migrator",
+        "parallel": "u",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "arguments": "",
+        "configuration": [],
+        "definition": "CREATE OR REPLACE FUNCTION blogpost.reject_immutable_update()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n  RAISE EXCEPTION 'Immutable snapshot cannot be updated' USING ERRCODE = '23514';\nEND;\n$function$\n",
+        "kind": "f",
+        "leakproof": false,
+        "name": "reject_immutable_update",
+        "owner": "blogpost_migrator",
+        "parallel": "u",
+        "security_definer": false,
+        "volatility": "v"
+      }
+    ],
+    "indexes": [
+      {
+        "definition": "CREATE INDEX \"AuditEvent_actorId_idx\" ON blogpost.\"AuditEvent\" USING btree (\"actorId\")",
+        "live": true,
+        "name": "AuditEvent_actorId_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "AuditEvent",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"AuditEvent_createdAt_id_idx\" ON blogpost.\"AuditEvent\" USING btree (\"createdAt\", id)",
+        "live": true,
+        "name": "AuditEvent_createdAt_id_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "AuditEvent",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"AuditEvent_subjectType_subjectId_idx\" ON blogpost.\"AuditEvent\" USING btree (\"subjectType\", \"subjectId\")",
+        "live": true,
+        "name": "AuditEvent_subjectType_subjectId_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "AuditEvent",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"IdempotencyRecord_expiresAt_idx\" ON blogpost.\"IdempotencyRecord\" USING btree (\"expiresAt\")",
+        "live": true,
+        "name": "IdempotencyRecord_expiresAt_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "IdempotencyRecord",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"Invitation_acceptedById_idx\" ON blogpost.\"Invitation\" USING btree (\"acceptedById\")",
+        "live": true,
+        "name": "Invitation_acceptedById_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "Invitation",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"Invitation_email_expiresAt_idx\" ON blogpost.\"Invitation\" USING btree (email, \"expiresAt\")",
+        "live": true,
+        "name": "Invitation_email_expiresAt_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "Invitation",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"Invitation_expiresAt_idx\" ON blogpost.\"Invitation\" USING btree (\"expiresAt\")",
+        "live": true,
+        "name": "Invitation_expiresAt_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "Invitation",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"Invitation_issuerId_idx\" ON blogpost.\"Invitation\" USING btree (\"issuerId\")",
+        "live": true,
+        "name": "Invitation_issuerId_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "Invitation",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"MediaAsset_state_deletionAfter_objectsDeletedAt_idx\" ON blogpost.\"MediaAsset\" USING btree (state, \"deletionAfter\", \"objectsDeletedAt\")",
+        "live": true,
+        "name": "MediaAsset_state_deletionAfter_objectsDeletedAt_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "MediaAsset",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"MediaAsset_unattachedExpiresAt_idx\" ON blogpost.\"MediaAsset\" USING btree (\"unattachedExpiresAt\")",
+        "live": true,
+        "name": "MediaAsset_unattachedExpiresAt_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "MediaAsset",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"MediaAsset_uploaderId_state_idx\" ON blogpost.\"MediaAsset\" USING btree (\"uploaderId\", state)",
+        "live": true,
+        "name": "MediaAsset_uploaderId_state_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "MediaAsset",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"MediaUploadAttempt_cleanupAfter_cleanedAt_idx\" ON blogpost.\"MediaUploadAttempt\" USING btree (\"cleanupAfter\", \"cleanedAt\")",
+        "live": true,
+        "name": "MediaUploadAttempt_cleanupAfter_cleanedAt_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "MediaUploadAttempt",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"MediaUploadAttempt_mediaId_idx\" ON blogpost.\"MediaUploadAttempt\" USING btree (\"mediaId\")",
+        "live": true,
+        "name": "MediaUploadAttempt_mediaId_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "MediaUploadAttempt",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"Member_active_role_idx\" ON blogpost.\"Member\" USING btree (active, role)",
+        "live": true,
+        "name": "Member_active_role_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "Member",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"Post_authorId_trashedAt_idx\" ON blogpost.\"Post\" USING btree (\"authorId\", \"trashedAt\")",
+        "live": true,
+        "name": "Post_authorId_trashedAt_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "Post",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"Post_publicationState_firstPublishedAt_id_idx\" ON blogpost.\"Post\" USING btree (\"publicationState\", \"firstPublishedAt\", id)",
+        "live": true,
+        "name": "Post_publicationState_firstPublishedAt_id_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "Post",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"Post_purgeAfter_idx\" ON blogpost.\"Post\" USING btree (\"purgeAfter\")",
+        "live": true,
+        "name": "Post_purgeAfter_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "Post",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"Post_workflowState_updatedAt_id_idx\" ON blogpost.\"Post\" USING btree (\"workflowState\", \"updatedAt\", id)",
+        "live": true,
+        "name": "Post_workflowState_updatedAt_id_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "Post",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"PublishedSearch_document_idx\" ON blogpost.\"PublishedSearch\" USING gin (document)",
+        "live": true,
+        "name": "PublishedSearch_document_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "PublishedSearch",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"RateLimitBucket_expiresAt_idx\" ON blogpost.\"RateLimitBucket\" USING btree (\"expiresAt\")",
+        "live": true,
+        "name": "RateLimitBucket_expiresAt_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "RateLimitBucket",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"ReviewEvent_actorId_idx\" ON blogpost.\"ReviewEvent\" USING btree (\"actorId\")",
+        "live": true,
+        "name": "ReviewEvent_actorId_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "ReviewEvent",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"ReviewEvent_postId_createdAt_id_idx\" ON blogpost.\"ReviewEvent\" USING btree (\"postId\", \"createdAt\", id)",
+        "live": true,
+        "name": "ReviewEvent_postId_createdAt_id_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "ReviewEvent",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"RevisionMedia_postId_mediaId_idx\" ON blogpost.\"RevisionMedia\" USING btree (\"postId\", \"mediaId\")",
+        "live": true,
+        "name": "RevisionMedia_postId_mediaId_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "RevisionMedia",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"RevisionTag_tagId_idx\" ON blogpost.\"RevisionTag\" USING btree (\"tagId\")",
+        "live": true,
+        "name": "RevisionTag_tagId_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "RevisionTag",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"Revision_categoryId_idx\" ON blogpost.\"Revision\" USING btree (\"categoryId\")",
+        "live": true,
+        "name": "Revision_categoryId_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "Revision",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"Revision_creatorId_idx\" ON blogpost.\"Revision\" USING btree (\"creatorId\")",
+        "live": true,
+        "name": "Revision_creatorId_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "Revision",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"Revision_creditedAuthorId_idx\" ON blogpost.\"Revision\" USING btree (\"creditedAuthorId\")",
+        "live": true,
+        "name": "Revision_creditedAuthorId_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "Revision",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"Revision_postId_coverMediaId_idx\" ON blogpost.\"Revision\" USING btree (\"postId\", \"coverMediaId\")",
+        "live": true,
+        "name": "Revision_postId_coverMediaId_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "Revision",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"SlugHistory_postId_idx\" ON blogpost.\"SlugHistory\" USING btree (\"postId\")",
+        "live": true,
+        "name": "SlugHistory_postId_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "SlugHistory",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"AuditEvent_pkey\" ON blogpost.\"AuditEvent\" USING btree (id)",
+        "live": true,
+        "name": "AuditEvent_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "AuditEvent",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Category_normalizedName_key\" ON blogpost.\"Category\" USING btree (\"normalizedName\")",
+        "live": true,
+        "name": "Category_normalizedName_key",
+        "primary": false,
+        "ready": true,
+        "relation": "Category",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Category_pkey\" ON blogpost.\"Category\" USING btree (id)",
+        "live": true,
+        "name": "Category_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "Category",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Category_slug_key\" ON blogpost.\"Category\" USING btree (slug)",
+        "live": true,
+        "name": "Category_slug_key",
+        "primary": false,
+        "ready": true,
+        "relation": "Category",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"IdempotencyRecord_identityUid_method_route_key_key\" ON blogpost.\"IdempotencyRecord\" USING btree (\"identityUid\", method, route, key)",
+        "live": true,
+        "name": "IdempotencyRecord_identityUid_method_route_key_key",
+        "primary": false,
+        "ready": true,
+        "relation": "IdempotencyRecord",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"IdempotencyRecord_pkey\" ON blogpost.\"IdempotencyRecord\" USING btree (id)",
+        "live": true,
+        "name": "IdempotencyRecord_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "IdempotencyRecord",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Invitation_pkey\" ON blogpost.\"Invitation\" USING btree (id)",
+        "live": true,
+        "name": "Invitation_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "Invitation",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Invitation_tokenHash_key\" ON blogpost.\"Invitation\" USING btree (\"tokenHash\")",
+        "live": true,
+        "name": "Invitation_tokenHash_key",
+        "primary": false,
+        "ready": true,
+        "relation": "Invitation",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"MaintenanceCheckpoint_pkey\" ON blogpost.\"MaintenanceCheckpoint\" USING btree (key)",
+        "live": true,
+        "name": "MaintenanceCheckpoint_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "MaintenanceCheckpoint",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"MediaAsset_pkey\" ON blogpost.\"MediaAsset\" USING btree (id)",
+        "live": true,
+        "name": "MediaAsset_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "MediaAsset",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"MediaAsset_postId_id_key\" ON blogpost.\"MediaAsset\" USING btree (\"postId\", id)",
+        "live": true,
+        "name": "MediaAsset_postId_id_key",
+        "primary": false,
+        "ready": true,
+        "relation": "MediaAsset",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"MediaAsset_uploadOperationId_key\" ON blogpost.\"MediaAsset\" USING btree (\"uploadOperationId\")",
+        "live": true,
+        "name": "MediaAsset_uploadOperationId_key",
+        "primary": false,
+        "ready": true,
+        "relation": "MediaAsset",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"MediaUploadAttempt_pkey\" ON blogpost.\"MediaUploadAttempt\" USING btree (id)",
+        "live": true,
+        "name": "MediaUploadAttempt_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "MediaUploadAttempt",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Member_handle_key\" ON blogpost.\"Member\" USING btree (handle)",
+        "live": true,
+        "name": "Member_handle_key",
+        "primary": false,
+        "ready": true,
+        "relation": "Member",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Member_identityUid_key\" ON blogpost.\"Member\" USING btree (\"identityUid\")",
+        "live": true,
+        "name": "Member_identityUid_key",
+        "primary": false,
+        "ready": true,
+        "relation": "Member",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Member_pkey\" ON blogpost.\"Member\" USING btree (id)",
+        "live": true,
+        "name": "Member_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "Member",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Post_canonicalSlug_key\" ON blogpost.\"Post\" USING btree (\"canonicalSlug\")",
+        "live": true,
+        "name": "Post_canonicalSlug_key",
+        "primary": false,
+        "ready": true,
+        "relation": "Post",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Post_creatorId_clientDraftId_key\" ON blogpost.\"Post\" USING btree (\"creatorId\", \"clientDraftId\")",
+        "live": true,
+        "name": "Post_creatorId_clientDraftId_key",
+        "primary": false,
+        "ready": true,
+        "relation": "Post",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Post_pkey\" ON blogpost.\"Post\" USING btree (id)",
+        "live": true,
+        "name": "Post_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "Post",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"PublishedSearch_pkey\" ON blogpost.\"PublishedSearch\" USING btree (\"postId\")",
+        "live": true,
+        "name": "PublishedSearch_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "PublishedSearch",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"RateLimitBucket_pkey\" ON blogpost.\"RateLimitBucket\" USING btree (\"memberId\", action, \"windowStart\")",
+        "live": true,
+        "name": "RateLimitBucket_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "RateLimitBucket",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"ReviewEvent_pkey\" ON blogpost.\"ReviewEvent\" USING btree (id)",
+        "live": true,
+        "name": "ReviewEvent_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "ReviewEvent",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"RevisionMedia_pkey\" ON blogpost.\"RevisionMedia\" USING btree (\"revisionId\", \"mediaId\")",
+        "live": true,
+        "name": "RevisionMedia_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "RevisionMedia",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"RevisionTag_pkey\" ON blogpost.\"RevisionTag\" USING btree (\"revisionId\", \"tagId\")",
+        "live": true,
+        "name": "RevisionTag_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "RevisionTag",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"RevisionTag_revisionId_position_key\" ON blogpost.\"RevisionTag\" USING btree (\"revisionId\", \"position\")",
+        "live": true,
+        "name": "RevisionTag_revisionId_position_key",
+        "primary": false,
+        "ready": true,
+        "relation": "RevisionTag",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Revision_pkey\" ON blogpost.\"Revision\" USING btree (id)",
+        "live": true,
+        "name": "Revision_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "Revision",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Revision_postId_id_key\" ON blogpost.\"Revision\" USING btree (\"postId\", id)",
+        "live": true,
+        "name": "Revision_postId_id_key",
+        "primary": false,
+        "ready": true,
+        "relation": "Revision",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Revision_postId_number_key\" ON blogpost.\"Revision\" USING btree (\"postId\", number)",
+        "live": true,
+        "name": "Revision_postId_number_key",
+        "primary": false,
+        "ready": true,
+        "relation": "Revision",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"SchemaMeta_pkey\" ON blogpost.\"SchemaMeta\" USING btree (id)",
+        "live": true,
+        "name": "SchemaMeta_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "SchemaMeta",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"SlugHistory_pkey\" ON blogpost.\"SlugHistory\" USING btree (slug)",
+        "live": true,
+        "name": "SlugHistory_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "SlugHistory",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"SlugHistory_postId_slug_key\" ON blogpost.\"SlugHistory\" USING btree (\"postId\", slug)",
+        "live": true,
+        "name": "SlugHistory_postId_slug_key",
+        "primary": false,
+        "ready": true,
+        "relation": "SlugHistory",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Tag_normalizedName_key\" ON blogpost.\"Tag\" USING btree (\"normalizedName\")",
+        "live": true,
+        "name": "Tag_normalizedName_key",
+        "primary": false,
+        "ready": true,
+        "relation": "Tag",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Tag_pkey\" ON blogpost.\"Tag\" USING btree (id)",
+        "live": true,
+        "name": "Tag_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "Tag",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"Tag_slug_key\" ON blogpost.\"Tag\" USING btree (slug)",
+        "live": true,
+        "name": "Tag_slug_key",
+        "primary": false,
+        "ready": true,
+        "relation": "Tag",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX _prisma_migrations_pkey ON blogpost._prisma_migrations USING btree (id)",
+        "live": true,
+        "name": "_prisma_migrations_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "_prisma_migrations",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX invitation_pending_email ON blogpost.\"Invitation\" USING btree (email) WHERE ((\"acceptedAt\" IS NULL) AND (\"revokedAt\" IS NULL))",
+        "live": true,
+        "name": "invitation_pending_email",
+        "primary": false,
+        "ready": true,
+        "relation": "Invitation",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX slug_one_canonical_per_post ON blogpost.\"SlugHistory\" USING btree (\"postId\") WHERE canonical",
+        "live": true,
+        "name": "slug_one_canonical_per_post",
+        "primary": false,
+        "ready": true,
+        "relation": "SlugHistory",
+        "unique": true,
+        "valid": true
+      }
+    ],
+    "namespace": [{ "name": "blogpost", "owner": "blogpost_migrator" }],
+    "policies": [],
+    "relations": [
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "AuditEvent",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "Category",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "IdempotencyRecord",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "Invitation",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "MaintenanceCheckpoint",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "MediaAsset",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "MediaUploadAttempt",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "Member",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "Post",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "PublishedSearch",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "RateLimitBucket",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "ReviewEvent",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "Revision",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "RevisionMedia",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "RevisionTag",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "SchemaMeta",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "SlugHistory",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "Tag",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
+        "name": "_prisma_migrations",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      }
+    ],
+    "sequences": [],
+    "triggers": [
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CREATE TRIGGER preserve_slug_reservation BEFORE UPDATE ON blogpost.\"SlugHistory\" FOR EACH ROW EXECUTE FUNCTION blogpost.preserve_slug_reservation()",
+        "enabled": "O",
+        "function": "blogpost.preserve_slug_reservation",
+        "internal": false,
+        "name": "preserve_slug_reservation",
+        "relation": "SlugHistory"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CREATE TRIGGER revision_immutable BEFORE UPDATE ON blogpost.\"Revision\" FOR EACH ROW EXECUTE FUNCTION blogpost.reject_immutable_update()",
+        "enabled": "O",
+        "function": "blogpost.reject_immutable_update",
+        "internal": false,
+        "name": "revision_immutable",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CREATE TRIGGER revision_media_immutable BEFORE UPDATE ON blogpost.\"RevisionMedia\" FOR EACH ROW EXECUTE FUNCTION blogpost.reject_immutable_update()",
+        "enabled": "O",
+        "function": "blogpost.reject_immutable_update",
+        "internal": false,
+        "name": "revision_media_immutable",
+        "relation": "RevisionMedia"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CREATE TRIGGER revision_tag_immutable BEFORE UPDATE ON blogpost.\"RevisionTag\" FOR EACH ROW EXECUTE FUNCTION blogpost.reject_immutable_update()",
+        "enabled": "O",
+        "function": "blogpost.reject_immutable_update",
+        "internal": false,
+        "name": "revision_tag_immutable",
+        "relation": "RevisionTag"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_del",
+        "internal": true,
+        "name": "MediaAsset_postId_fkey:RI_FKey_cascade_del:9",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_del",
+        "internal": true,
+        "name": "MediaUploadAttempt_mediaId_fkey:RI_FKey_cascade_del:9",
+        "relation": "MediaAsset"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_del",
+        "internal": true,
+        "name": "PublishedSearch_postId_fkey:RI_FKey_cascade_del:9",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_del",
+        "internal": true,
+        "name": "RateLimitBucket_memberId_fkey:RI_FKey_cascade_del:9",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_del",
+        "internal": true,
+        "name": "ReviewEvent_postId_fkey:RI_FKey_cascade_del:9",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_del",
+        "internal": true,
+        "name": "RevisionMedia_postId_revisionId_fkey:RI_FKey_cascade_del:9",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_del",
+        "internal": true,
+        "name": "RevisionTag_revisionId_fkey:RI_FKey_cascade_del:9",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_del",
+        "internal": true,
+        "name": "Revision_postId_fkey:RI_FKey_cascade_del:9",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "AuditEvent_actorId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "Invitation_acceptedById_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "Invitation_issuerId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "MediaAsset_postId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "MediaAsset_uploadOperationId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "IdempotencyRecord"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "MediaAsset_uploaderId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "MediaUploadAttempt_mediaId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "MediaAsset"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "Post_authorId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "Post_creatorId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "PublishedSearch_postId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "RateLimitBucket_memberId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "ReviewEvent_actorId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "ReviewEvent_postId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "RevisionMedia_postId_mediaId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "MediaAsset"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "RevisionMedia_postId_revisionId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "RevisionTag_revisionId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "RevisionTag_tagId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Tag"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "Revision_categoryId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Category"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "Revision_creatorId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "Revision_creditedAuthorId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "Revision_postId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "SlugHistory_postId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "AuditEvent_actorId_fkey:RI_FKey_check_ins:5",
+        "relation": "AuditEvent"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "Invitation_acceptedById_fkey:RI_FKey_check_ins:5",
+        "relation": "Invitation"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "Invitation_issuerId_fkey:RI_FKey_check_ins:5",
+        "relation": "Invitation"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "MediaAsset_postId_fkey:RI_FKey_check_ins:5",
+        "relation": "MediaAsset"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "MediaAsset_uploadOperationId_fkey:RI_FKey_check_ins:5",
+        "relation": "MediaAsset"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "MediaAsset_uploaderId_fkey:RI_FKey_check_ins:5",
+        "relation": "MediaAsset"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "MediaUploadAttempt_mediaId_fkey:RI_FKey_check_ins:5",
+        "relation": "MediaUploadAttempt"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "Post_authorId_fkey:RI_FKey_check_ins:5",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "Post_creatorId_fkey:RI_FKey_check_ins:5",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "Post_id_publishedRevisionId_fkey:RI_FKey_check_ins:5",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "Post_id_submittedRevisionId_fkey:RI_FKey_check_ins:5",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "Post_id_workingRevisionId_fkey:RI_FKey_check_ins:5",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "PublishedSearch_postId_fkey:RI_FKey_check_ins:5",
+        "relation": "PublishedSearch"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "PublishedSearch_postId_revisionId_fkey:RI_FKey_check_ins:5",
+        "relation": "PublishedSearch"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "RateLimitBucket_memberId_fkey:RI_FKey_check_ins:5",
+        "relation": "RateLimitBucket"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "ReviewEvent_actorId_fkey:RI_FKey_check_ins:5",
+        "relation": "ReviewEvent"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "ReviewEvent_postId_fkey:RI_FKey_check_ins:5",
+        "relation": "ReviewEvent"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "ReviewEvent_postId_revisionId_fkey:RI_FKey_check_ins:5",
+        "relation": "ReviewEvent"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "RevisionMedia_postId_mediaId_fkey:RI_FKey_check_ins:5",
+        "relation": "RevisionMedia"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "RevisionMedia_postId_revisionId_fkey:RI_FKey_check_ins:5",
+        "relation": "RevisionMedia"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "RevisionTag_revisionId_fkey:RI_FKey_check_ins:5",
+        "relation": "RevisionTag"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "RevisionTag_tagId_fkey:RI_FKey_check_ins:5",
+        "relation": "RevisionTag"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "Revision_categoryId_fkey:RI_FKey_check_ins:5",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "Revision_creatorId_fkey:RI_FKey_check_ins:5",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "Revision_creditedAuthorId_fkey:RI_FKey_check_ins:5",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "Revision_postId_coverMediaId_fkey:RI_FKey_check_ins:5",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "Revision_postId_fkey:RI_FKey_check_ins:5",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "Revision_postId_restoredFromRevisionId_fkey:RI_FKey_check_ins:5",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "SlugHistory_postId_fkey:RI_FKey_check_ins:5",
+        "relation": "SlugHistory"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "AuditEvent_actorId_fkey:RI_FKey_check_upd:17",
+        "relation": "AuditEvent"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "Invitation_acceptedById_fkey:RI_FKey_check_upd:17",
+        "relation": "Invitation"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "Invitation_issuerId_fkey:RI_FKey_check_upd:17",
+        "relation": "Invitation"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "MediaAsset_postId_fkey:RI_FKey_check_upd:17",
+        "relation": "MediaAsset"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "MediaAsset_uploadOperationId_fkey:RI_FKey_check_upd:17",
+        "relation": "MediaAsset"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "MediaAsset_uploaderId_fkey:RI_FKey_check_upd:17",
+        "relation": "MediaAsset"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "MediaUploadAttempt_mediaId_fkey:RI_FKey_check_upd:17",
+        "relation": "MediaUploadAttempt"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "Post_authorId_fkey:RI_FKey_check_upd:17",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "Post_creatorId_fkey:RI_FKey_check_upd:17",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "Post_id_publishedRevisionId_fkey:RI_FKey_check_upd:17",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "Post_id_submittedRevisionId_fkey:RI_FKey_check_upd:17",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "Post_id_workingRevisionId_fkey:RI_FKey_check_upd:17",
+        "relation": "Post"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "PublishedSearch_postId_fkey:RI_FKey_check_upd:17",
+        "relation": "PublishedSearch"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "PublishedSearch_postId_revisionId_fkey:RI_FKey_check_upd:17",
+        "relation": "PublishedSearch"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "RateLimitBucket_memberId_fkey:RI_FKey_check_upd:17",
+        "relation": "RateLimitBucket"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "ReviewEvent_actorId_fkey:RI_FKey_check_upd:17",
+        "relation": "ReviewEvent"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "ReviewEvent_postId_fkey:RI_FKey_check_upd:17",
+        "relation": "ReviewEvent"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "ReviewEvent_postId_revisionId_fkey:RI_FKey_check_upd:17",
+        "relation": "ReviewEvent"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "RevisionMedia_postId_mediaId_fkey:RI_FKey_check_upd:17",
+        "relation": "RevisionMedia"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "RevisionMedia_postId_revisionId_fkey:RI_FKey_check_upd:17",
+        "relation": "RevisionMedia"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "RevisionTag_revisionId_fkey:RI_FKey_check_upd:17",
+        "relation": "RevisionTag"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "RevisionTag_tagId_fkey:RI_FKey_check_upd:17",
+        "relation": "RevisionTag"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "Revision_categoryId_fkey:RI_FKey_check_upd:17",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "Revision_creatorId_fkey:RI_FKey_check_upd:17",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "Revision_creditedAuthorId_fkey:RI_FKey_check_upd:17",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "Revision_postId_coverMediaId_fkey:RI_FKey_check_upd:17",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "Revision_postId_fkey:RI_FKey_check_upd:17",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "Revision_postId_restoredFromRevisionId_fkey:RI_FKey_check_upd:1",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "SlugHistory_postId_fkey:RI_FKey_check_upd:17",
+        "relation": "SlugHistory"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_del",
+        "internal": true,
+        "name": "Post_id_publishedRevisionId_fkey:RI_FKey_noaction_del:9",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_del",
+        "internal": true,
+        "name": "Post_id_submittedRevisionId_fkey:RI_FKey_noaction_del:9",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_del",
+        "internal": true,
+        "name": "Post_id_workingRevisionId_fkey:RI_FKey_noaction_del:9",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_del",
+        "internal": true,
+        "name": "PublishedSearch_postId_revisionId_fkey:RI_FKey_noaction_del:9",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_del",
+        "internal": true,
+        "name": "ReviewEvent_postId_revisionId_fkey:RI_FKey_noaction_del:9",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_del",
+        "internal": true,
+        "name": "Revision_postId_coverMediaId_fkey:RI_FKey_noaction_del:9",
+        "relation": "MediaAsset"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_del",
+        "internal": true,
+        "name": "Revision_postId_restoredFromRevisionId_fkey:RI_FKey_noaction_de",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_upd",
+        "internal": true,
+        "name": "Post_id_publishedRevisionId_fkey:RI_FKey_noaction_upd:17",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_upd",
+        "internal": true,
+        "name": "Post_id_submittedRevisionId_fkey:RI_FKey_noaction_upd:17",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_upd",
+        "internal": true,
+        "name": "Post_id_workingRevisionId_fkey:RI_FKey_noaction_upd:17",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_upd",
+        "internal": true,
+        "name": "PublishedSearch_postId_revisionId_fkey:RI_FKey_noaction_upd:17",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_upd",
+        "internal": true,
+        "name": "ReviewEvent_postId_revisionId_fkey:RI_FKey_noaction_upd:17",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_upd",
+        "internal": true,
+        "name": "Revision_postId_coverMediaId_fkey:RI_FKey_noaction_upd:17",
+        "relation": "MediaAsset"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_upd",
+        "internal": true,
+        "name": "Revision_postId_restoredFromRevisionId_fkey:RI_FKey_noaction_up",
+        "relation": "Revision"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_restrict_del",
+        "internal": true,
+        "name": "AuditEvent_actorId_fkey:RI_FKey_restrict_del:9",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_restrict_del",
+        "internal": true,
+        "name": "Invitation_acceptedById_fkey:RI_FKey_restrict_del:9",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_restrict_del",
+        "internal": true,
+        "name": "Invitation_issuerId_fkey:RI_FKey_restrict_del:9",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_restrict_del",
+        "internal": true,
+        "name": "MediaAsset_uploaderId_fkey:RI_FKey_restrict_del:9",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_restrict_del",
+        "internal": true,
+        "name": "Post_authorId_fkey:RI_FKey_restrict_del:9",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_restrict_del",
+        "internal": true,
+        "name": "Post_creatorId_fkey:RI_FKey_restrict_del:9",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_restrict_del",
+        "internal": true,
+        "name": "ReviewEvent_actorId_fkey:RI_FKey_restrict_del:9",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_restrict_del",
+        "internal": true,
+        "name": "RevisionMedia_postId_mediaId_fkey:RI_FKey_restrict_del:9",
+        "relation": "MediaAsset"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_restrict_del",
+        "internal": true,
+        "name": "RevisionTag_tagId_fkey:RI_FKey_restrict_del:9",
+        "relation": "Tag"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_restrict_del",
+        "internal": true,
+        "name": "Revision_categoryId_fkey:RI_FKey_restrict_del:9",
+        "relation": "Category"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_restrict_del",
+        "internal": true,
+        "name": "Revision_creatorId_fkey:RI_FKey_restrict_del:9",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_restrict_del",
+        "internal": true,
+        "name": "Revision_creditedAuthorId_fkey:RI_FKey_restrict_del:9",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_setnull_del",
+        "internal": true,
+        "name": "MediaAsset_uploadOperationId_fkey:RI_FKey_setnull_del:9",
+        "relation": "IdempotencyRecord"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_setnull_del",
+        "internal": true,
+        "name": "SlugHistory_postId_fkey:RI_FKey_setnull_del:9",
+        "relation": "Post"
+      },
+      {
+        "deferrable": true,
+        "deferred": true,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "post_reserved_slug:RI_FKey_check_ins:5",
+        "relation": "Post"
+      },
+      {
+        "deferrable": true,
+        "deferred": true,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "post_reserved_slug:RI_FKey_check_upd:17",
+        "relation": "Post"
+      },
+      {
+        "deferrable": true,
+        "deferred": true,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_del",
+        "internal": true,
+        "name": "post_reserved_slug:RI_FKey_noaction_del:9",
+        "relation": "SlugHistory"
+      },
+      {
+        "deferrable": true,
+        "deferred": true,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_noaction_upd",
+        "internal": true,
+        "name": "post_reserved_slug:RI_FKey_noaction_upd:17",
+        "relation": "SlugHistory"
+      }
+    ],
+    "types": [
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "AuditEvent",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "Category",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "IdempotencyRecord",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "Invitation",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "MaintenanceCheckpoint",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "MediaAsset",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "MediaUploadAttempt",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "Member",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "Post",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "PublishedSearch",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "RateLimitBucket",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "ReviewEvent",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "Revision",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "RevisionMedia",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "RevisionTag",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "SchemaMeta",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "SlugHistory",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "Tag",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
+        "name": "_prisma_migrations",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "e",
+        "labels": "{AUTHOR,EDITOR,ADMIN}",
+        "name": "Role",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "e",
+        "labels": "{DRAFT,IN_REVIEW,CHANGES_REQUESTED,CLEAN}",
+        "name": "WorkflowState",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "e",
+        "labels": "{NEVER_PUBLISHED,PUBLISHED,WITHDRAWN}",
+        "name": "PublicationState",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "e",
+        "labels": "{PROCESSING,READY,DELETING}",
+        "name": "MediaState",
+        "owner": "blogpost_migrator",
+        "required": false
+      }
+    ]
+  },
+  "migrationDigest": "7c90cb3d3b05c26e6d7acf03dda94cf3ac6b24c6ee20f1a55508ea08df98c1e8",
+  "postgresMajor": 17,
+  "schemaDigest": "7eeb4aefbc6f5b4e8d0bc3c75f7842c5a18e855140853240a0e1acc755874c4a",
+  "schemaVersion": 1
+}
