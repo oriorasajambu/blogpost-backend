@@ -68,7 +68,7 @@ test('staging receipt binds candidate inputs, both image targets, schema and cou
         );
     },
     (f) => {
-      f.receipt.counterparts[0].contractSha256 = '9'.repeat(64);
+      f.receipt.counterparts[0].verifiedBackendContract.sha256 = '9'.repeat(64);
     },
     (f) => {
       f.descriptor.sourceSha = '9'.repeat(40);
@@ -112,6 +112,101 @@ test('staging receipt binds candidate inputs, both image targets, schema and cou
     );
   }
 });
+test('counterparts preserve independent contract pins and bind actual web and signed staging APK identities', () => {
+  const f = evidenceFixture();
+  f.receipt.counterparts[1].contractVersion = '0.9.0';
+  f.receipt.counterparts[1].contractSha256 = '0'.repeat(64);
+  assertReceiptMatches(
+    f.receipt,
+    f.descriptor,
+    f.build,
+    '1'.repeat(64),
+    now,
+    policy,
+  );
+  for (const mutate of [
+    (c) => {
+      delete c[0].servingRevision;
+    },
+    (c) => {
+      c[0].origin = 'https://other.example.test';
+    },
+    (c) => {
+      c[0].image = c[0].image.replace(/@sha256:.*/, ':latest');
+    },
+    (c) => {
+      c[1].versionCode = 2100000001;
+    },
+    (c) => {
+      c[1].versionCode = 1.5;
+    },
+    (c) => {
+      c[1].applicationId = 'test.fixture.blogpost';
+    },
+    (c) => {
+      delete c[1].signingCertificateSha256;
+    },
+    (c) => {
+      c[1].artifact.filename = '../staging.apk';
+    },
+    (c) => {
+      c[1].artifact.mediaType = 'application/octet-stream';
+    },
+    (c) => {
+      c[1].artifact.size = 0;
+    },
+    (c) => {
+      c[1].verifiedBackendContract.sha256 = '0'.repeat(64);
+    },
+  ]) {
+    const changed = evidenceFixture();
+    mutate(changed.receipt.counterparts);
+    assert.throws(() =>
+      assertReceiptMatches(
+        changed.receipt,
+        changed.descriptor,
+        changed.build,
+        '1'.repeat(64),
+        now,
+        policy,
+      ),
+    );
+  }
+  for (const mutate of [
+    (c) => {
+      c[0].servingRevision = 'blogpost-web-00002-new';
+    },
+    (c) => {
+      c[1].versionCode++;
+    },
+    (c) => {
+      c[1].artifact.sha256 = '0'.repeat(64);
+    },
+    (c) => {
+      c[1].signingCertificateSha256 = '0'.repeat(64);
+    },
+  ]) {
+    const changed = evidenceFixture();
+    changed.validation.counterparts = structuredClone(
+      changed.receipt.counterparts,
+    );
+    mutate(changed.validation.counterparts);
+    changed.pr.body = changed.ownerBody(changed.validation);
+    assert.throws(
+      () =>
+        assertOwnerValidation(
+          changed.pr,
+          config,
+          changed.receipt,
+          changed.descriptor,
+          now,
+          policy,
+        ),
+      { code: 'MANUAL_VALIDATION_DOES_NOT_MATCH' },
+    );
+  }
+});
+
 test('live staging metadata detects environment, revision, build, input and health drift', () => {
   for (const mutate of [
     (f) => {

@@ -94,11 +94,39 @@ export function evidenceFixture() {
     counterparts: ['web', 'android'].map((application) => ({
       application,
       applicationVersion: '0.1.0',
+      sourceSha: '6'.repeat(40),
+      runtimeInputDigest: '7'.repeat(64),
+      configurationDigest: '8'.repeat(64),
       apiMajor: 1,
       contractVersion: build.contractVersion,
       contractSha256: build.contractSha256,
+      verifiedBackendContract: {
+        version: build.contractVersion,
+        sha256: build.contractSha256,
+      },
       capabilityDigest: '4'.repeat(64),
       verificationSha256: '5'.repeat(64),
+      ...(application === 'web'
+        ? {
+            origin: configuration.webOrigin,
+            servingRevision: 'blogpost-web-00001-abc',
+            image:
+              'asia-southeast2-docker.pkg.dev/' +
+              configuration.projectId +
+              '/images/web@sha256:' +
+              '9'.repeat(64),
+          }
+        : {
+            applicationId: 'test.fixture.blogpost.staging',
+            versionCode: 1001,
+            signingCertificateSha256: 'a'.repeat(64),
+            artifact: {
+              filename: 'blogpost-staging-release.apk',
+              mediaType: 'application/vnd.android.package-archive',
+              size: 123456,
+              sha256: '9'.repeat(64),
+            },
+          }),
     })),
     supersedes: null,
   };

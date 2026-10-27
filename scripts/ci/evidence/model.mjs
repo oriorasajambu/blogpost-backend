@@ -261,11 +261,23 @@ export function validateReceipt(value) {
     exact(c, [
       'application',
       'applicationVersion',
+      'sourceSha',
+      'runtimeInputDigest',
+      'configurationDigest',
       'apiMajor',
       'contractVersion',
       'contractSha256',
+      'verifiedBackendContract',
       'capabilityDigest',
       'verificationSha256',
+      ...(c.application === 'web'
+        ? ['origin', 'servingRevision', 'image']
+        : [
+            'applicationId',
+            'versionCode',
+            'signingCertificateSha256',
+            'artifact',
+          ]),
     ]);
     if (
       !['web', 'android'].includes(c.application) ||
@@ -276,12 +288,48 @@ export function validateReceipt(value) {
     counterparts.add(c.application);
     stableVersion(c.applicationVersion);
     stableVersion(c.contractVersion);
+    sha(c.sourceSha);
+    exact(c.verifiedBackendContract, ['version', 'sha256']);
+    stableVersion(c.verifiedBackendContract.version);
+    hash(c.verifiedBackendContract.sha256);
     for (const key of [
       'contractSha256',
+      'runtimeInputDigest',
+      'configurationDigest',
       'capabilityDigest',
       'verificationSha256',
     ])
       hash(c[key]);
+    if (c.application === 'web') {
+      const webOrigin = new URL(c.origin);
+      if (webOrigin.protocol !== 'https:' || webOrigin.origin !== c.origin)
+        fail('INVALID_COUNTERPART_ORIGIN');
+      text(c.servingRevision, /^[a-z][a-z0-9-]{0,62}$/, 63);
+      text(c.image, /^[a-z0-9./_-]+@sha256:[a-f0-9]{64}$/, 512);
+    } else {
+      text(
+        c.applicationId,
+        /^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+\.staging$/,
+        255,
+      );
+      if (
+        !Number.isSafeInteger(c.versionCode) ||
+        c.versionCode < 1 ||
+        c.versionCode > 2100000000
+      )
+        fail('INVALID_COUNTERPART_VERSION_CODE');
+      hash(c.signingCertificateSha256);
+      exact(c.artifact, ['filename', 'mediaType', 'size', 'sha256']);
+      text(c.artifact.filename, /^[A-Za-z0-9][A-Za-z0-9._-]*\.apk$/, 128);
+      hash(c.artifact.sha256);
+      if (
+        c.artifact.mediaType !== 'application/vnd.android.package-archive' ||
+        !Number.isSafeInteger(c.artifact.size) ||
+        c.artifact.size < 1 ||
+        c.artifact.size > 1073741824
+      )
+        fail('INVALID_COUNTERPART_APK');
+    }
   }
   if (value.mode === 'DEPLOYED') {
     if (value.builtFromSha !== value.candidateSha || value.supersedes !== null)
@@ -347,10 +395,15 @@ export function assertReceiptMatches(
     fail('EVIDENCE_EXPIRED_OR_FUTURE');
   for (const c of receipt.counterparts)
     if (
-      c.contractVersion !== receipt.contractVersion ||
-      c.contractSha256 !== receipt.contractSha256
+      c.verifiedBackendContract.version !== receipt.contractVersion ||
+      c.verifiedBackendContract.sha256 !== receipt.contractSha256
     )
       fail('COUNTERPART_CONTRACT_DISAGREES');
+    else if (c.application === 'web') {
+      if (c.origin !== build.configuration.webOrigin)
+        fail('COUNTERPART_ORIGIN_DISAGREES');
+      imageUri(c.image, build.configuration.projectId);
+    }
   return receipt;
 }
 export function assertEquivalentReuse(current, previous) {

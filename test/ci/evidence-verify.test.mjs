@@ -265,6 +265,7 @@ test('verified docs reuse walks actual Git ancestry and authenticates historical
     receipt.schemaVerification.verifiedAt = '2026-10-' + day + 'T08:20:00Z';
     receipt.counterparts.forEach((c) => {
       c.contractSha256 = receipt.contractSha256;
+      c.verifiedBackendContract.sha256 = receipt.contractSha256;
     });
     receipt.artifact = {
       filename: 'backend-staging-artifact.json',
