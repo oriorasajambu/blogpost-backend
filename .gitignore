@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.local/
+.build/
+.env
+.env.*
+!.env.example
+src/generated/
+*.log
+*.tsbuildinfo
+tools/kotlin/consumer/.gradle/
+tools/kotlin/consumer/.kotlin/
+tools/kotlin/consumer/build/
