@@ -33,14 +33,8 @@ import {
 test('staging receipt binds candidate inputs, both image targets, schema and counterpart pins', () => {
   const f = evidenceFixture();
   assert.equal(
-    assertReceiptMatches(
-      f.receipt,
-      f.descriptor,
-      f.build,
-      '1'.repeat(64),
-      now,
-      policy,
-    ).candidateSha,
+    assertReceiptMatches(f.receipt, f.descriptor, f.build, f.sql, now, policy)
+      .candidateSha,
     f.build.sourceSha,
   );
   assertLiveMetadata(f.receipt, f.live, now, policy);
@@ -105,7 +99,7 @@ test('staging receipt binds candidate inputs, both image targets, schema and cou
         changed.receipt,
         changed.descriptor,
         changed.build,
-        '1'.repeat(64),
+        changed.sql,
         now,
         policy,
       ),
@@ -116,14 +110,7 @@ test('counterparts preserve independent contract pins and bind actual web and si
   const f = evidenceFixture();
   f.receipt.counterparts[1].contractVersion = '0.9.0';
   f.receipt.counterparts[1].contractSha256 = '0'.repeat(64);
-  assertReceiptMatches(
-    f.receipt,
-    f.descriptor,
-    f.build,
-    '1'.repeat(64),
-    now,
-    policy,
-  );
+  assertReceiptMatches(f.receipt, f.descriptor, f.build, f.sql, now, policy);
   for (const mutate of [
     (c) => {
       delete c[0].servingRevision;
@@ -166,7 +153,7 @@ test('counterparts preserve independent contract pins and bind actual web and si
         changed.receipt,
         changed.descriptor,
         changed.build,
-        '1'.repeat(64),
+        changed.sql,
         now,
         policy,
       ),
@@ -363,7 +350,7 @@ test('equivalent reuse preserves the actual artifact identity and requires expli
     current,
     f.descriptor,
     candidateBuild,
-    '1'.repeat(64),
+    f.sql,
     now,
     policy,
   );
@@ -455,7 +442,7 @@ test('owner validation requires owner-attributed current PR content, completed o
 });
 test('canonical artifact bundle binds file names, exact bytes and checksum manifest', () => {
   const f = evidenceFixture();
-  const files = bundleFiles(f.receipt, f.descriptor);
+  const files = bundleFiles(f.receipt, f.descriptor, f.database);
   assert.equal(
     decodeBundle(files, policy).receiptSha256,
     sha256(jsonBytes(f.receipt)),
@@ -471,8 +458,8 @@ test('canonical artifact bundle binds file names, exact bytes and checksum manif
     'staging-evidence.json',
     Buffer.from(
       canonical(f.receipt).replace(
-        '"schemaVersion":1',
-        '"schemaVersion":2,"schemaVersion":1',
+        '"schemaVersion":2',
+        '"schemaVersion":1,"schemaVersion":2',
       ) + '\n',
     ),
   );
@@ -483,7 +470,7 @@ test('canonical artifact bundle binds file names, exact bytes and checksum manif
 });
 test('ZIP decoder handles bounded stored/deflated entries and data descriptors without extracting paths', () => {
   const f = evidenceFixture();
-  const files = bundleFiles(f.receipt, f.descriptor);
+  const files = bundleFiles(f.receipt, f.descriptor, f.database);
   for (const compressed of [true, false])
     for (const descriptors of [true, false]) {
       const archive = zip(files, { compressed, descriptors });
@@ -509,7 +496,7 @@ test('ZIP decoder handles bounded stored/deflated entries and data descriptors w
       b.writeUInt16LE(1, b.length - 22 + 4);
     },
     (b) => {
-      b.writeUInt16LE(4, b.length - 22 + 10);
+      b.writeUInt16LE(3, b.length - 22 + 10);
     },
     (b) => {
       b.writeUInt32LE(0xffffffff, b.length - 22 + 16);

@@ -6,20 +6,28 @@ import { evidencePolicy, sha256, validateReceipt } from './model.mjs';
 export const BUNDLE_FILES = [
   'SHA256SUMS',
   'backend-staging-artifact.json',
+  'backend-staging-database.json',
   'staging-evidence.json',
 ];
 export const jsonBytes = (value) => Buffer.from(canonical(value) + '\n');
-export function bundleFiles(receipt, descriptor) {
+export function bundleFiles(receipt, descriptor, database) {
   receipt = validateReceipt(receipt);
   const artifact = jsonBytes(descriptor);
+  const databaseBytes = jsonBytes(database);
   if (
     receipt.artifact.size !== artifact.length ||
     receipt.artifact.sha256 !== sha256(artifact)
   )
     fail('ARTIFACT_FILE_DISAGREES');
+  if (
+    receipt.databaseEvidence.size !== databaseBytes.length ||
+    receipt.databaseEvidence.sha256 !== sha256(databaseBytes)
+  )
+    fail('DATABASE_FILE_DISAGREES');
   const files = new Map([
     ['staging-evidence.json', jsonBytes(receipt)],
     ['backend-staging-artifact.json', artifact],
+    ['backend-staging-database.json', databaseBytes],
   ]);
   files.set(
     'SHA256SUMS',
@@ -61,7 +69,8 @@ export function decodeBundle(files, policy) {
   };
   const receipt = validateReceipt(read('staging-evidence.json'));
   const descriptor = read('backend-staging-artifact.json');
-  const expected = bundleFiles(receipt, descriptor);
+  const database = read('backend-staging-database.json');
+  const expected = bundleFiles(receipt, descriptor, database);
   if (
     !Buffer.isBuffer(files.get('SHA256SUMS')) ||
     !files.get('SHA256SUMS').equals(expected.get('SHA256SUMS'))
@@ -70,6 +79,7 @@ export function decodeBundle(files, policy) {
   return {
     receipt,
     descriptor,
+    database,
     receiptSha256: sha256(files.get('staging-evidence.json')),
   };
 }
@@ -85,8 +95,8 @@ function unpack(bytes, policy) {
     bytes.readUInt32LE(end) !== 0x06054b50 ||
     bytes.readUInt16LE(end + 4) ||
     bytes.readUInt16LE(end + 6) ||
-    bytes.readUInt16LE(end + 8) !== 3 ||
-    bytes.readUInt16LE(end + 10) !== 3 ||
+    bytes.readUInt16LE(end + 8) !== BUNDLE_FILES.length ||
+    bytes.readUInt16LE(end + 10) !== BUNDLE_FILES.length ||
     bytes.readUInt16LE(end + 20)
   )
     fail('UNSUPPORTED_STAGING_ARCHIVE');
@@ -95,7 +105,7 @@ function unpack(bytes, policy) {
   if (directoryStart + directorySize !== end) fail('INVALID_STAGING_DIRECTORY');
   let at = directoryStart;
   const entries = [];
-  for (let n = 0; n < 3; n++) {
+  for (let n = 0; n < BUNDLE_FILES.length; n++) {
     if (at + 46 > end || bytes.readUInt32LE(at) !== 0x02014b50)
       fail('INVALID_STAGING_DIRECTORY');
     const flags = bytes.readUInt16LE(at + 8);
@@ -137,7 +147,10 @@ function unpack(bytes, policy) {
     });
     at += 46 + nameSize + extraSize + commentSize;
   }
-  if (at !== end || new Set(entries.map((entry) => entry.name)).size !== 3)
+  if (
+    at !== end ||
+    new Set(entries.map((entry) => entry.name)).size !== BUNDLE_FILES.length
+  )
     fail('AMBIGUOUS_STAGING_ARCHIVE');
   const files = new Map();
   let cursor = 0;

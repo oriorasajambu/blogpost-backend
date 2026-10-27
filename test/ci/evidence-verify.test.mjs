@@ -13,8 +13,11 @@ import {
   policy,
   configuration,
   zip,
+  seedDatabase,
+  attachDatabaseEvidence,
 } from './evidence-fixtures.mjs';
 import { fixture } from './fixtures.mjs';
+import { digest } from '../../src/platform/config/build-model.ts';
 
 function context(f) {
   const calls = [];
@@ -51,6 +54,7 @@ function context(f) {
     expectations: async () => ({
       build: f.build,
       migrationDigest: f.receipt.schemaVerification.migrationDigest,
+      sql: f.sql,
     }),
   };
 }
@@ -62,6 +66,52 @@ test('complete evidence flow validates current RC before and after artifact/live
   assert.equal(result.staging.receiptSha256, sha256(jsonBytes(f.receipt)));
   assert.equal(options.calls[0], '/git/ref/heads/rc');
   assert.equal(options.calls.at(-1), '/git/ref/heads/rc');
+});
+
+test('rehashing a replayed SQL archive cannot bypass staging attempt and operations-image binding', async () => {
+  for (const field of ['workflow', 'image']) {
+    const f = evidenceFixture();
+    for (const proof of [f.database.history, f.database.runtime]) {
+      if (field === 'workflow') proof.workflow.runId = '101';
+      else proof.image = proof.image.replace('f'.repeat(64), 'e'.repeat(64));
+    }
+    f.receipt.schemaVerification.evidenceSha256 = digest(f.database);
+    f.receipt.databaseEvidence = {
+      filename: 'backend-staging-database.json',
+      size: jsonBytes(f.database).length,
+      sha256: sha256(jsonBytes(f.database)),
+    };
+    f.archive = zip(bundleFiles(f.receipt, f.descriptor, f.database));
+    f.artifact.digest = 'sha256:' + sha256(f.archive);
+    f.artifact.size_in_bytes = f.archive.length;
+    await assert.rejects(verifyStagingEvidence(context(f)), {
+      code:
+        field === 'workflow'
+          ? 'DATABASE_WORKFLOW_DISAGREES'
+          : 'DATABASE_ARTIFACT_DISAGREES',
+    });
+  }
+});
+
+test('promotion rechecks SQL freshness at completion even when its receipt and live metadata remain fresh', async () => {
+  const f = evidenceFixture(),
+    options = context(f);
+  let at =
+    Date.parse(f.database.history.verifiedAt) +
+    policy.receiptMaxAgeSeconds * 1000 -
+    1000;
+  options.now = () => at;
+  options.readLive = async () => ({
+    ...f.live,
+    observedAt: new Date(at).toISOString(),
+  });
+  options.readOwner = async () => {
+    at += 2000;
+    return f.pr;
+  };
+  await assert.rejects(verifyStagingEvidence(options), {
+    code: 'EVIDENCE_EXPIRED_OR_FUTURE',
+  });
 });
 test('evidence must remain fresh at completion after slow remote reads', async () => {
   for (const type of [
@@ -140,10 +190,7 @@ test('unavailable evidence, ambiguity, source movement and absent owner validati
 });
 test('candidate expectations use immutable Git blobs and share the build manifest docs exclusion', async (t) => {
   const f = await fixture(t, '0.1.0');
-  await f.write(
-    'prisma/migrations/20261027_fixture/migration.sql',
-    'SELECT 1;\n',
-  );
+  await seedDatabase(f);
   const before = f.commit();
   const first = await expectedCandidateInputs(f.root, before, configuration);
   await f.write('docs/guide.md', '# Documentation\n');
@@ -151,10 +198,7 @@ test('candidate expectations use immutable Git blobs and share the build manifes
   const second = await expectedCandidateInputs(f.root, docs, configuration);
   assert.equal(first.build.runtimeInputDigest, second.build.runtimeInputDigest);
   assert.notEqual(first.build.sourceSha, second.build.sourceSha);
-  await f.write(
-    'prisma/migrations/20261027_fixture/migration.sql',
-    'SELECT 2;\n',
-  );
+  await seedDatabase(f, 'SELECT 2;\n');
   const changed = f.commit();
   const next = await expectedCandidateInputs(f.root, changed, configuration);
   assert.notEqual(
@@ -217,10 +261,7 @@ test('manual evidence may retain its actual tested SHA through more than one ver
 });
 test('verified docs reuse walks actual Git ancestry and authenticates historical archives before carrying manual evidence', async (t) => {
   const repo = await fixture(t, '0.1.0');
-  await repo.write(
-    'prisma/migrations/20261027_fixture/migration.sql',
-    'SELECT 1;\n',
-  );
+  await seedDatabase(repo);
   const firstSha = repo.commit();
   await repo.write('docs/one.md', '# First guide\n');
   const middleSha = repo.commit();
@@ -261,8 +302,6 @@ test('verified docs reuse walks actual Git ancestry and authenticates historical
       verifiedAt: '2026-10-' + day + 'T08:30:00Z',
       supersedes: previous?.reference ?? null,
     });
-    receipt.schemaVerification.migrationDigest = firstInputs.migrationDigest;
-    receipt.schemaVerification.verifiedAt = '2026-10-' + day + 'T08:20:00Z';
     receipt.counterparts.forEach((c) => {
       c.contractSha256 = receipt.contractSha256;
       c.verifiedBackendContract.sha256 = receipt.contractSha256;
@@ -272,7 +311,13 @@ test('verified docs reuse walks actual Git ancestry and authenticates historical
       size: jsonBytes(f.descriptor).length,
       sha256: sha256(jsonBytes(f.descriptor)),
     };
-    const archive = zip(bundleFiles(receipt, f.descriptor));
+    const database = attachDatabaseEvidence(
+      receipt,
+      f.descriptor,
+      firstInputs.build,
+      firstInputs.sql,
+    );
+    const archive = zip(bundleFiles(receipt, f.descriptor, database));
     const run = {
       ...f.run,
       id: Number(runId),

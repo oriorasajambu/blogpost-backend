@@ -14,6 +14,151 @@ import {
 } from '../../scripts/ci/evidence/owner-validation.mjs';
 import { evidenceArtifactName } from '../../scripts/ci/evidence/github-proof.mjs';
 import { crc32, deflateRawSync } from 'node:zlib';
+import { combineDatabaseEvidence } from '../../scripts/deploy/database-reader.mjs';
+
+export function syntheticSql(bytes = 'SELECT 1;\n') {
+  const migrations = [
+    { id: '202610270001_fixture', sha256: sha256(Buffer.from(bytes)) },
+  ];
+  return {
+    migrations,
+    migrationDigest: digest(migrations),
+    schemaDigest: digest({ relations: [] }),
+    permissionDigest: '2'.repeat(64),
+  };
+}
+export async function seedDatabase(repo, bytes = 'SELECT 1;\n') {
+  const sql = syntheticSql(bytes);
+  await repo.write(
+    'prisma/migrations/202610270001_fixture/migration.sql',
+    bytes,
+  );
+  await repo.write('config/database/schema-baseline.json', {
+    schemaVersion: 1,
+    postgresMajor: 17,
+    definitions: { relations: [] },
+    migrationDigest: sql.migrationDigest,
+    schemaDigest: sql.schemaDigest,
+    permissionDigest: sql.permissionDigest,
+  });
+}
+// Synthetic archive observations only; this helper is never a trusted writer.
+export function attachDatabaseEvidence(receipt, descriptor, build, sql) {
+  const issued = Date.parse(receipt.verifiedAt);
+  const time = (seconds) => new Date(issued + seconds * 1000).toISOString();
+  const proofs = ['HISTORY', 'RUNTIME'].map((kind, i) => {
+    const purpose = i ? 'verify' : 'inspect';
+    const jobName =
+      'projects/' +
+      build.configuration.projectId +
+      '/locations/asia-southeast2/jobs/blogpost-' +
+      purpose;
+    const name =
+      jobName + '/executions/blogpost-' + purpose + '-' + receipt.workflowRunId;
+    const verifiedAt = time(i ? -542 : -662);
+    const evidence = i
+      ? {
+          schemaVersion: 1,
+          migrationDigest: sql.migrationDigest,
+          schemaDigest: sql.schemaDigest,
+          permissionDigest: sql.permissionDigest,
+          deniedProbes: 4,
+          connectionBudget: {
+            maximum: 100,
+            reserved: 3,
+            database_limit: -1,
+            database_connections: 3,
+            total_connections: 8,
+          },
+        }
+      : {
+          migrationDigest: sql.migrationDigest,
+          historyDigest: '3'.repeat(64),
+          applied: sql.migrations.map((m) => m.id),
+          pending: [],
+          resolvedAttempts: 0,
+          migrations: sql.migrations,
+        };
+    const record = {
+      schemaVersion: 1,
+      event: 'database_verification',
+      application: 'backend',
+      environment: 'staging',
+      kind,
+      builtFromSha: receipt.builtFromSha,
+      runtimeInputDigest: build.runtimeInputDigest,
+      sourceInputDigest: build.sourceInputDigest,
+      configurationDigest: digest(build.configuration),
+      applicationVersion: build.applicationVersion,
+      contractVersion: build.contractVersion,
+      contractSha256: build.contractSha256,
+      execution: name,
+      verifiedAt,
+      result: 'PASSED',
+      evidence,
+    };
+    const identity = {
+      uid: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      generation: '1',
+      etag: 'synthetic-etag',
+    };
+    const times = {
+      startTime: time(i ? -600 : -720),
+      completionTime: time(i ? -541 : -661),
+    };
+    return {
+      schemaVersion: 1,
+      status: 'VERIFIED',
+      scope: 'database-execution',
+      evidenceSource: 'live-api',
+      observedAt: time(-10),
+      environment: 'staging',
+      purpose,
+      kind,
+      builtFromSha: receipt.builtFromSha,
+      applicationVersion: build.applicationVersion,
+      contractVersion: build.contractVersion,
+      contractSha256: build.contractSha256,
+      runtimeInputDigest: build.runtimeInputDigest,
+      sourceInputDigest: build.sourceInputDigest,
+      configurationDigest: digest(build.configuration),
+      image: descriptor.operationsImage,
+      deploymentBindingDigest: (i ? '5' : '6').repeat(64),
+      workflow: {
+        repositoryId: '42',
+        runId: receipt.workflowRunId,
+        runAttempt: receipt.workflowRunAttempt,
+        workflow: 'staging',
+      },
+      recordSha256: digest(record),
+      verifiedAt,
+      evidence,
+      observation: {
+        job: { resourceName: jobName, ...identity },
+        execution: { name, ...identity, ...times },
+        task: { name: name + '/tasks/task-0', ...identity, ...times },
+        log: { insertId: 'synthetic-' + purpose, timestamp: verifiedAt },
+      },
+      limitations: [
+        'Requires separately authenticated image/source provenance and provider IAM/resource/backup/rollout verification.',
+      ],
+    };
+  });
+  const combined = combineDatabaseEvidence({
+    history: proofs[0],
+    runtime: proofs[1],
+    expectedSql: sql,
+    now: issued,
+    requireLive: false,
+  });
+  receipt.schemaVerification = combined.schemaVerification;
+  receipt.databaseEvidence = {
+    filename: 'backend-staging-database.json',
+    size: jsonBytes(combined.evidence).length,
+    sha256: sha256(jsonBytes(combined.evidence)),
+  };
+  return combined.evidence;
+}
 
 export const policy = JSON.parse(
   await readFile('config/ci/evidence-policy.json', 'utf8'),
@@ -28,6 +173,7 @@ export const config = {
   ownerId: '7',
 };
 export function evidenceFixture() {
+  const sql = syntheticSql();
   const build = {
     schemaVersion: 1,
     application: 'backend',
@@ -57,7 +203,7 @@ export function evidenceFixture() {
       'f'.repeat(64),
   );
   const receipt = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     application: 'backend',
     environment: 'staging',
     candidateSha: build.sourceSha,
@@ -81,16 +227,8 @@ export function evidenceFixture() {
       size: jsonBytes(descriptor).length,
       sha256: sha256(jsonBytes(descriptor)),
     },
-    schemaVerification: {
-      execution:
-        'projects/' +
-        configuration.projectId +
-        '/locations/asia-southeast2/jobs/blogpost-verify/executions/blogpost-verify-abc',
-      verifiedAt: '2026-10-27T08:20:00.000Z',
-      migrationDigest: '1'.repeat(64),
-      permissionDigest: '2'.repeat(64),
-      evidenceSha256: '3'.repeat(64),
-    },
+    schemaVerification: null,
+    databaseEvidence: null,
     counterparts: ['web', 'android'].map((application) => ({
       application,
       applicationVersion: '0.1.0',
@@ -159,7 +297,8 @@ export function evidenceFixture() {
       conclusion: 'success',
     })),
   };
-  const archive = zip(bundleFiles(receipt, descriptor));
+  const database = attachDatabaseEvidence(receipt, descriptor, build, sql);
+  const archive = zip(bundleFiles(receipt, descriptor, database));
   const artifact = {
     id: 200,
     name: evidenceArtifactName(build.sourceSha, '100', 1),
@@ -243,6 +382,8 @@ export function evidenceFixture() {
   };
   return {
     build,
+    sql,
+    database,
     descriptor,
     receipt,
     run,

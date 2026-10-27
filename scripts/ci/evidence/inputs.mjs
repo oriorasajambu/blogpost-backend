@@ -6,6 +6,7 @@ import {
 import { committedFiles, inputManifest } from '../../build/inputs.mjs';
 import { fail, metadata, sha } from '../policy.mjs';
 import { sha256 } from './model.mjs';
+import { expectedDatabaseSql } from './database-inputs.mjs';
 
 // Expectations are computed from immutable Git blobs; this does not build or attest an image.
 export async function expectedCandidateInputs(root, candidateSha, profile) {
@@ -53,5 +54,6 @@ export async function expectedCandidateInputs(root, candidateSha, profile) {
     }),
     migrationDigest: digest(migrations),
     migrations,
+    sql: expectedDatabaseSql(root, candidateSha),
   };
 }

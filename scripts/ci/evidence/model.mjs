@@ -5,6 +5,7 @@ import {
   validateProvenance,
 } from '../../../src/platform/config/build-model.ts';
 import { fail, sha, stableVersion } from '../policy.mjs';
+import { sqlExpectations } from '../../deploy/database-proof.mjs';
 
 export const sha256 = (bytes) =>
   createHash('sha256').update(bytes).digest('hex');
@@ -196,12 +197,13 @@ export function validateReceipt(value) {
     'verifiedAt',
     'result',
     'artifact',
+    'databaseEvidence',
     'schemaVerification',
     'counterparts',
     'supersedes',
   ]);
   if (
-    value.schemaVersion !== 1 ||
+    value.schemaVersion !== 2 ||
     value.application !== 'backend' ||
     value.environment !== 'staging' ||
     value.result !== 'PASSED' ||
@@ -238,21 +240,37 @@ export function validateReceipt(value) {
   if (instant(value.deployedAt) > instant(value.verifiedAt))
     fail('EVIDENCE_TIME_DISAGREES');
   fileReference(value.artifact, 'backend-staging-artifact.json');
+  fileReference(value.databaseEvidence, 'backend-staging-database.json');
   exact(value.schemaVerification, [
     'execution',
+    'historyExecution',
     'verifiedAt',
     'migrationDigest',
+    'historyDigest',
+    'schemaDigest',
     'permissionDigest',
     'evidenceSha256',
   ]);
-  text(
-    value.schemaVerification.execution,
-    /^projects\/[a-z][a-z0-9-]+\/locations\/asia-southeast2\/jobs\/[a-z][a-z0-9-]+\/executions\/[a-z][a-z0-9-]+$/,
-    512,
-  );
+  for (const key of ['execution', 'historyExecution'])
+    text(
+      value.schemaVerification[key],
+      /^projects\/[a-z][a-z0-9-]+\/locations\/asia-southeast2\/jobs\/[a-z][a-z0-9-]+\/executions\/[a-z][a-z0-9-]+$/,
+      512,
+    );
+  if (
+    value.schemaVerification.execution ===
+    value.schemaVerification.historyExecution
+  )
+    fail('DISTINCT_DATABASE_EXECUTIONS_REQUIRED');
   if (instant(value.schemaVerification.verifiedAt) > instant(value.verifiedAt))
     fail('EVIDENCE_TIME_DISAGREES');
-  for (const key of ['migrationDigest', 'permissionDigest', 'evidenceSha256'])
+  for (const key of [
+    'migrationDigest',
+    'historyDigest',
+    'schemaDigest',
+    'permissionDigest',
+    'evidenceSha256',
+  ])
     hash(value.schemaVerification[key]);
   if (!Array.isArray(value.counterparts) || value.counterparts.length !== 2)
     fail('COUNTERPART_EVIDENCE_REQUIRED');
@@ -348,12 +366,13 @@ export function assertReceiptMatches(
   receipt,
   descriptor,
   build,
-  migrationDigest,
+  expectedSql,
   now,
   policy,
   { historical = false } = {},
 ) {
   receipt = validateReceipt(receipt);
+  expectedSql = sqlExpectations(expectedSql);
   policy = evidencePolicy(policy);
   build = validateProvenance(build);
   if (build.environment !== 'staging' || build.kind !== 'ARTIFACT')
@@ -378,9 +397,14 @@ export function assertReceiptMatches(
     receipt.configurationDigest !== digest(build.configuration) ||
     receipt.apiOrigin !== build.configuration.apiOrigin ||
     receipt.candidateSha !== build.sourceSha ||
-    receipt.schemaVerification.migrationDigest !== hash(migrationDigest) ||
-    !receipt.schemaVerification.execution.startsWith(
-      'projects/' + build.configuration.projectId + '/',
+    ['migrationDigest', 'schemaDigest', 'permissionDigest'].some(
+      (key) => receipt.schemaVerification[key] !== expectedSql[key],
+    ) ||
+    ['execution', 'historyExecution'].some(
+      (key) =>
+        !receipt.schemaVerification[key].startsWith(
+          'projects/' + build.configuration.projectId + '/',
+        ),
     )
   )
     fail('CANDIDATE_CONFIGURATION_DISAGREES');
@@ -434,7 +458,12 @@ export function assertEquivalentReuse(current, previous) {
       fail('REUSE_INPUTS_OR_ARTIFACT_DISAGREE');
   if (instant(current.verifiedAt) < instant(previous.verifiedAt))
     fail('REUSE_PRECEDES_PRIOR_EVIDENCE');
-  for (const key of ['migrationDigest', 'permissionDigest'])
+  for (const key of [
+    'migrationDigest',
+    'historyDigest',
+    'schemaDigest',
+    'permissionDigest',
+  ])
     if (current.schemaVerification[key] !== previous.schemaVerification[key])
       fail('REUSE_SCHEMA_OR_PERMISSIONS_DISAGREE');
 }

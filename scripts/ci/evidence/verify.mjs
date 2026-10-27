@@ -16,6 +16,7 @@ import {
   receiptReference,
 } from './model.mjs';
 import { assertOwnerValidation } from './owner-validation.mjs';
+import { assertArchivedDatabase } from './database.mjs';
 
 export async function verifyStagingEvidence({
   root,
@@ -107,7 +108,7 @@ export async function verifyStagingEvidence({
       String(artifact.digest).slice(7),
       policy,
     );
-    const { receipt, descriptor } = decoded;
+    const { receipt, descriptor, database } = decoded;
     const jobs = await read(
       '/actions/runs/' +
         runId +
@@ -136,12 +137,32 @@ export async function verifyStagingEvidence({
       receipt,
       descriptor,
       expected.build,
-      expected.migrationDigest,
+      expected.sql,
       clock(),
       policy,
       { historical: depth > 0 },
     );
-    const node = { receipt, descriptor, reference, expected, previous: null };
+    assertArchivedDatabase({
+      receipt,
+      descriptor,
+      database,
+      build: expected.build,
+      expectedSql: expected.sql,
+      run,
+      config,
+      policy,
+      now: clock(),
+      historical: depth > 0,
+    });
+    const node = {
+      receipt,
+      descriptor,
+      database,
+      run,
+      reference,
+      expected,
+      previous: null,
+    };
     if (receipt.mode === 'EQUIVALENT_REUSE') {
       node.previous = await load(
         receipt.supersedes.runId,
@@ -188,11 +209,22 @@ export async function verifyStagingEvidence({
     current.receipt,
     current.descriptor,
     current.expected.build,
-    current.expected.migrationDigest,
+    current.expected.sql,
     completedAt,
     policy,
   );
   assertLiveMetadata(current.receipt, observation, completedAt, policy);
+  assertArchivedDatabase({
+    receipt: current.receipt,
+    descriptor: current.descriptor,
+    database: current.database,
+    build: current.expected.build,
+    expectedSql: current.expected.sql,
+    run: current.run,
+    config,
+    policy,
+    now: completedAt,
+  });
   const manual = assertOwnerValidation(
     owner,
     config,
