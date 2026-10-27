@@ -6,6 +6,7 @@ import {
   inspectCloudBuild,
   verifyCloudBuildContext,
 } from './context.mjs';
+import { verifyRecoveryRecipe } from './recipe.mjs';
 
 const liveContexts = new WeakMap();
 const metadata =
@@ -157,13 +158,16 @@ export async function verifyLiveCloudBuildContext({
     evidenceSource: 'live-api',
     observedAt: new Date(clock()).toISOString(),
   };
-  liveContexts.set(proof, digest(proof));
+  liveContexts.set(proof, {
+    digest: digest(proof),
+    build: structuredClone(finalBuild),
+  });
   return proof;
 }
 export function requireLiveCloudBuildContext(proof, now = Date.now()) {
   if (
     !proof ||
-    liveContexts.get(proof) !== digest(proof) ||
+    liveContexts.get(proof)?.digest !== digest(proof) ||
     proof.evidenceSource !== 'live-api'
   )
     fail('AUTHENTICATED_CLOUD_BUILD_CONTEXT_REQUIRED');
@@ -171,4 +175,20 @@ export function requireLiveCloudBuildContext(proof, now = Date.now()) {
   if (at > now + 300000 || at < now - 60000)
     fail('CLOUD_BUILD_CONTEXT_EXPIRED');
   return proof;
+}
+export function requireRecoveryRecipe(
+  proof,
+  request,
+  projects,
+  now = Date.now(),
+) {
+  requireLiveCloudBuildContext(proof, now);
+  const build = liveContexts.get(proof).build;
+  // Rebind routing to this exact live observation before inspecting its recipe.
+  if (
+    inspectCloudBuild(request, projects, build, now).buildName !==
+    proof.observation.build.name
+  )
+    fail('CLOUD_BUILD_RECIPE_CONTEXT_DISAGREES');
+  return verifyRecoveryRecipe(build, request, projects);
 }

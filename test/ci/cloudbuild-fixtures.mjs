@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { config } from './fixtures.mjs';
+import { recoveryRecipe } from '../../scripts/cloudbuild/recipe.mjs';
 
 export const observed = Date.parse('2026-10-28T00:00:00Z');
 export const syntheticToken = 'synthetic-cloud-build-test-token';
@@ -134,4 +135,12 @@ export function provider(fixture, transform = (response) => response) {
     return transform(response, { url, options, count, fixture });
   };
   return { calls, transport };
+}
+export function recipeFixture(environment = 'staging', sha) {
+  const f = cloudFixture(environment, sha);
+  const recipe = recoveryRecipe(f.request);
+  Object.assign(f.build, recipe, {
+    substitutions: { ...f.build.substitutions, _APP_ENV: environment },
+  });
+  return f;
 }

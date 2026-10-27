@@ -9,9 +9,14 @@ import { prepareBuild } from '../build/prepare.mjs';
 // No saved stack env file, published port or persistent volume is used.
 const root = resolve(import.meta.dirname, '../..');
 const args = process.argv.slice(2);
-if (args.some((arg) => !['--build', '--compiled-operations'].includes(arg)))
+if (
+  args.some(
+    (arg) =>
+      !['--build', '--compiled-operations', '--copy-reports'].includes(arg),
+  )
+)
   throw new Error(
-    'Usage: npm run test:identity [-- --build] [--compiled-operations]',
+    'Usage: npm run test:identity [-- --build] [--compiled-operations] [--copy-reports]',
   );
 const hash = createHash('sha256')
   .update(root.toLowerCase())
@@ -101,10 +106,12 @@ const appEnv = {
 const envArgs = (env) =>
   Object.entries(env).flatMap(([key, value]) => ['--env', `${key}=${value}`]);
 const mounts = [];
-mounts.push(
-  '--mount',
-  `type=bind,source=${reportDirectory},target=/app/.local/conformance`,
-);
+const copyReports = args.includes('--copy-reports');
+if (!copyReports)
+  mounts.push(
+    '--mount',
+    `type=bind,source=${reportDirectory},target=/app/.local/conformance`,
+  );
 const logs = [
   '--log-driver',
   'local',
@@ -113,10 +120,10 @@ const logs = [
   '--log-opt',
   'max-file=2',
 ];
-const run = (command, extraEnv = {}, artifact = backendArtifact) =>
-  docker([
-    'run',
-    '--rm',
+const run = (command, extraEnv = {}, artifact = backendArtifact) => {
+  const arguments_ = [
+    copyReports ? 'create' : 'run',
+    ...(copyReports ? [] : ['--rm']),
     '--pull',
     'never',
     '--name',
@@ -129,8 +136,65 @@ const run = (command, extraEnv = {}, artifact = backendArtifact) =>
     ...envArgs({ ...appEnv, ...extraEnv }),
     ...mounts,
     artifact,
-    ...command,
-  ]);
+    ...(copyReports && extraEnv.BLOGPOST_IDENTITY_RUN_ID
+      ? [
+          'node',
+          '--input-type=module',
+          '-e',
+          "import {mkdirSync} from 'node:fs'; import {spawnSync} from 'node:child_process'; mkdirSync('/app/.local/conformance',{recursive:true}); const result=spawnSync(process.argv[1],process.argv.slice(2),{stdio:'inherit'}); process.exit(result.status ?? 1);",
+          ...command,
+        ]
+      : command),
+  ];
+  if (!copyReports) return docker(arguments_);
+  // Daemon-side bind paths need not match the builder's workspace mount.
+  // Copy only this invocation's small JSON observations out of its stopped container.
+  try {
+    docker(arguments_, { capture: true });
+    docker(['start', '--attach', testContainer]);
+    if (
+      docker(['inspect', '--format', '{{.State.ExitCode}}', testContainer], {
+        capture: true,
+      }) !== '0'
+    )
+      throw new Error('Disposable test container failed');
+    if (extraEnv.BLOGPOST_IDENTITY_RUN_ID) {
+      const suite = command.find((part) =>
+        /^test\/(?:operations|identity)\/[a-z-]+\.test\.ts$/.test(part),
+      );
+      const name = suite?.split('/').at(-1).replace('.test.ts', '');
+      if (
+        ![
+          'database',
+          'identity',
+          'administration',
+          'editorial',
+          'public-taxonomy',
+          'media',
+          'maintenance',
+        ].includes(name)
+      )
+        throw new Error('Unrecognized disposable evidence suite');
+      const filename = name + '-' + suffix + '.json';
+      docker(
+        [
+          'cp',
+          testContainer + ':/app/.local/conformance/' + filename,
+          resolve(reportDirectory, filename),
+        ],
+        { capture: true },
+      );
+    }
+  } finally {
+    if (
+      docker(['container', 'inspect', testContainer], {
+        capture: true,
+        optional: true,
+      }) !== null
+    )
+      docker(['rm', '--force', testContainer], { capture: true });
+  }
+};
 let networkCreated = false;
 try {
   const build = await prepareBuild(root);

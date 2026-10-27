@@ -19,11 +19,16 @@ await mkdir(resolve(localRoot, 'conformance'), { recursive: true });
 const tags = ['blogpost-api:check', 'blogpost-operations:check'];
 const created = new Set();
 const results = [];
-function docker(args, capture = false, optional = false) {
+function docker(args, capture = false, optional = false, input) {
   const result = spawnSync('docker', args, {
     cwd: root,
     encoding: 'utf8',
-    stdio: capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
+    stdio: capture
+      ? ['ignore', 'pipe', 'pipe']
+      : input === undefined
+        ? 'inherit'
+        : ['pipe', 'inherit', 'inherit'],
+    input,
     windowsHide: true,
   });
   if (!optional && (result.error || result.status !== 0))
@@ -125,31 +130,34 @@ try {
         ['image', 'inspect', '--format', '{{.Id}}', tag],
         true,
       );
-      docker([
-        'run',
-        '--rm',
-        '--pull',
-        'never',
-        '--network',
-        'none',
-        '--mount',
-        'type=bind,source=' +
-          resolve(root, 'test/build/image-smoke.mjs') +
-          ',target=/app/.local/build-image-smoke.mjs,readonly',
-        imageId,
-        'node',
-        '/app/.local/build-image-smoke.mjs',
-        ...(target === 'operations' ? ['--operations'] : []),
-        '--expected',
-        JSON.stringify({
-          environment,
-          sourceSha: build.provenance.sourceSha,
-          runtimeInputDigest: build.provenance.runtimeInputDigest,
-          sourceInputDigest: build.provenance.sourceInputDigest,
-          contractSha256: build.provenance.contractSha256,
-          configurationDigest: digest(build.provenance.configuration),
-        }),
-      ]);
+      docker(
+        [
+          'run',
+          '--rm',
+          '--pull',
+          'never',
+          '--interactive',
+          '--network',
+          'none',
+          imageId,
+          'node',
+          '--input-type=module',
+          '-',
+          ...(target === 'operations' ? ['--operations'] : []),
+          '--expected',
+          JSON.stringify({
+            environment,
+            sourceSha: build.provenance.sourceSha,
+            runtimeInputDigest: build.provenance.runtimeInputDigest,
+            sourceInputDigest: build.provenance.sourceInputDigest,
+            contractSha256: build.provenance.contractSha256,
+            configurationDigest: digest(build.provenance.configuration),
+          }),
+        ],
+        false,
+        false,
+        await readFile(resolve(root, 'test/build/image-smoke.mjs')),
+      );
       const { configuration, ...provenance } = build.provenance;
       results.push({
         environment,

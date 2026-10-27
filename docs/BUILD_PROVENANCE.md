@@ -22,6 +22,8 @@ npm run build:image -- --environment staging --profile .local/profiles/staging.j
 npm run build:image -- --environment staging --profile .local/profiles/staging.json --target operations --tag blogpost-operations:staging-check
 ```
 
+The [manual Cloud Build recovery recipe](CLOUDBUILD_RECOVERY.md) instead requires the actual nonsecret profile committed at `config/environments/staging.json` or `production.json`, so its reviewed source and both image targets bind the same exact inputs. Those files have not been supplied. Private local profiles are not copied into cloud source. Its disposable SQL runner uses Docker API report copying and optimized smoke scripts use stdin, avoiding daemon-side assumptions about workspace bind paths. No actual Cloud Build run or provider provenance is established by local checks.
+
 Both optimized environments require `NODE_ENV=production`. `APP_ENV` must match the baked environment. API startup checks `GCP_PROJECT_ID`, `IDENTITY_PROJECT_ID`, `API_ORIGIN`, `WEB_ORIGIN`, `IDENTITY_TOKEN_AUDIENCE`, `IDENTITY_TOKEN_ISSUER`, `IDENTITY_SESSION_ISSUER`, `INSTANCE_CONNECTION_NAME`, `SQL_HOST`, `SQL_DATABASE`, `MEDIA_ADAPTER`, `MEDIA_BUCKET`, `MEDIA_BUCKET_PROJECT_ID` and `RUNTIME_SERVICE_ACCOUNT` against the baked pairing. It rejects emulator/mock inputs, local credential files, database-URL overrides and unapproved SQL port/schema values.
 
 Secret values arrive only at runtime. Required declaration metadata depends on the command:

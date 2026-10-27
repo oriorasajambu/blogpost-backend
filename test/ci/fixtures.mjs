@@ -91,7 +91,7 @@ export function pushEvent(source, before, branch = 'chore/ci-foundation') {
     event: { repository, before, after: source, ref, deleted: false },
   };
 }
-export async function merged(t, target = 'rc') {
+export async function merged(t, target = 'rc', populate) {
   const f = await fixture(t);
   const headRef = target === 'main' ? 'rc' : 'chore/ci-foundation';
   f.run([
@@ -101,6 +101,7 @@ export async function merged(t, target = 'rc') {
   ]);
   await f.release(target === 'main' ? '0.1.0' : '0.0.0', target === 'main');
   await f.write('src/main.ts', 'export const value = 2;\n');
+  await populate?.(f);
   const head = f.commit();
   f.run(['checkout', target]);
   f.run(['merge', '--no-ff', headRef, '-m', 'Synthetic reviewed merge']);

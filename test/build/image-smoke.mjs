@@ -1,15 +1,15 @@
-// Mounted read-only at /app/.local/build-image-smoke.mjs in an optimized image.
+// Mounted read-only in a network-disabled optimized container; only disposable credentials are used.
 import assert from 'node:assert/strict';
 import { access } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { spawn, execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { once } from 'node:events';
-import { readProvenance } from '../dist/platform/config/provenance.js';
-import { readConfig } from '../dist/platform/config/config.js';
-import { digest } from '../dist/platform/config/build-model.js';
-import { migrationManifest } from '../dist/ops/database-model.js';
-import { expectedSchema } from '../dist/ops/database-verification.js';
+import { readProvenance } from '/app/dist/platform/config/provenance.js';
+import { readConfig } from '/app/dist/platform/config/config.js';
+import { digest } from '/app/dist/platform/config/build-model.js';
+import { migrationManifest } from '/app/dist/ops/database-model.js';
+import { expectedSchema } from '/app/dist/ops/database-verification.js';
 
 assert.equal(process.getuid(), 1000);
 await assert.rejects(access('/app/.build/provenance.json', constants.W_OK));
@@ -54,7 +54,6 @@ assert.equal(
   'refs/heads/' + (build.environment === 'staging' ? 'rc' : 'main'),
 );
 const profile = build.configuration;
-assert.ok(profile.projectId.startsWith('example-'));
 const env = {
   NODE_ENV: 'production',
   APP_ENV: build.environment,
@@ -183,7 +182,7 @@ try {
   );
   console.log(
     JSON.stringify({
-      event: 'synthetic_build_image_passed',
+      event: 'offline_build_image_passed',
       environment: build.environment,
       operations,
       sourceSha: build.sourceSha,
