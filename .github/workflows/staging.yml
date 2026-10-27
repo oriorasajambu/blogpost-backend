@@ -65,8 +65,7 @@ jobs:
           POSTGRES_PASSWORD: disposable-ci-root
         ports:
           - 5432:5432
-        options:
-          --health-cmd 'pg_isready -U postgres -d blogpost' --health-interval 3s
+        options: --health-cmd pg_isready --health-interval 3s
           --health-timeout 3s --health-retries 20
     env:
       APP_ENV: development

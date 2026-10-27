@@ -94,6 +94,10 @@ test('root and migration fixture credentials exist only in the disposable databa
       foundation.services.postgres.env.POSTGRES_PASSWORD,
       'disposable-ci-root',
     );
+    assert.match(
+      foundation.services.postgres.options,
+      /^--health-cmd pg_isready --health-interval 3s --health-timeout 3s --health-retries 20$/,
+    );
   }
   const quality = await read('.github/actions/quality/action.yml');
   for (const step of quality.runs.steps) {

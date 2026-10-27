@@ -71,9 +71,15 @@ export function installGenerator() {
     ),
   );
 }
+export function configuredGradleHome(environment = process.env) {
+  // Hosted runners may set GRADLE_HOME to an unrelated preinstalled version.
+  // Only this project's explicit override may replace the pinned distribution.
+  return environment.BLOGPOST_GRADLE_HOME
+    ? resolve(environment.BLOGPOST_GRADLE_HOME)
+    : null;
+}
 export async function gradleHome() {
-  const configured =
-    process.env.BLOGPOST_GRADLE_HOME ?? process.env.GRADLE_HOME;
+  const configured = configuredGradleHome();
   if (configured) {
     const home = resolve(configured);
     await access(
