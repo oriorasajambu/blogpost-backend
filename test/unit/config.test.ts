@@ -165,6 +165,7 @@ test('database jobs validate their baked purpose, account and credential referen
   for (const purpose of [
     'bootstrap-db',
     'migrate',
+    'inspect',
     'verify',
     'bootstrap-admin',
     'maintenance',
@@ -174,13 +175,13 @@ test('database jobs validate their baked purpose, account and credential referen
     delete env.CURSOR_SECRET_REF;
     env.RUNTIME_SERVICE_ACCOUNT =
       cloudProfile.serviceAccounts[
-        purpose === 'migrate'
+        purpose === 'migrate' || purpose === 'inspect'
           ? 'migrator'
           : purpose === 'bootstrap-db' || purpose === 'bootstrap-admin'
             ? 'bootstrap'
             : 'ops'
       ];
-    if (purpose === 'bootstrap-db' || purpose === 'migrate') {
+    if (['bootstrap-db', 'migrate', 'inspect'].includes(purpose)) {
       env.SQL_MIGRATOR_PASSWORD = 'synthetic-migrator';
       env.SQL_MIGRATOR_SECRET_REF =
         cloudProfile.secretVersions.SQL_MIGRATOR_PASSWORD;
@@ -207,7 +208,7 @@ test('database jobs validate their baked purpose, account and credential referen
         cloudProvenance,
       ),
     );
-    if (purpose === 'bootstrap-db' || purpose === 'migrate')
+    if (['bootstrap-db', 'migrate', 'inspect'].includes(purpose))
       assert.throws(() =>
         readConfig(
           {

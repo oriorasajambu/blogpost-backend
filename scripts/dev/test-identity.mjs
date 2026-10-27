@@ -323,6 +323,11 @@ try {
         { SQL_MIGRATOR_PASSWORD: 'disposable-identity-migrator' },
         operationsArtifact,
       );
+    run(
+      ['node', 'dist/ops/inspect-db.js'],
+      { SQL_MIGRATOR_PASSWORD: 'disposable-identity-migrator' },
+      operationsArtifact,
+    );
     run(['node', 'dist/ops/verify-db.js'], {}, operationsArtifact);
     run(['node', 'dist/ops/maintenance.js'], {}, operationsArtifact);
   }
@@ -346,7 +351,7 @@ try {
     database.runId !== suffix ||
     database.runtimeInputDigest !== baked.runtimeInputDigest ||
     database.contractSha256 !== baked.contractSha256 ||
-    database.operatorTests !== 10
+    database.operatorTests !== 11
   )
     throw new Error(
       'Database operator evidence is stale, incomplete or mismatched',

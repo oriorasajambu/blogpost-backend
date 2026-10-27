@@ -101,7 +101,7 @@ for (const patch of [
 ])
   assert.throws(() => readConfig({ ...env, ...patch }));
 if (operations) {
-  for (const file of ['bootstrap-db', 'migrate', 'verify-db']) {
+  for (const file of ['bootstrap-db', 'migrate', 'inspect-db', 'verify-db']) {
     await assert.rejects(
       promisify(execFile)(process.execPath, ['dist/ops/' + file + '.js'], {
         env: {

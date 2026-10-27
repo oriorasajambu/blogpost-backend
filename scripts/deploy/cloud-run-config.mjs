@@ -75,6 +75,9 @@ function projectIdentity(project, profile) {
     fail('PROJECT_MISMATCH');
   return text(project.projectNumber, /^[1-9][0-9]{0,18}$/);
 }
+export function cloudRunExpectations(provenance, target) {
+  return inputs(provenance, target);
+}
 function actualSecret(selector, profile, projectNumber) {
   object(selector, ['secret', 'version']);
   const version = text(selector.version, /^[1-9][0-9]{0,18}$/);
@@ -175,48 +178,23 @@ function environment(container, build, binding, purpose, projectNumber) {
     fail('MISSING_OPERATOR_INPUT');
   return { literals, secrets, operatorInputs };
 }
-export function verifyCloudRunConfiguration({
-  provenance,
+function taskProjection(
+  build,
   target,
-  project,
-  resource,
-}) {
-  const { build, profile, binding, kind } = inputs(provenance, target);
-  const projectNumber = projectIdentity(project, profile);
-  object(resource);
-  if (resource.apiVersion || resource.spec || resource.kind)
-    fail('V2_RESOURCE_REQUIRED');
-  const suffix =
-    '/locations/' + target.region + '/' + kind + '/' + target.resourceId;
-  if (
-    ![profile.projectId, projectNumber].some(
-      (id) => resource.name === 'projects/' + id + suffix,
-    )
-  )
-    fail('RESOURCE_MISMATCH');
-  text(
-    resource.uid,
-    /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/,
-  );
-  text(resource.generation, /^[1-9][0-9]{0,18}$/);
-  text(resource.etag, /^[\x21-\x7e]{1,256}$/);
-  if (
-    resource.observedGeneration !== resource.generation ||
-    ![undefined, false].includes(resource.reconciling) ||
-    resource.deleteTime ||
-    resource.terminalCondition?.state !== 'CONDITION_SUCCEEDED'
-  )
-    fail('RESOURCE_NOT_SETTLED');
-  let template = object(resource.template);
+  projectNumber,
+  kind,
+  template,
+  taskCounts,
+) {
+  const profile = build.configuration;
+  const binding = cloudRuntimeBinding(build, target.purpose);
   if (kind === 'jobs') {
-    if ((template.taskCount ?? 1) !== 1 || (template.parallelism ?? 1) !== 1)
+    if (taskCounts.taskCount !== 1 || taskCounts.parallelism !== 1)
       fail('JOB_PARALLELISM_MISMATCH');
-    template = object(template.template);
-    const retries = template.maxRetries;
     if (
-      !Number.isInteger(retries) ||
-      retries < 0 ||
-      retries > (target.purpose === 'maintenance' ? 1 : 0)
+      !Number.isInteger(template.maxRetries) ||
+      template.maxRetries < 0 ||
+      template.maxRetries > (target.purpose === 'maintenance' ? 1 : 0)
     )
       fail('JOB_RETRY_MISMATCH');
     if ((template.timeout ?? '600s') !== '600s') fail('TIMEOUT_MISMATCH');
@@ -241,7 +219,9 @@ export function verifyCloudRunConfiguration({
     target.purpose === 'api'
       ? 'dist/main.js'
       : 'dist/ops/' +
-        (target.purpose === 'verify' ? 'verify-db' : target.purpose) +
+        (['verify', 'inspect'].includes(target.purpose)
+          ? target.purpose + '-db'
+          : target.purpose) +
         '.js';
   if (
     target.purpose === 'api' &&
@@ -315,11 +295,83 @@ export function verifyCloudRunConfiguration({
           }
         : {
             timeout: template.timeout ?? '600s',
-            taskCount: resource.template.taskCount ?? 1,
-            parallelism: resource.template.parallelism ?? 1,
+            taskCount: taskCounts.taskCount,
+            parallelism: taskCounts.parallelism,
             maxRetries: template.maxRetries,
           },
   };
+  return projection;
+}
+export function verifyCloudRunTaskTemplate({
+  provenance,
+  target,
+  project,
+  template,
+  taskCount = 1,
+  parallelism = 1,
+}) {
+  const { build, profile, kind } = inputs(provenance, target);
+  if (kind !== 'jobs') fail('JOB_TARGET_REQUIRED');
+  const projection = taskProjection(
+    build,
+    target,
+    projectIdentity(project, profile),
+    kind,
+    object(template),
+    { taskCount, parallelism },
+  );
+  return {
+    deploymentBindingDigest: digest(projection),
+    configurationDigest: digest(profile),
+    image: target.image,
+  };
+}
+export function verifyCloudRunConfiguration({
+  provenance,
+  target,
+  project,
+  resource,
+}) {
+  const { build, profile, binding, kind } = inputs(provenance, target);
+  const projectNumber = projectIdentity(project, profile);
+  object(resource);
+  if (resource.apiVersion || resource.spec || resource.kind)
+    fail('V2_RESOURCE_REQUIRED');
+  const suffix =
+    '/locations/' + target.region + '/' + kind + '/' + target.resourceId;
+  if (
+    ![profile.projectId, projectNumber].some(
+      (id) => resource.name === 'projects/' + id + suffix,
+    )
+  )
+    fail('RESOURCE_MISMATCH');
+  text(
+    resource.uid,
+    /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/,
+  );
+  text(resource.generation, /^[1-9][0-9]{0,18}$/);
+  text(resource.etag, /^[\x21-\x7e]{1,256}$/);
+  if (
+    resource.observedGeneration !== resource.generation ||
+    ![undefined, false].includes(resource.reconciling) ||
+    resource.deleteTime ||
+    resource.terminalCondition?.state !== 'CONDITION_SUCCEEDED'
+  )
+    fail('RESOURCE_NOT_SETTLED');
+  const template = object(resource.template);
+  const projection = taskProjection(
+    build,
+    target,
+    projectNumber,
+    kind,
+    kind === 'jobs' ? object(template.template) : template,
+    kind === 'jobs'
+      ? {
+          taskCount: template.taskCount ?? 1,
+          parallelism: template.parallelism ?? 1,
+        }
+      : null,
+  );
   return {
     schemaVersion: 1,
     status: 'PASSED',

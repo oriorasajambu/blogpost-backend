@@ -30,6 +30,8 @@ await runJob(async () => {
       if (expected.schemaDigest !== observed.schemaDigest)
         databaseError('DATABASE_SCHEMA_DRIFT');
       const runtime = await runtimePermissions(client);
+      if (runtime.permissionDigest !== expected.permissionDigest)
+        databaseError('RUNTIME_PERMISSION_BASELINE_DRIFT');
       process.stdout.write(
         JSON.stringify(
           databaseReceipt(config, 'RUNTIME', {

@@ -41,13 +41,14 @@ test(
     const manifest = await migrationManifest();
     const originalEnv = { ...process.env };
     const execute = async (
-      job: 'migrate' | 'verify-db',
+      job: 'migrate' | 'inspect-db' | 'verify-db',
       success = true,
       code?: string,
     ) => {
       const env = { ...originalEnv };
       delete env.SQL_ROOT_PASSWORD;
-      if (job !== 'migrate') delete env.SQL_MIGRATOR_PASSWORD;
+      if (!['migrate', 'inspect-db'].includes(job))
+        delete env.SQL_MIGRATOR_PASSWORD;
       let result: { stdout: string; stderr: string };
       try {
         result = await promisify(execFile)(
@@ -130,6 +131,52 @@ test(
         assert.equal(
           runtime.evidence.migrationDigest,
           first.evidence.migrationDigest,
+        );
+      },
+    );
+    await t.test(
+      'read-only history inspection observes pending work without SQL or grant mutation',
+      async () => {
+        const initial = await execute('inspect-db');
+        assert.equal(initial.kind, 'HISTORY');
+        assert.deepEqual(initial.evidence.pending, []);
+        await root.query(
+          'REVOKE SELECT ON blogpost."Member" FROM blogpost_app',
+        );
+        try {
+          await execute('inspect-db');
+          assert.equal(
+            (
+              await root.query(
+                "SELECT has_table_privilege('blogpost_app','blogpost.\"Member\"','SELECT') AS allowed",
+              )
+            ).rows[0].allowed,
+            false,
+          );
+        } finally {
+          await root.query('GRANT SELECT ON blogpost."Member" TO blogpost_app');
+        }
+        const saved = (
+          await root.query(
+            'SELECT row_to_json(m) AS row FROM blogpost._prisma_migrations m ORDER BY migration_name DESC LIMIT 1',
+          )
+        ).rows[0].row;
+        await root.query(
+          'DELETE FROM blogpost._prisma_migrations WHERE id=$1',
+          [saved.id],
+        );
+        try {
+          const pending = await execute('inspect-db');
+          assert.deepEqual(pending.evidence.pending, [manifest.at(-1)!.id]);
+        } finally {
+          await root.query(
+            'INSERT INTO blogpost._prisma_migrations SELECT * FROM json_populate_record(NULL::blogpost._prisma_migrations,$1::json)',
+            [JSON.stringify(saved)],
+          );
+        }
+        assert.equal(
+          (await execute('inspect-db')).evidence.historyDigest,
+          initial.evidence.historyDigest,
         );
       },
     );
@@ -303,6 +350,7 @@ test(
             false,
           );
           await execute('verify-db', false, 'SCHEMA_OPERATION_BUSY');
+          await execute('inspect-db', false, 'SCHEMA_OPERATION_BUSY');
         } finally {
           await holder.query('SELECT pg_advisory_unlock_all()');
           holder.release(true);
@@ -430,7 +478,7 @@ test(
         runId: process.env.BLOGPOST_IDENTITY_RUN_ID,
         runtimeInputDigest: readProvenance().runtimeInputDigest,
         contractSha256: readProvenance().contractSha256,
-        operatorTests: 10,
+        operatorTests: 11,
         observedAt: new Date().toISOString(),
       }) + '\n',
     );

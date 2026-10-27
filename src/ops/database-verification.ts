@@ -138,6 +138,7 @@ export async function expectedSchema() {
     baseline.schemaVersion !== 1 ||
     baseline.postgresMajor !== 17 ||
     !/^[a-f0-9]{64}$/.test(baseline.migrationDigest ?? '') ||
+    !/^[a-f0-9]{64}$/.test(baseline.permissionDigest ?? '') ||
     baseline.schemaDigest !== digest(baseline.definitions)
   )
     databaseError('INVALID_SCHEMA_BASELINE');
@@ -145,6 +146,7 @@ export async function expectedSchema() {
     schemaVersion: 1;
     postgresMajor: 17;
     migrationDigest: string;
+    permissionDigest: string;
     schemaDigest: string;
     definitions: Record<string, unknown[]>;
   };

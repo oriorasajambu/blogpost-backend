@@ -85,7 +85,7 @@ export function readConfig(
   if (
     (env.SQL_ROOT_PASSWORD && purpose !== 'bootstrap-db') ||
     (env.SQL_MIGRATOR_PASSWORD &&
-      !['bootstrap-db', 'migrate'].includes(purpose))
+      !['bootstrap-db', 'migrate', 'inspect'].includes(purpose))
   )
     throw new Error(
       'Privileged SQL credentials must not be mounted on the API',

@@ -23,7 +23,7 @@ export function databaseExecution(
 }
 export function databaseReceipt(
   config: AppConfig,
-  kind: 'MIGRATIONS' | 'RUNTIME',
+  kind: 'MIGRATIONS' | 'HISTORY' | 'RUNTIME',
   result: Record<string, unknown>,
 ) {
   return {

@@ -25,10 +25,11 @@ await runJob(async () => {
       await schemaLock(client, true);
       locked = true;
       const snapshot = await schemaSnapshot(client);
-      await runtimePermissions(client);
+      const runtime = await runtimePermissions(client);
       const baseline = {
         ...snapshot,
         migrationDigest: digest(await migrationManifest()),
+        permissionDigest: runtime.permissionDigest,
       };
       const directory = new URL('../../config/database/', import.meta.url);
       await mkdir(directory, { recursive: true });

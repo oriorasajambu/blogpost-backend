@@ -4778,6 +4778,7 @@
     ]
   },
   "migrationDigest": "7c90cb3d3b05c26e6d7acf03dda94cf3ac6b24c6ee20f1a55508ea08df98c1e8",
+  "permissionDigest": "6848e1f4d00f6bf94a173a5f99f9abd40d5255c18067bc627160444576a8b8cd",
   "postgresMajor": 17,
   "schemaDigest": "7eeb4aefbc6f5b4e8d0bc3c75f7842c5a18e855140853240a0e1acc755874c4a",
   "schemaVersion": 1

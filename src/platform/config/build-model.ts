@@ -44,6 +44,7 @@ export const RUNTIME_PURPOSES = Object.freeze([
   'api',
   'bootstrap-db',
   'migrate',
+  'inspect',
   'verify',
   'bootstrap-admin',
   'maintenance',
@@ -63,7 +64,7 @@ export function requiredSecretNames(
   if (!RUNTIME_PURPOSES.includes(purpose)) return invalid();
   return purpose === 'bootstrap-db'
     ? ['SQL_ROOT_PASSWORD', 'SQL_MIGRATOR_PASSWORD', 'SQL_APP_PASSWORD']
-    : purpose === 'migrate'
+    : purpose === 'migrate' || purpose === 'inspect'
       ? ['SQL_MIGRATOR_PASSWORD']
       : purpose === 'api'
         ? ['SQL_APP_PASSWORD', 'CURSOR_SIGNING_KEY']
@@ -101,7 +102,7 @@ export function cloudRuntimeBinding(
       profile.serviceAccounts[
         purpose === 'api'
           ? 'api'
-          : purpose === 'migrate'
+          : purpose === 'migrate' || purpose === 'inspect'
             ? 'migrator'
             : purpose === 'bootstrap-db' || purpose === 'bootstrap-admin'
               ? 'bootstrap'
