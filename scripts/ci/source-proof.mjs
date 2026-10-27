@@ -9,6 +9,9 @@ import {
   prRoute,
   sha,
   validateRun,
+  assertSourceTree,
+  assertIntroducedHistory,
+  metadata,
 } from './policy.mjs';
 import { githubReader } from './github-api.mjs';
 
@@ -29,6 +32,41 @@ export async function proveMergedSource(root, env, event, config, read) {
         branch
   )
     fail('UNTRUSTED_DELIVERY_WORKFLOW');
+  return proveReviewedMerge(
+    root,
+    { branch, sourceSha: policy.sourceSha, baseSha: policy.baseSha },
+    config,
+    read,
+  );
+}
+
+// Shared merge policy; callers independently establish their real execution context.
+// Cloud Build must not synthesize GitHub event variables to enter the Actions guard.
+export async function proveReviewedMerge(
+  root,
+  { branch, sourceSha, baseSha },
+  config,
+  read,
+) {
+  if (
+    !['rc', 'main'].includes(branch) ||
+    typeof config.fullName !== 'string' ||
+    config.fullName.length > 200 ||
+    /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.exec(config.fullName)?.[0] !==
+      config.fullName ||
+    typeof config.repositoryId !== 'string' ||
+    /^[1-9][0-9]{0,19}$/.exec(config.repositoryId)?.[0] !==
+      config.repositoryId ||
+    typeof config.ownerId !== 'string' ||
+    /^[1-9][0-9]{0,19}$/.exec(config.ownerId)?.[0] !== config.ownerId
+  )
+    fail('INVALID_REVIEWED_SOURCE_CONTEXT');
+  const policy = { sourceSha: sha(sourceSha), baseSha: sha(baseSha) };
+  const expectedRepository = {
+    full_name: config.fullName,
+    id: config.repositoryId,
+    owner: { id: config.ownerId },
+  };
   const parents = gitText(root, [
     'show',
     '-s',
@@ -37,6 +75,9 @@ export async function proveMergedSource(root, env, event, config, read) {
   ]).split(' ');
   if (parents.length !== 2 || parents[0] !== policy.baseSha)
     fail('DELIVERY_REQUIRES_REVIEWED_SINGLE_MERGE');
+  metadata(root, policy.sourceSha);
+  assertSourceTree(root, policy.sourceSha);
+  assertIntroducedHistory(root, policy.baseSha, policy.sourceSha);
   const candidates = await read(
     '/commits/' + policy.sourceSha + '/pulls?per_page=100',
   );
@@ -59,7 +100,7 @@ export async function proveMergedSource(root, env, event, config, read) {
       !pr.merged_at
     )
       continue;
-    const route = prRoute(pr, event.repository);
+    const route = prRoute(pr, expectedRepository);
     if (pr.base.ref !== branch) continue;
     if (
       pr.draft !== false ||

@@ -1,43 +1,34 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { proveMergedSource } from '../../scripts/ci/source-proof.mjs';
+import {
+  proveMergedSource,
+  proveReviewedMerge,
+} from '../../scripts/ci/source-proof.mjs';
 import {
   currentBranchSha,
   githubReader,
 } from '../../scripts/ci/github-api.mjs';
-import { config, fixture, pushEvent, repository } from './fixtures.mjs';
+import { config, merged } from './fixtures.mjs';
 
-async function merged(t, target = 'rc') {
-  const f = await fixture(t);
-  const headRef = target === 'main' ? 'rc' : 'chore/ci-foundation';
-  f.run([
-    'checkout',
-    headRef === 'rc' ? 'rc' : '-b',
-    ...(headRef === 'rc' ? [] : [headRef]),
-  ]);
-  await f.release(target === 'main' ? '0.1.0' : '0.0.0', target === 'main');
-  await f.write('src/main.ts', 'export const value = 2;\n');
-  const head = f.commit();
-  f.run(['checkout', target]);
-  f.run(['merge', '--no-ff', headRef, '-m', 'Synthetic reviewed merge']);
-  const merge = f.run(['rev-parse', 'HEAD']);
-  const { env, event } = pushEvent(merge, f.base, target);
-  const pr = {
-    number: 9,
-    merged: true,
-    state: 'closed',
-    merged_at: '2026-10-27T00:00:00Z',
-    merge_commit_sha: merge,
-    base: { ref: target, repo: repository, sha: merge },
-    head: { ref: headRef, repo: repository, sha: head },
-    draft: false,
-    auto_merge: null,
-    merged_by: { id: 7 },
-  };
-  const read = async (path) =>
-    path.startsWith('/commits/') ? [{ number: 9 }] : pr;
-  return { ...f, merge, env, event, pr, read };
-}
+test('shared reviewed-source guard rejects malformed repository identity before Git or API reads', async () => {
+  for (const patch of [
+    { fullName: 'fixture/backend\n' },
+    { repositoryId: '42\n' },
+    { ownerId: '7\n' },
+    { ownerId: 7 },
+  ])
+    await assert.rejects(
+      proveReviewedMerge(
+        'unused-invalid-root',
+        { branch: 'rc', sourceSha: 'a'.repeat(40), baseSha: 'b'.repeat(40) },
+        { ...config, ...patch },
+        async () => {
+          throw new Error('must reject before API');
+        },
+      ),
+      { code: 'INVALID_REVIEWED_SOURCE_CONTEXT' },
+    );
+});
 for (const target of ['rc', 'main'])
   test(
     'trusted ' +

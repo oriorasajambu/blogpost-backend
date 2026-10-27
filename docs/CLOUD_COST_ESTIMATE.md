@@ -2,6 +2,8 @@
 
 Planning observation: 27 October 2026. This worksheet covers the backend **and web** resources in Jakarta for `blogpost-staging` and `blogpost-512905`. It implements the backend/variant plans' requirement to estimate both environments before provisioning. It is a usage model, not a provider quote, approved spend, bill cap or capacity proof. No resource, budget, recipient or API was changed while preparing it.
 
+Owner decision, 28 October 2026: **keep this as an estimate only**. The proposed amounts remain illustrative. Do not enable the Budget API, create/update budgets or configure alert recipients under this proposal. No such settings were changed. Paid cloud provisioning remains pending the plan's budget/setup prerequisites; local development can continue independently.
+
 Read-only Cloud SDK observations confirm billing enabled and billing currency **IDR** for both selected projects. Cloud Run, SQL Admin, Cloud Billing and Cloud Billing Budget APIs were absent from each project's enabled-service inventory. Budget listing was unavailable; that does **not** prove budgets are absent. Inspect existing project-scoped budgets before creating or changing one. Keep billing-account identifiers and recipient details in the private worksheet.
 
 ## Configuration and usage assumptions

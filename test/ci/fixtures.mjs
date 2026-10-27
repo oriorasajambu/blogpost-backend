@@ -91,6 +91,37 @@ export function pushEvent(source, before, branch = 'chore/ci-foundation') {
     event: { repository, before, after: source, ref, deleted: false },
   };
 }
+export async function merged(t, target = 'rc') {
+  const f = await fixture(t);
+  const headRef = target === 'main' ? 'rc' : 'chore/ci-foundation';
+  f.run([
+    'checkout',
+    headRef === 'rc' ? 'rc' : '-b',
+    ...(headRef === 'rc' ? [] : [headRef]),
+  ]);
+  await f.release(target === 'main' ? '0.1.0' : '0.0.0', target === 'main');
+  await f.write('src/main.ts', 'export const value = 2;\n');
+  const head = f.commit();
+  f.run(['checkout', target]);
+  f.run(['merge', '--no-ff', headRef, '-m', 'Synthetic reviewed merge']);
+  const merge = f.run(['rev-parse', 'HEAD']);
+  const { env, event } = pushEvent(merge, f.base, target);
+  const pr = {
+    number: 9,
+    merged: true,
+    state: 'closed',
+    merged_at: '2026-10-27T00:00:00Z',
+    merge_commit_sha: merge,
+    base: { ref: target, repo: repository, sha: merge },
+    head: { ref: headRef, repo: repository, sha: head },
+    draft: false,
+    auto_merge: null,
+    merged_by: { id: 7 },
+  };
+  const read = async (path) =>
+    path.startsWith('/commits/') ? [{ number: 9 }] : pr;
+  return { ...f, merge, env, event, pr, read };
+}
 export function prEvent(base, head, merge, options = {}) {
   const pull_request = {
     base: { ref: 'rc', sha: base, repo: repository },
