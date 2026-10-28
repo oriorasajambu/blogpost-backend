@@ -5,9 +5,11 @@ import { resolve } from 'node:path';
 import { config, merged } from './fixtures.mjs';
 import { recipeFixture, provider, observed } from './cloudbuild-fixtures.mjs';
 import {
+  recoveryBuilder,
   runRecovery,
   executeRecovery,
 } from '../../scripts/cloudbuild/recover.mjs';
+import { toolchain } from '../../scripts/cloudbuild/recipe.mjs';
 import { prepareProvenance } from '../../scripts/build/inputs.mjs';
 
 async function recovery(
@@ -218,6 +220,21 @@ test('recovery captures real Git source once and two-target orchestration uses i
     (call) => call.command === 'docker' && call.args[0] === 'build',
   );
   assert.equal(builds.length, 2);
+  const builder = recoveryBuilder(f.cloud.request.buildId);
+  const created = f.calls.findIndex(
+    (call) =>
+      call.command === 'docker' &&
+      JSON.stringify(call.args) === JSON.stringify(builder.create),
+  );
+  const sqlCheck = f.calls.findIndex((call) =>
+    call.args.includes('test:identity'),
+  );
+  assert.ok(created > 0 && created < sqlCheck);
+  assert.equal(f.calls.at(-1).command, 'docker');
+  assert.deepEqual(f.calls.at(-1).args, builder.remove);
+  for (const call of [...builds, f.calls[sqlCheck]])
+    assert.equal(call.options.env.BUILDX_BUILDER, builder.name);
+  for (const build of builds) assert.ok(build.args.includes('--load'));
   assert.equal(builds[0].args.at(-1), builds[1].args.at(-1));
   assert.equal(
     builds[0].args[builds[0].args.indexOf('--build-context') + 1],
@@ -280,7 +297,16 @@ test('recovery does not build publication images after a failed disposable SQL c
     const f = await recovery(t, options);
     await f.invoke('capture');
     await assert.rejects(f.invoke('check-build'));
-    assert.ok(!f.calls.some((call) => call.command === 'docker'));
+    assert.ok(
+      !f.calls.some(
+        (call) => call.command === 'docker' && call.args[0] === 'build',
+      ),
+    );
+    // The pinned builder is still removed after a failed check.
+    assert.deepEqual(
+      f.calls.at(-1).args,
+      recoveryBuilder(f.cloud.request.buildId).remove,
+    );
   }
 });
 test('recovery rechecks final Docker tag identity before allowing managed publication', async (t) => {
@@ -289,4 +315,28 @@ test('recovery rechecks final Docker tag identity before allowing managed public
   await assert.rejects(f.invoke('check-build'), {
     code: 'RECOVERY_FINAL_IMAGE_DISAGREES',
   });
+});
+
+test('recovery builder is a per-build docker-container builder on pinned BuildKit', () => {
+  const builder = recoveryBuilder('11111111-1111-4111-8111-111111111111');
+  assert.equal(
+    builder.name,
+    'blogpost-recovery-11111111-1111-4111-8111-111111111111',
+  );
+  assert.deepEqual(builder.create, [
+    'buildx',
+    'create',
+    '--name',
+    builder.name,
+    '--driver',
+    'docker-container',
+    '--driver-opt',
+    'image=' + toolchain.buildkit,
+    '--bootstrap',
+  ]);
+  assert.match(
+    toolchain.buildkit,
+    /^moby\/buildkit:v[0-9.]+@sha256:[a-f0-9]{64}$/,
+  );
+  assert.deepEqual(builder.remove, ['buildx', 'rm', '--force', builder.name]);
 });

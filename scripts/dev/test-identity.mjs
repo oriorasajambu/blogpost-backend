@@ -201,6 +201,7 @@ try {
   if (args.includes('--build')) {
     docker([
       'build',
+      '--load',
       '--platform',
       'linux/amd64',
       '--target',
@@ -211,7 +212,7 @@ try {
       'blogpost_metadata=' + build.metadataDirectory,
       build.sourceDirectory,
     ]);
-    docker(['build', '--tag', authImage, './docker/auth']);
+    docker(['build', '--load', '--tag', authImage, './docker/auth']);
     docker(['pull', postgres]);
   }
   for (const image of [backend, authImage, postgres])
@@ -234,6 +235,7 @@ try {
       throw new Error('Temporary operations image unexpectedly exists');
     docker([
       'build',
+      '--load',
       '--platform',
       'linux/amd64',
       '--target',

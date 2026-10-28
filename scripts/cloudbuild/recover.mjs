@@ -16,7 +16,7 @@ import {
   verifyLiveCloudBuildContext,
   requireRecoveryRecipe,
 } from './reader.mjs';
-import { recoveryRecipe } from './recipe.mjs';
+import { recoveryRecipe, toolchain } from './recipe.mjs';
 import { proveCloudBuildSource } from './source.mjs';
 
 export function recoveryArguments(args) {
@@ -216,6 +216,27 @@ export function recoveryChecks(environment, baseSha) {
     ].map((prefix) => ['npm', ['audit', ...prefix, '--audit-level=moderate']]),
   ];
 }
+// Cloud Build workers run Docker Engine 20.10, whose embedded BuildKit lacks
+// named build contexts. Image builds use a pinned docker-container builder and
+// load their results into that engine instead.
+export function recoveryBuilder(buildId) {
+  const name = 'blogpost-recovery-' + buildId;
+  return {
+    name,
+    create: [
+      'buildx',
+      'create',
+      '--name',
+      name,
+      '--driver',
+      'docker-container',
+      '--driver-opt',
+      'image=' + toolchain.buildkit,
+      '--bootstrap',
+    ],
+    remove: ['buildx', 'rm', '--force', name],
+  };
+}
 export async function runRecovery({
   phase,
   request,
@@ -362,183 +383,201 @@ export async function runRecovery({
     ],
     { capture: true },
   );
-  const checkEnv = {
-    ...env,
-    APP_ENV: 'development',
-    NODE_ENV: 'test',
-    IDENTITY_PROJECT_ID: 'demo-blogpost-recovery',
-    FIREBASE_AUTH_EMULATOR_HOST: '127.0.0.1:9099',
-    MEDIA_ADAPTER: 'local',
-    MEDIA_LOCAL_ROOT: '.local/media',
-    API_ORIGIN: 'http://localhost:8080',
-    WEB_ORIGIN: 'http://localhost:3000',
-    SQL_HOST: '127.0.0.1',
-    SQL_DATABASE: 'blogpost',
-    SQL_APP_PASSWORD: 'disposable-recovery-app',
-    CURSOR_SIGNING_KEY: '3'.repeat(64),
-  };
-  for (const [command, args] of recoveryChecks(
-    plan.environment,
-    sourceProof.baseSha,
-  ))
-    await run(command, args, { cwd: checks, env: checkEnv, timeout: 1200000 });
-  const sql = await json(
-    resolve(checks, '.local/conformance/backend-identity.json'),
-  );
-  const inventory = await json(
-    resolve(source, 'contracts/operation-inventory.json'),
-  );
-  const expectedOperations = inventory
-    .map((operation) => operation.operationId)
-    .sort();
-  if (
-    sql.status !== 'PASSED' ||
-    sql.complete !== true ||
-    sql.executed !== 52 ||
-    ![
-      'identitySqlSuitePassed',
-      'foundationIntegrationSuitePassed',
-      'administrationSuitePassed',
-      'editorialSuitePassed',
-      'publicTaxonomySuitePassed',
-      'mediaSuitePassed',
-      'maintenanceSuitePassed',
-      'databaseOperatorSuitePassed',
-      'compiledOperationsSuitePassed',
-    ].every((key) => sql[key] === true) ||
-    sql.databaseOperatorTests !== 11 ||
-    typeof sql.runId !== 'string' ||
-    /^[a-f0-9]{12}$/.exec(sql.runId)?.[0] !== sql.runId ||
-    !Array.isArray(sql.observedOperations) ||
-    canonical([...sql.observedOperations].sort()) !==
-      canonical(expectedOperations) ||
-    sql.candidate?.sourceSha !== identity.sourceSha ||
-    sql.candidate?.sourceInputDigest !== identity.sourceInputDigest ||
-    sql.candidate?.dirty !== false ||
-    sql.artifact?.sourceSha !== identity.sourceSha ||
-    sql.artifact?.sourceInputDigest !== identity.sourceInputDigest ||
-    sql.artifact?.dirty !== false ||
-    sql.artifact?.environment !== 'development' ||
-    sql.artifact?.runtimeInputDigest !== sql.candidate.runtimeInputDigest
-  )
-    fail('RECOVERY_SQL_ARTIFACT_DISAGREES');
-  const rehearsal = await json(
-    resolve(checks, '.local/conformance/database-recovery.json'),
-  );
-  if (
-    rehearsal.schemaVersion !== 1 ||
-    rehearsal.status !== 'PASSED' ||
-    rehearsal.scope !== 'disposable-development-recovery-rehearsal' ||
-    typeof rehearsal.runId !== 'string' ||
-    /^[a-f0-9]{12}$/.exec(rehearsal.runId)?.[0] !== rehearsal.runId ||
-    !Array.isArray(rehearsal.checks) ||
-    rehearsal.checks.length !== 15 ||
-    new Set(rehearsal.checks).size !== 15 ||
-    rehearsal.mediaObjects !== 3 ||
-    rehearsal.artifact?.sourceSha !== identity.sourceSha ||
-    rehearsal.artifact?.sourceInputDigest !== identity.sourceInputDigest ||
-    rehearsal.artifact?.runtimeInputDigest !==
-      sql.artifact.runtimeInputDigest ||
-    rehearsal.artifact?.dirty !== false ||
-    rehearsal.artifact?.environment !== 'development' ||
-    rehearsal.candidateSource?.sourceSha !== identity.sourceSha ||
-    rehearsal.candidateSource?.sourceInputDigest !==
-      identity.sourceInputDigest ||
-    rehearsal.candidateSource?.dirty !== false ||
-    rehearsal.candidateSource?.runtimeInputDigest !==
-      sql.artifact.runtimeInputDigest
-  )
-    fail('RECOVERY_DATABASE_REHEARSAL_DISAGREES');
-  const images = [];
-  for (const [index, target] of ['runtime', 'operations'].entries()) {
-    const tag = recoveryRecipe(request).images[index];
-    await run('docker', [
-      'build',
-      '--platform',
-      'linux/amd64',
-      '--target',
-      target,
-      '--tag',
-      tag,
-      '--build-context',
-      'blogpost_metadata=' + build.metadataDirectory,
-      build.sourceDirectory,
-    ]);
-    const imageId = await run(
-      'docker',
-      ['image', 'inspect', '--format', '{{.Id}}', tag],
-      { capture: true },
+  const builder = recoveryBuilder(plan.buildId);
+  await run('docker', builder.create, { capture: true });
+  env.BUILDX_BUILDER = builder.name;
+  try {
+    const checkEnv = {
+      ...env,
+      APP_ENV: 'development',
+      NODE_ENV: 'test',
+      IDENTITY_PROJECT_ID: 'demo-blogpost-recovery',
+      FIREBASE_AUTH_EMULATOR_HOST: '127.0.0.1:9099',
+      MEDIA_ADAPTER: 'local',
+      MEDIA_LOCAL_ROOT: '.local/media',
+      API_ORIGIN: 'http://localhost:8080',
+      WEB_ORIGIN: 'http://localhost:3000',
+      SQL_HOST: '127.0.0.1',
+      SQL_DATABASE: 'blogpost',
+      SQL_APP_PASSWORD: 'disposable-recovery-app',
+      CURSOR_SIGNING_KEY: '3'.repeat(64),
+    };
+    for (const [command, args] of recoveryChecks(
+      plan.environment,
+      sourceProof.baseSha,
+    ))
+      await run(command, args, {
+        cwd: checks,
+        env: checkEnv,
+        timeout: 1200000,
+      });
+    const sql = await json(
+      resolve(checks, '.local/conformance/backend-identity.json'),
     );
-    if (!/^sha256:[a-f0-9]{64}$/.test(imageId) || imageId.length !== 71)
-      fail('INVALID_RECOVERY_IMAGE_ID');
-    await run(
-      'docker',
-      [
-        'run',
-        '--rm',
-        '--pull',
-        'never',
-        '--interactive',
-        '--network',
-        'none',
-        imageId,
-        'node',
-        '--input-type=module',
-        '-',
-        ...(target === 'operations' ? ['--operations'] : []),
-        '--expected',
-        canonical({
-          environment: plan.environment,
-          sourceSha: identity.sourceSha,
-          sourceInputDigest: identity.sourceInputDigest,
-          runtimeInputDigest: identity.runtimeInputDigest,
-          contractSha256: build.provenance.contractSha256,
-          configurationDigest: identity.configurationDigest,
-        }),
-      ],
-      { input: await readFile(resolve(source, 'test/build/image-smoke.mjs')) },
+    const inventory = await json(
+      resolve(source, 'contracts/operation-inventory.json'),
     );
-    images.push({ target, tag, imageId });
-  }
-  const final = await observe();
-  await proveCloudBuildSource({
-    root: source,
-    context: final.context,
-    config,
-    read: githubReader(config, null, githubTransport),
-    now: clock,
-  });
-  const frozen = await prepareBuild(source, plan.environment, profile, {});
-  if (
-    final.context.sourceSha !== identity.sourceSha ||
-    final.context.configurationDigest !== identity.contextDigest ||
-    final.recipe.recipeDigest !== identity.recipeDigest ||
-    canonical(frozen.provenance) !== canonical(build.provenance)
-  )
-    fail('RECOVERY_FINAL_INPUTS_DISAGREE');
-  for (const image of images)
+    const expectedOperations = inventory
+      .map((operation) => operation.operationId)
+      .sort();
     if (
-      (await run(
-        'docker',
-        ['image', 'inspect', '--format', '{{.Id}}', image.tag],
-        { capture: true },
-      )) !== image.imageId
+      sql.status !== 'PASSED' ||
+      sql.complete !== true ||
+      sql.executed !== 52 ||
+      ![
+        'identitySqlSuitePassed',
+        'foundationIntegrationSuitePassed',
+        'administrationSuitePassed',
+        'editorialSuitePassed',
+        'publicTaxonomySuitePassed',
+        'mediaSuitePassed',
+        'maintenanceSuitePassed',
+        'databaseOperatorSuitePassed',
+        'compiledOperationsSuitePassed',
+      ].every((key) => sql[key] === true) ||
+      sql.databaseOperatorTests !== 11 ||
+      typeof sql.runId !== 'string' ||
+      /^[a-f0-9]{12}$/.exec(sql.runId)?.[0] !== sql.runId ||
+      !Array.isArray(sql.observedOperations) ||
+      canonical([...sql.observedOperations].sort()) !==
+        canonical(expectedOperations) ||
+      sql.candidate?.sourceSha !== identity.sourceSha ||
+      sql.candidate?.sourceInputDigest !== identity.sourceInputDigest ||
+      sql.candidate?.dirty !== false ||
+      sql.artifact?.sourceSha !== identity.sourceSha ||
+      sql.artifact?.sourceInputDigest !== identity.sourceInputDigest ||
+      sql.artifact?.dirty !== false ||
+      sql.artifact?.environment !== 'development' ||
+      sql.artifact?.runtimeInputDigest !== sql.candidate.runtimeInputDigest
     )
-      fail('RECOVERY_FINAL_IMAGE_DISAGREES');
-  const result = {
-    schemaVersion: 1,
-    status: 'CHECKS_PASSED_PUSH_PENDING',
-    ...identity,
-    images,
-    sqlRunId: sql.runId,
-    limitations: [
-      'Cloud Build must still complete its managed image push and provide results/provenance. This record is not release, deployment or actual-provider/client acceptance.',
-    ],
-  };
-  await writeFile(resolve(location, 'result.json'), canonical(result) + '\n', {
-    flag: 'wx',
-  });
-  return result;
+      fail('RECOVERY_SQL_ARTIFACT_DISAGREES');
+    const rehearsal = await json(
+      resolve(checks, '.local/conformance/database-recovery.json'),
+    );
+    if (
+      rehearsal.schemaVersion !== 1 ||
+      rehearsal.status !== 'PASSED' ||
+      rehearsal.scope !== 'disposable-development-recovery-rehearsal' ||
+      typeof rehearsal.runId !== 'string' ||
+      /^[a-f0-9]{12}$/.exec(rehearsal.runId)?.[0] !== rehearsal.runId ||
+      !Array.isArray(rehearsal.checks) ||
+      rehearsal.checks.length !== 15 ||
+      new Set(rehearsal.checks).size !== 15 ||
+      rehearsal.mediaObjects !== 3 ||
+      rehearsal.artifact?.sourceSha !== identity.sourceSha ||
+      rehearsal.artifact?.sourceInputDigest !== identity.sourceInputDigest ||
+      rehearsal.artifact?.runtimeInputDigest !==
+        sql.artifact.runtimeInputDigest ||
+      rehearsal.artifact?.dirty !== false ||
+      rehearsal.artifact?.environment !== 'development' ||
+      rehearsal.candidateSource?.sourceSha !== identity.sourceSha ||
+      rehearsal.candidateSource?.sourceInputDigest !==
+        identity.sourceInputDigest ||
+      rehearsal.candidateSource?.dirty !== false ||
+      rehearsal.candidateSource?.runtimeInputDigest !==
+        sql.artifact.runtimeInputDigest
+    )
+      fail('RECOVERY_DATABASE_REHEARSAL_DISAGREES');
+    const images = [];
+    for (const [index, target] of ['runtime', 'operations'].entries()) {
+      const tag = recoveryRecipe(request).images[index];
+      await run('docker', [
+        'build',
+        '--load',
+        '--platform',
+        'linux/amd64',
+        '--target',
+        target,
+        '--tag',
+        tag,
+        '--build-context',
+        'blogpost_metadata=' + build.metadataDirectory,
+        build.sourceDirectory,
+      ]);
+      const imageId = await run(
+        'docker',
+        ['image', 'inspect', '--format', '{{.Id}}', tag],
+        { capture: true },
+      );
+      if (!/^sha256:[a-f0-9]{64}$/.test(imageId) || imageId.length !== 71)
+        fail('INVALID_RECOVERY_IMAGE_ID');
+      await run(
+        'docker',
+        [
+          'run',
+          '--rm',
+          '--pull',
+          'never',
+          '--interactive',
+          '--network',
+          'none',
+          imageId,
+          'node',
+          '--input-type=module',
+          '-',
+          ...(target === 'operations' ? ['--operations'] : []),
+          '--expected',
+          canonical({
+            environment: plan.environment,
+            sourceSha: identity.sourceSha,
+            sourceInputDigest: identity.sourceInputDigest,
+            runtimeInputDigest: identity.runtimeInputDigest,
+            contractSha256: build.provenance.contractSha256,
+            configurationDigest: identity.configurationDigest,
+          }),
+        ],
+        {
+          input: await readFile(resolve(source, 'test/build/image-smoke.mjs')),
+        },
+      );
+      images.push({ target, tag, imageId });
+    }
+    const final = await observe();
+    await proveCloudBuildSource({
+      root: source,
+      context: final.context,
+      config,
+      read: githubReader(config, null, githubTransport),
+      now: clock,
+    });
+    const frozen = await prepareBuild(source, plan.environment, profile, {});
+    if (
+      final.context.sourceSha !== identity.sourceSha ||
+      final.context.configurationDigest !== identity.contextDigest ||
+      final.recipe.recipeDigest !== identity.recipeDigest ||
+      canonical(frozen.provenance) !== canonical(build.provenance)
+    )
+      fail('RECOVERY_FINAL_INPUTS_DISAGREE');
+    for (const image of images)
+      if (
+        (await run(
+          'docker',
+          ['image', 'inspect', '--format', '{{.Id}}', image.tag],
+          { capture: true },
+        )) !== image.imageId
+      )
+        fail('RECOVERY_FINAL_IMAGE_DISAGREES');
+    const result = {
+      schemaVersion: 1,
+      status: 'CHECKS_PASSED_PUSH_PENDING',
+      ...identity,
+      images,
+      sqlRunId: sql.runId,
+      limitations: [
+        'Cloud Build must still complete its managed image push and provide results/provenance. This record is not release, deployment or actual-provider/client acceptance.',
+      ],
+    };
+    await writeFile(
+      resolve(location, 'result.json'),
+      canonical(result) + '\n',
+      {
+        flag: 'wx',
+      },
+    );
+    return result;
+  } finally {
+    await run('docker', builder.remove, { capture: true }).catch(() => {});
+  }
 }
 if (
   process.argv[1] &&

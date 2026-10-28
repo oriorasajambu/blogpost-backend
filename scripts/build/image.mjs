@@ -31,6 +31,7 @@ try {
     'docker',
     [
       'build',
+      '--load',
       '--platform',
       'linux/amd64',
       '--target',
