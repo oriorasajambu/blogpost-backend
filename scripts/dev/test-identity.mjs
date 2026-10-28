@@ -417,7 +417,7 @@ try {
     database.runId !== suffix ||
     database.runtimeInputDigest !== baked.runtimeInputDigest ||
     database.contractSha256 !== baked.contractSha256 ||
-    database.operatorTests !== 11
+    database.operatorTests !== 12
   )
     throw new Error(
       'Database operator evidence is stale, incomplete or mismatched',

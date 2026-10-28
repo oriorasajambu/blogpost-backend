@@ -435,7 +435,7 @@ export async function runRecovery({
         'databaseOperatorSuitePassed',
         'compiledOperationsSuitePassed',
       ].every((key) => sql[key] === true) ||
-      sql.databaseOperatorTests !== 11 ||
+      sql.databaseOperatorTests !== 12 ||
       typeof sql.runId !== 'string' ||
       /^[a-f0-9]{12}$/.exec(sql.runId)?.[0] !== sql.runId ||
       !Array.isArray(sql.observedOperations) ||

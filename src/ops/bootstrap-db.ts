@@ -3,6 +3,7 @@ import pg from 'pg';
 import { readConfig } from '../platform/config/config.js';
 import { connection } from '../platform/database/connection.js';
 import { runJob } from './run.js';
+import { createOwnedSchema } from './schema-owner.js';
 
 await runJob(async () => {
   readConfig(process.env, 'bootstrap-db');
@@ -39,9 +40,7 @@ await runJob(async () => {
       )
         throw new Error('Existing role is privileged');
     }
-    await client.query(
-      'CREATE SCHEMA IF NOT EXISTS blogpost AUTHORIZATION blogpost_migrator',
-    );
+    await createOwnedSchema(client, 'blogpost', 'blogpost_migrator');
     await client.query('REVOKE ALL ON SCHEMA blogpost FROM PUBLIC');
     await client.query('REVOKE CREATE ON SCHEMA public FROM PUBLIC');
     const database = pg.escapeIdentifier(connection('root').database!);
