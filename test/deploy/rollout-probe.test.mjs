@@ -501,7 +501,7 @@ test('a supplied historical contract is selected by hash for an expected rollbac
   assert.equal(result.observedSourceSha, previous.provenance.sourceSha);
 });
 
-test('a stalled response body is canceled at the per-request deadline', async () => {
+test('a stalled response body and cancellation respect the request deadline', async () => {
   const h = probeFixture();
   let canceled = false;
   const keepAlive = setInterval(() => {}, 1000);
@@ -514,6 +514,7 @@ test('a stalled response body is canceled at the per-request deadline', async ()
           new ReadableStream({
             cancel() {
               canceled = true;
+              return new Promise(() => {});
             },
           }),
           { headers: fixture.headers },
@@ -526,6 +527,24 @@ test('a stalled response body is canceled at the per-request deadline', async ()
     assert.equal(result.rule, 'PROBE_REQUEST_TIMEOUT');
     assert.ok(Date.now() - started < 8000);
     assert.equal(canceled, true);
+  } finally {
+    clearInterval(keepAlive);
+  }
+});
+
+test('an uncooperative transport cannot bypass the probe deadline', async () => {
+  const h = probeFixture();
+  const keepAlive = setInterval(() => {}, 1000);
+  try {
+    const probe = createReadOnlyRolloutProbe({
+      readMetadataPolicy: h.readMetadataPolicy,
+      fetchImpl: () => new Promise(() => {}),
+    });
+    const start = Date.now();
+    const result = await probe(h.state.input);
+    assert.equal(result.ok, false);
+    assert.equal(result.rule, 'PROBE_REQUEST_TIMEOUT');
+    assert.ok(Date.now() - start < 8000);
   } finally {
     clearInterval(keepAlive);
   }

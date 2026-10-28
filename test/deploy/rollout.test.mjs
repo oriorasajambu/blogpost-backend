@@ -674,6 +674,71 @@ test('fixed REST adapter rejects foreign operation/revision names and unbounded 
   await assert.rejects(client.project(), { code: 'PROVIDER_READ_FAILED' });
 });
 
+test('provider deadlines bound token, transport, body and uncertain writes', async () => {
+  const h = harness();
+  let canceled = false;
+  const never = () => new Promise(() => {});
+  const clients = [
+    cloudRunRolloutClient({
+      ...h.candidate,
+      getAccessToken: never,
+      fetchImpl: never,
+    }),
+    cloudRunRolloutClient({
+      ...h.candidate,
+      getAccessToken: async () => 'synthetic-token',
+      fetchImpl: never,
+    }),
+    cloudRunRolloutClient({
+      ...h.candidate,
+      getAccessToken: async () => 'synthetic-token',
+      fetchImpl: async () =>
+        new Response(
+          new ReadableStream({
+            cancel() {
+              canceled = true;
+              return never();
+            },
+          }),
+          { headers: { 'content-type': 'application/json' } },
+        ),
+    }),
+  ];
+  const writeClient = cloudRunRolloutClient({
+    ...h.candidate,
+    getAccessToken: async () => 'synthetic-token',
+    fetchImpl: async (url) =>
+      url.startsWith('https://cloudresourcemanager.googleapis.com/')
+        ? h.json(h.old.project)
+        : never(),
+  });
+  await writeClient.project();
+  const keepAlive = setInterval(() => {}, 1000);
+  try {
+    const start = Date.now();
+    await Promise.all([
+      ...clients.map((client) =>
+        assert.rejects(client.project(), { code: 'PROVIDER_READ_FAILED' }),
+      ),
+      assert.rejects(
+        writeClient.patch(
+          {
+            name: h.state.service.name,
+            etag: h.state.service.etag,
+            traffic: h.state.service.traffic,
+          },
+          'traffic',
+        ),
+        { code: 'PROVIDER_WRITE_UNCERTAIN' },
+      ),
+    ]);
+    assert.equal(canceled, true);
+    assert.ok(Date.now() - start < 19000);
+  } finally {
+    clearInterval(keepAlive);
+  }
+});
+
 test('rollback restores a previous split across distinct verified revisions', async () => {
   const h = harness();
   const second = 'blogpost-api-other-good';

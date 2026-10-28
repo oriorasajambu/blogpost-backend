@@ -5,6 +5,11 @@ import { cloudRunExpectations } from './cloud-run-config.mjs';
 import { createWireVerifier, ConformanceError } from './wire-contract.mjs';
 import { refuse, RolloutError } from './rollout-client.mjs';
 import { gitMetadataPolicyReader } from './metadata-policy.mjs';
+import {
+  abortable,
+  cancelQuietly,
+  discardResponse,
+} from './transport-deadline.mjs';
 
 const REQUEST_TIMEOUT = 5000;
 const ROUND_TIMEOUT = 25000;
@@ -223,7 +228,7 @@ async function body(response, limit, signal) {
   const reader = response.body?.getReader();
   if (!reader) refuse('PROBE_BODY_UNAVAILABLE');
   const abort = () => {
-    void reader.cancel().catch(() => {});
+    cancelQuietly(reader);
   };
   signal.addEventListener('abort', abort, { once: true });
   const chunks = [];
@@ -231,7 +236,7 @@ async function body(response, limit, signal) {
   try {
     for (;;) {
       signal.throwIfAborted();
-      const part = await reader.read();
+      const part = await abortable(reader.read(), signal);
       signal.throwIfAborted();
       if (part.done) break;
       size += part.value.byteLength;
@@ -240,7 +245,7 @@ async function body(response, limit, signal) {
     }
   } finally {
     signal.removeEventListener('abort', abort);
-    await reader.cancel().catch(() => {});
+    cancelQuietly(reader);
     reader.releaseLock();
   }
   if (
@@ -272,21 +277,26 @@ async function read(
     roundSignal,
     AbortSignal.timeout(REQUEST_TIMEOUT),
   ]);
+  let response;
   try {
-    const response = await transport(url.href, {
-      method: 'GET',
-      headers: {
-        Accept: path.includes('/media/')
-          ? 'image/png, image/jpeg, image/webp, application/json'
-          : 'application/json',
-        'Cache-Control': 'no-cache',
-        ...metadata,
-      },
-      redirect: 'error',
-      credentials: 'omit',
-      cache: 'no-store',
+    response = await abortable(
+      transport(url.href, {
+        method: 'GET',
+        headers: {
+          Accept: path.includes('/media/')
+            ? 'image/png, image/jpeg, image/webp, application/json'
+            : 'application/json',
+          'Cache-Control': 'no-cache',
+          ...metadata,
+        },
+        redirect: 'error',
+        credentials: 'omit',
+        cache: 'no-store',
+        signal,
+      }),
       signal,
-    });
+      discardResponse,
+    );
     signal.throwIfAborted();
     if (
       response.redirected ||
@@ -320,6 +330,8 @@ async function read(
         roundSignal.aborted ? 'PROBE_ROUND_TIMEOUT' : 'PROBE_REQUEST_TIMEOUT',
       );
     throw error;
+  } finally {
+    discardResponse(response);
   }
 }
 function wire(plan, id, exchange) {

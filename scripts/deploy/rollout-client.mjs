@@ -1,4 +1,9 @@
 import { cloudRunExpectations } from './cloud-run-config.mjs';
+import {
+  abortable,
+  cancelQuietly,
+  discardResponse,
+} from './transport-deadline.mjs';
 
 export class RolloutError extends Error {
   constructor(code) {
@@ -36,28 +41,34 @@ export function cloudRunRolloutClient({
       );
   }
   async function request(url, body) {
+    const signal = AbortSignal.timeout(15000);
+    let response;
     try {
       const payload = body ? JSON.stringify(body) : null;
       if (payload && Buffer.byteLength(payload) > 1048576)
         refuse('PROVIDER_REQUEST_TOO_LARGE');
-      const token = await getAccessToken();
+      const token = await abortable(getAccessToken({ signal }), signal);
       if (
         typeof token !== 'string' ||
         !/^[A-Za-z0-9._~+/=-]{1,4096}$/.test(token)
       )
         refuse('TOKEN_UNAVAILABLE');
-      const response = await fetchImpl(url, {
-        method: body ? 'PATCH' : 'GET',
-        headers: {
-          authorization: 'Bearer ' + token,
-          accept: 'application/json',
-          ...(body ? { 'content-type': 'application/json' } : {}),
-        },
-        ...(body ? { body: payload } : {}),
-        redirect: 'error',
-        credentials: 'omit',
-        signal: AbortSignal.timeout(15000),
-      });
+      response = await abortable(
+        fetchImpl(url, {
+          method: body ? 'PATCH' : 'GET',
+          headers: {
+            authorization: 'Bearer ' + token,
+            accept: 'application/json',
+            ...(body ? { 'content-type': 'application/json' } : {}),
+          },
+          ...(body ? { body: payload } : {}),
+          redirect: 'error',
+          credentials: 'omit',
+          signal,
+        }),
+        signal,
+        discardResponse,
+      );
       if (
         response.status !== 200 ||
         response.redirected ||
@@ -68,20 +79,23 @@ export function cloudRunRolloutClient({
       )
         refuse('PROVIDER_REQUEST_FAILED');
       const reader = response.body.getReader();
+      const abort = () => cancelQuietly(reader);
+      signal.addEventListener('abort', abort, { once: true });
       const chunks = [];
       let size = 0;
       try {
         for (;;) {
-          const { done, value } = await reader.read();
+          const { done, value } = await abortable(reader.read(), signal);
           if (done) break;
           size += value.byteLength;
           if (size > 1048576) {
-            await reader.cancel();
             refuse('PROVIDER_RESPONSE_TOO_LARGE');
           }
           chunks.push(Buffer.from(value));
         }
       } finally {
+        signal.removeEventListener('abort', abort);
+        cancelQuietly(reader);
         reader.releaseLock();
       }
       const value = JSON.parse(
@@ -93,6 +107,8 @@ export function cloudRunRolloutClient({
     } catch {
       // Transport/provider diagnostics can contain credentials or private inputs.
       refuse(body ? 'PROVIDER_WRITE_UNCERTAIN' : 'PROVIDER_READ_FAILED');
+    } finally {
+      discardResponse(response);
     }
   }
   return Object.freeze({

@@ -1,6 +1,11 @@
 import { cloudRunExpectations } from './cloud-run-config.mjs';
 import { refuse, RolloutError } from './rollout-client.mjs';
 import {
+  abortable,
+  cancelQuietly,
+  discardResponse,
+} from './transport-deadline.mjs';
+import {
   serviceMetricsWindow,
   metricsIdentity,
   METRICS_MINUTE,
@@ -118,25 +123,6 @@ function json(bytes) {
   if (!object(value)) refuse('METRICS_JSON_INVALID');
   return value;
 }
-async function abortable(promise, signal) {
-  signal.throwIfAborted();
-  return new Promise((resolve, reject) => {
-    const abort = () => {
-      signal.removeEventListener('abort', abort);
-      reject(signal.reason);
-    };
-    signal.addEventListener('abort', abort, { once: true });
-    Promise.resolve(promise)
-      .then((value) => {
-        if (signal.aborted) {
-          void value?.body?.cancel?.().catch(() => {});
-          return;
-        }
-        resolve(value);
-      }, reject)
-      .finally(() => signal.removeEventListener('abort', abort));
-  });
-}
 async function read(url, getAccessToken, transport, roundSignal) {
   const signal = AbortSignal.any([roundSignal, AbortSignal.timeout(5000)]);
   const token = await abortable(getAccessToken({ signal }), signal);
@@ -151,6 +137,7 @@ async function read(url, getAccessToken, transport, roundSignal) {
       signal,
     }),
     signal,
+    discardResponse,
   );
   if (
     response.status !== 200 ||
@@ -160,7 +147,7 @@ async function read(url, getAccessToken, transport, roundSignal) {
       response.headers.get('content-type') ?? '',
     )
   ) {
-    await response.body?.cancel().catch(() => {});
+    discardResponse(response);
     refuse('METRICS_PROVIDER_UNAVAILABLE');
   }
   const length = response.headers.get('content-length');
@@ -168,13 +155,13 @@ async function read(url, getAccessToken, transport, roundSignal) {
     length !== null &&
     (!/^(?:0|[1-9][0-9]*)$/.test(length) || Number(length) > PAGE_BYTES)
   ) {
-    await response.body?.cancel().catch(() => {});
+    discardResponse(response);
     refuse('METRICS_BODY_LIMIT');
   }
   const reader = response.body?.getReader();
   if (!reader) refuse('METRICS_BODY_UNAVAILABLE');
   const abort = () => {
-    void reader.cancel().catch(() => {});
+    cancelQuietly(reader);
   };
   signal.addEventListener('abort', abort, { once: true });
   const chunks = [];
@@ -182,7 +169,7 @@ async function read(url, getAccessToken, transport, roundSignal) {
   try {
     for (;;) {
       signal.throwIfAborted();
-      const part = await reader.read();
+      const part = await abortable(reader.read(), signal);
       signal.throwIfAborted();
       if (part.done) break;
       size += part.value.byteLength;
@@ -191,7 +178,7 @@ async function read(url, getAccessToken, transport, roundSignal) {
     }
   } finally {
     signal.removeEventListener('abort', abort);
-    await reader.cancel().catch(() => {});
+    cancelQuietly(reader);
     reader.releaseLock();
   }
   if (

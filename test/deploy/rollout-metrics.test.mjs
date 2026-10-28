@@ -377,7 +377,7 @@ test('a stalled token broker is bounded before the provider request starts', asy
   }
 });
 
-test('a stalled provider body is canceled within the request deadline', async () => {
+test('a stalled provider body and cancellation cannot defeat the request deadline', async () => {
   const h = metricsFixture();
   let canceled = false;
   const keepAlive = setInterval(() => {}, 1000);
@@ -389,6 +389,7 @@ test('a stalled provider body is canceled within the request deadline', async ()
           new ReadableStream({
             cancel() {
               canceled = true;
+              return new Promise(() => {});
             },
           }),
           { headers: { 'content-type': 'application/json' } },
@@ -404,6 +405,33 @@ test('a stalled provider body is canceled within the request deadline', async ()
   } finally {
     clearInterval(keepAlive);
   }
+});
+
+test('an invalid response with stalled cancellation fails without waiting for cleanup', async () => {
+  const h = metricsFixture();
+  let canceled = false;
+  const collector = createCloudRunMetricsCollector({
+    getAccessToken: h.getAccessToken,
+    fetchImpl: async () =>
+      new Response(
+        new ReadableStream({
+          cancel() {
+            canceled = true;
+            return new Promise(() => {});
+          },
+        }),
+        { status: 403 },
+      ),
+    clock: () => h.state.input.now,
+  });
+  const result = await Promise.race([
+    collector(h.state.input),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('cleanup hung')), 1000),
+    ),
+  ]);
+  assert.equal(result.reason, 'METRICS_PROVIDER_UNAVAILABLE');
+  assert.equal(canceled, true);
 });
 
 test('pagination loops and page limits cannot return partial counts', async () => {

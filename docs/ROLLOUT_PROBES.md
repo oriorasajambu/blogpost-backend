@@ -35,6 +35,8 @@ Every request sends all five required metadata headers. One random device ID is 
 
 Responses must be `no-store`, `nosniff` and `no-referrer`, with no `Set-Cookie`. Staging must also advertise `noindex, nofollow, noarchive`. The adapter caps metadata at 64 KiB, other JSON at 1 MiB and a known image at its reviewed bounded byte size. It checks declared lengths and streamed bytes. After immutable-source resolution, each HTTP request has a five-second deadline and the HTTP collection phase twenty-five seconds; failures cancel remaining work and response streams. Cold-start failures can be retried only by the executor's bounded startup procedure.
 
+The caller stops waiting at the deadline even if an injected transport or cancellation hook does not settle. Cleanup is best effort; a noncooperative implementation may continue in the background and cannot produce a successful probe result.
+
 ## Results and operational limits
 
 The returned `ok` result contains only phase, safe check names, time/duration, observed source/revision and contract checksum. Failures contain a stable rule and completed check names, never bodies, HTTP headers, image bytes, cookies, tokens or transport diagnostics. Default transport is labeled `live-http`; injected transport remains explicitly `injected-transport`. Neither label turns a serialized result into authenticated release evidence. Archive authenticity, freshness and workflow-attempt binding remain the future trusted collector's responsibility.
