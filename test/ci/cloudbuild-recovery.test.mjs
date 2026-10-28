@@ -115,7 +115,7 @@ async function recovery(
           complete: true,
           executed: 52,
           runId: 'abcdef012345',
-          databaseOperatorTests: 11,
+          databaseOperatorTests: 12,
           candidate: provenance,
           artifact: provenance,
           observedOperations: operations.map(

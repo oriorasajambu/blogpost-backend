@@ -20,6 +20,7 @@ import {
   schemaSnapshot,
 } from '../../src/ops/database-verification.js';
 import { MaintenanceService } from '../../src/modules/operations/maintenance.service.js';
+import { createOwnedSchema } from '../../src/ops/schema-owner.js';
 import type { MediaStorage } from '../../src/modules/media/storage.js';
 
 // This operator fixture requires its invocation-owned tmpfs database. It never
@@ -468,6 +469,56 @@ test(
         }
       },
     );
+    await t.test(
+      'schema ownership works for a non-superuser CREATEROLE root as on Cloud SQL',
+      async () => {
+        const client = await root.connect();
+        const id = randomUUID().replaceAll('-', '').slice(0, 12);
+        const actor = 'cloudsql_root_' + id,
+          owner = 'cloudsql_owner_' + id,
+          schema = 'cloudsql_schema_' + id;
+        try {
+          await client.query('BEGIN');
+          const database = (
+            await client.query<{ name: string }>(
+              'SELECT current_database() AS name',
+            )
+          ).rows[0]!.name;
+          await client.query(
+            `CREATE ROLE ${actor} NOLOGIN NOSUPERUSER CREATEROLE`,
+          );
+          await client.query(
+            `GRANT CREATE ON DATABASE ${pg.escapeIdentifier(database)} TO ${actor}`,
+          );
+          await client.query(`SET ROLE ${actor}`);
+          await client.query(`CREATE ROLE ${owner} NOLOGIN NOINHERIT`);
+          await client.query('SAVEPOINT plain');
+          await assert.rejects(
+            client.query(`CREATE SCHEMA ${schema} AUTHORIZATION ${owner}`),
+            { code: '42501' },
+          );
+          await client.query('ROLLBACK TO plain');
+          await createOwnedSchema(client, schema, owner);
+          // Reruns on an existing schema still need the temporary SET grant.
+          await createOwnedSchema(client, schema, owner);
+          const owned = await client.query<{ owner: string }>(
+            'SELECT pg_get_userbyid(nspowner) AS owner FROM pg_namespace WHERE nspname = $1',
+            [schema],
+          );
+          assert.equal(owned.rows[0]?.owner, owner);
+          const residual = await client.query<{ count: number }>(
+            `SELECT count(*)::int AS count FROM pg_auth_members
+              WHERE (roleid = $1::regrole AND (set_option OR inherit_option))
+                 OR member = $1::regrole`,
+            [owner],
+          );
+          assert.equal(residual.rows[0]?.count, 0);
+        } finally {
+          await client.query('ROLLBACK');
+          client.release(true);
+        }
+      },
+    );
     await execute('verify-db');
     await writeFile(
       '/app/.local/conformance/database-' +
@@ -478,7 +529,7 @@ test(
         runId: process.env.BLOGPOST_IDENTITY_RUN_ID,
         runtimeInputDigest: readProvenance().runtimeInputDigest,
         contractSha256: readProvenance().contractSha256,
-        operatorTests: 11,
+        operatorTests: 12,
         observedAt: new Date().toISOString(),
       }) + '\n',
     );
