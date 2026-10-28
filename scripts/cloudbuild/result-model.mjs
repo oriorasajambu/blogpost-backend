@@ -145,13 +145,17 @@ export function provenanceListUrl(plan, buildName, image) {
 export function completedContext(input) {
   const plan = cloudBuildRequest(input.request, input.projects);
   const context = verifyCompletedCloudBuildContext(input);
-  const result = completedBuildImages(
-    input.request,
-    input.projects,
-    input.build,
-    input.sourceSha,
-    input.now,
-  );
+  const result = {
+    ...completedBuildImages(
+      input.request,
+      input.projects,
+      input.build,
+      input.sourceSha,
+      input.now,
+    ),
+    // A gitSource build names no repository; use the verified trigger binding.
+    connectedRepository: context.observation.repository.name,
+  };
   const registry = verifyRegistryRepository(plan, input.registry);
   if (!Array.isArray(input.images) || input.images.length !== 2)
     fail('REGISTRY_IMAGE_INVENTORY_DISAGREES');

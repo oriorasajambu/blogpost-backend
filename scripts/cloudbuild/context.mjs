@@ -154,42 +154,68 @@ function inspectBuild(request, projects, build, now, completed) {
   )
     fail('UNAPPROVED_CLOUD_BUILD_CONFIGURATION');
   const source = record(build.source);
-  if (canonical(Object.keys(source)) !== canonical(['connectedRepository']))
-    fail('CONNECTED_BUILD_SOURCE_REQUIRED');
-  const input = record(source.connectedRepository),
-    resolved = record(build.sourceProvenance?.resolvedConnectedRepository);
+  // Manual 2nd gen triggers on a public repository are recorded by Cloud Build
+  // as a resolved gitSource rather than connectedRepository. That form names
+  // no connected repository, so callers bind it through the trigger instead.
+  const kind = canonical(Object.keys(source));
+  const sourceField =
+    kind === canonical(['connectedRepository'])
+      ? 'connectedRepository'
+      : kind === canonical(['gitSource'])
+        ? 'gitSource'
+        : fail('CONNECTED_BUILD_SOURCE_REQUIRED');
+  const resolvedField =
+    sourceField === 'gitSource'
+      ? 'resolvedGitSource'
+      : 'resolvedConnectedRepository';
+  const location = sourceField === 'gitSource' ? 'url' : 'repository';
+  const input = record(source[sourceField]),
+    resolved = record(build.sourceProvenance?.[resolvedField]);
   for (const value of [input, resolved]) {
     if (value.dir !== undefined && value.dir !== '')
       fail('ROOT_BUILD_SOURCE_REQUIRED');
     const extra = Object.keys(value).filter(
-      (key) => !['repository', 'revision', 'dir'].includes(key),
+      (key) => ![location, 'revision', 'dir'].includes(key),
     );
     if (extra.length) fail('INVALID_CONNECTED_BUILD_SOURCE');
   }
   for (const field of [
     'resolvedRepoSource',
     'resolvedGitSource',
+    'resolvedConnectedRepository',
     'resolvedStorageSource',
     'resolvedStorageSourceManifest',
   ])
-    if (build.sourceProvenance[field] !== undefined)
+    if (field !== resolvedField && build.sourceProvenance[field] !== undefined)
       fail('AMBIGUOUS_CLOUD_BUILD_SOURCE');
-  const connected = resourceName(
-    resolved.repository,
-    plan,
-    /^connections\/[A-Za-z0-9._-]{1,128}\/repositories\/[A-Za-z0-9._-]{1,128}$/,
-  );
-  if (
-    resourceName(
-      input.repository,
+  const sourceSha = sha(resolved.revision);
+  let connected = null,
+    gitSourceUrl = null;
+  if (sourceField === 'gitSource') {
+    gitSourceUrl = string(
+      input.url,
+      /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/,
+      300,
+    );
+    if (resolved.url !== gitSourceUrl) fail('CLOUD_BUILD_SOURCE_DISAGREES');
+    if (input.revision !== sourceSha) fail('WRONG_CLOUD_BUILD_REF');
+  } else {
+    connected = resourceName(
+      resolved.repository,
       plan,
       /^connections\/[A-Za-z0-9._-]{1,128}\/repositories\/[A-Za-z0-9._-]{1,128}$/,
-    ) !== connected
-  )
-    fail('CLOUD_BUILD_SOURCE_DISAGREES');
-  const sourceSha = sha(resolved.revision);
-  if (!['refs/heads/' + plan.branch, sourceSha].includes(input.revision))
-    fail('WRONG_CLOUD_BUILD_REF');
+    );
+    if (
+      resourceName(
+        input.repository,
+        plan,
+        /^connections\/[A-Za-z0-9._-]{1,128}\/repositories\/[A-Za-z0-9._-]{1,128}$/,
+      ) !== connected
+    )
+      fail('CLOUD_BUILD_SOURCE_DISAGREES');
+    if (!['refs/heads/' + plan.branch, sourceSha].includes(input.revision))
+      fail('WRONG_CLOUD_BUILD_REF');
+  }
   const substitutions = record(build.substitutions);
   if (substitutions._APP_ENV !== plan.environment || substitutions.TAG_NAME)
     fail('WRONG_CLOUD_BUILD_ENVIRONMENT');
@@ -207,6 +233,7 @@ function inspectBuild(request, projects, build, now, completed) {
     plan,
     sourceSha,
     connectedRepository: connected,
+    gitSourceUrl,
     triggerId,
     buildName:
       'projects/' +
@@ -223,6 +250,16 @@ function inspectBuild(request, projects, build, now, completed) {
       '/triggers/' +
       triggerId,
   };
+}
+export function cloudBuildRepositoryName(inspected, trigger) {
+  return (
+    inspected.connectedRepository ??
+    resourceName(
+      record(record(trigger).sourceToBuild).repository,
+      inspected.plan,
+      /^connections\/[A-Za-z0-9._-]{1,128}\/repositories\/[A-Za-z0-9._-]{1,128}$/,
+    )
+  );
 }
 export function inspectCloudBuild(request, projects, build, now = Date.now()) {
   return inspectBuild(request, projects, build, now, false);
@@ -254,6 +291,7 @@ function verifyBuildResources(
   record(project);
   record(trigger);
   record(repository);
+  const connected = cloudBuildRepositoryName(inspected, trigger);
   string(repositoryConfig.fullName, /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/, 200);
   string(repositoryConfig.repositoryId, /^[1-9][0-9]{0,19}$/, 20);
   string(repositoryConfig.ownerId, /^[1-9][0-9]{0,19}$/, 20);
@@ -266,7 +304,9 @@ function verifyBuildResources(
   if (
     trigger.id !== inspected.triggerId ||
     trigger.name !== 'blogpost-backend-manual' ||
-    trigger.eventType !== 'MANUAL' ||
+    // The v1 API omits eventType for manual triggers; the absent event
+    // sources below are what establish manual invocation.
+    (trigger.eventType !== undefined && trigger.eventType !== 'MANUAL') ||
     (trigger.disabled !== undefined && trigger.disabled !== false) ||
     resourceName(trigger.resourceName, plan, /^triggers\/[a-f0-9-]{36}$/) !==
       inspected.triggerName
@@ -295,8 +335,10 @@ function verifyBuildResources(
     fail('UNAPPROVED_CLOUD_BUILD_TRIGGER_FILTER');
   serviceAccount(trigger.serviceAccount, plan);
   const source = record(trigger.sourceToBuild);
+  // 2nd gen connected-repository sources omit repoType; the resource name pins
+  // the repository instead.
   if (
-    source.repoType !== 'GITHUB' ||
+    (source.repoType !== undefined && source.repoType !== 'GITHUB') ||
     !['refs/heads/' + plan.branch, inspected.sourceSha].includes(source.ref) ||
     source.uri ||
     source.githubEnterpriseConfig ||
@@ -305,12 +347,12 @@ function verifyBuildResources(
       source.repository,
       plan,
       /^connections\/[A-Za-z0-9._-]{1,128}\/repositories\/[A-Za-z0-9._-]{1,128}$/,
-    ) !== inspected.connectedRepository
+    ) !== connected
   )
     fail('CLOUD_BUILD_TRIGGER_SOURCE_DISAGREES');
   const configurationSource = {
     kind: 'source-root',
-    repository: inspected.connectedRepository,
+    repository: connected,
     ref: source.ref,
     path: 'cloudbuild.yaml',
   };
@@ -318,7 +360,7 @@ function verifyBuildResources(
     const file = record(trigger.gitFileSource);
     if (
       trigger.filename !== undefined ||
-      file.repoType !== 'GITHUB' ||
+      (file.repoType !== undefined && file.repoType !== 'GITHUB') ||
       !['cloudbuild.yaml', '/cloudbuild.yaml'].includes(file.path) ||
       (file.revision !== undefined &&
         file.revision !== '' &&
@@ -344,7 +386,7 @@ function verifyBuildResources(
         file.repository,
         plan,
         /^connections\/[A-Za-z0-9._-]{1,128}\/repositories\/[A-Za-z0-9._-]{1,128}$/,
-      ) !== inspected.connectedRepository
+      ) !== connected
     )
       fail('CLOUD_BUILD_REPOSITORY_RECIPE_REQUIRED');
     configurationSource.kind = 'git-file';
@@ -359,11 +401,13 @@ function verifyBuildResources(
       repository.name,
       plan,
       /^connections\/[A-Za-z0-9._-]{1,128}\/repositories\/[A-Za-z0-9._-]{1,128}$/,
-    ) !== inspected.connectedRepository ||
+    ) !== connected ||
     ![
       'https://github.com/' + repositoryConfig.fullName,
       'https://github.com/' + repositoryConfig.fullName + '.git',
-    ].includes(repository.remoteUri)
+    ].includes(repository.remoteUri) ||
+    (inspected.gitSourceUrl !== null &&
+      inspected.gitSourceUrl !== repository.remoteUri)
   )
     fail('CLOUD_BUILD_REPOSITORY_DISAGREES');
   string(repository.etag, /^[\x21-\x7e]{1,256}$/, 256);
@@ -398,7 +442,7 @@ function verifyBuildResources(
         configurationSource,
       },
       repository: {
-        name: inspected.connectedRepository,
+        name: connected,
         etag: repository.etag,
       },
     },
@@ -406,7 +450,7 @@ function verifyBuildResources(
       projectId: plan.projectId,
       branch: plan.branch,
       serviceAccount: plan.serviceAccount,
-      connectedRepository: inspected.connectedRepository,
+      connectedRepository: connected,
       recipe: 'cloudbuild.yaml',
       triggerType: 'MANUAL',
       configurationSource,

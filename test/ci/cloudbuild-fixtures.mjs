@@ -83,6 +83,21 @@ export function cloudFixture(
     },
   };
 }
+// Shape observed from a real manual 2nd gen trigger on a public repository:
+// the build records gitSource, and the trigger omits eventType and repoType.
+export function useGitSource(f) {
+  const revision =
+    f.build.sourceProvenance.resolvedConnectedRepository.revision;
+  f.build.source = {
+    gitSource: { url: f.repository.remoteUri, revision },
+  };
+  f.build.sourceProvenance = {
+    resolvedGitSource: { url: f.repository.remoteUri, revision },
+  };
+  delete f.trigger.eventType;
+  delete f.trigger.sourceToBuild.repoType;
+  return f;
+}
 
 // Mock transport only: no request is forwarded to metadata, Google or GitHub.
 export function provider(fixture, transform = (response) => response) {

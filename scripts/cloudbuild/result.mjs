@@ -3,7 +3,11 @@ import { currentBranchSha, githubReader } from '../ci/github-api.mjs';
 import { proveReviewedMerge } from '../ci/source-proof.mjs';
 import { fail, gitText } from '../ci/policy.mjs';
 import { uniqueJson } from '../ci/evidence/unique-json.mjs';
-import { cloudBuildTime, inspectCompletedCloudBuild } from './context.mjs';
+import {
+  cloudBuildRepositoryName,
+  cloudBuildTime,
+  inspectCompletedCloudBuild,
+} from './context.mjs';
 import { recoveryResultInputs } from './result-inputs.mjs';
 import {
   completedContext,
@@ -131,27 +135,31 @@ async function observe(inputs, get, now) {
     sourceSha,
     now(),
   );
-  const [trigger, repository, registry, images, occurrencePages] =
-    await Promise.all([
-      get('https://cloudbuild.googleapis.com/v1/' + refs.triggerName),
-      get('https://cloudbuild.googleapis.com/v2/' + refs.connectedRepository),
-      get('https://artifactregistry.googleapis.com/v1/' + registryPrefix(plan)),
-      Promise.all(
-        result.images.map((image) =>
-          get(
-            'https://artifactregistry.googleapis.com/v1/' +
-              registryPrefix(plan) +
-              '/dockerImages/' +
-              encodeURIComponent(image.name + '@' + image.digest),
-          ),
+  const trigger = await get(
+    'https://cloudbuild.googleapis.com/v1/' + refs.triggerName,
+  );
+  const [repository, registry, images, occurrencePages] = await Promise.all([
+    get(
+      'https://cloudbuild.googleapis.com/v2/' +
+        cloudBuildRepositoryName(refs, trigger),
+    ),
+    get('https://artifactregistry.googleapis.com/v1/' + registryPrefix(plan)),
+    Promise.all(
+      result.images.map((image) =>
+        get(
+          'https://artifactregistry.googleapis.com/v1/' +
+            registryPrefix(plan) +
+            '/dockerImages/' +
+            encodeURIComponent(image.name + '@' + image.digest),
         ),
       ),
-      Promise.all(
-        result.images.map((image) =>
-          get(provenanceListUrl(plan, refs.buildName, image)),
-        ),
+    ),
+    Promise.all(
+      result.images.map((image) =>
+        get(provenanceListUrl(plan, refs.buildName, image)),
       ),
-    ]);
+    ),
+  ]);
   const observations = {
     project,
     build,
