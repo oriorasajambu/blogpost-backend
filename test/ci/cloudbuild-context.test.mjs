@@ -13,6 +13,7 @@ import {
   observed,
   provider,
   syntheticToken,
+  useGitSource,
 } from './cloudbuild-fixtures.mjs';
 
 for (const environment of ['staging', 'production']) {
@@ -477,6 +478,155 @@ test('Cloud Build re-observation detects source, trigger, connection and metadat
             ? 'CLOUD_BUILD_METADATA_ACCOUNT_DISAGREES'
             : 'CLOUD_BUILD_CONTEXT_CHANGED',
       },
+    );
+  }
+});
+
+for (const environment of ['staging', 'production']) {
+  test(
+    'Cloud Build ' +
+      environment +
+      ' accepts the gitSource shape of a manual connected trigger',
+    async () => {
+      const connected = verifyCloudBuildContext(cloudFixture(environment));
+      const f = useGitSource(cloudFixture(environment));
+      const proof = verifyCloudBuildContext(f);
+      assert.equal(proof.sourceSha, f.build.source.gitSource.revision);
+      assert.equal(proof.observation.repository.name, f.repository.name);
+      // The trigger binding yields the same configuration as connectedRepository.
+      assert.equal(proof.configurationDigest, connected.configurationDigest);
+      const p = provider(f);
+      const live = await verifyLiveCloudBuildContext({
+        ...f,
+        transport: p.transport,
+      });
+      assert.equal(live.sourceSha, proof.sourceSha);
+      assert.equal(p.calls.length, 10);
+      assert.ok(
+        p.calls.some(
+          ({ url }) =>
+            url === 'https://cloudbuild.googleapis.com/v2/' + f.repository.name,
+        ),
+      );
+    },
+  );
+}
+
+test('Cloud Build gitSource must match the linked repository and exact revision', () => {
+  const other = 'https://github.com/other/backend.git';
+  const mutations = [
+    [
+      (f) => {
+        f.build.source.gitSource.url = other;
+        f.build.sourceProvenance.resolvedGitSource.url = other;
+      },
+      'CLOUD_BUILD_REPOSITORY_DISAGREES',
+    ],
+    [
+      (f) => {
+        f.build.sourceProvenance.resolvedGitSource.url = other;
+      },
+      'CLOUD_BUILD_SOURCE_DISAGREES',
+    ],
+    [
+      (f) => {
+        f.build.source.gitSource.url = 'https://gitlab.com/fixture/backend.git';
+        f.build.sourceProvenance.resolvedGitSource.url =
+          f.build.source.gitSource.url;
+      },
+      'INVALID_CLOUD_BUILD_CONTEXT',
+    ],
+    [
+      (f) => {
+        f.build.source.gitSource.url = f.build.source.gitSource.url.replace(
+          'https://',
+          'https://token@',
+        );
+      },
+      'INVALID_CLOUD_BUILD_CONTEXT',
+    ],
+    [
+      (f) => {
+        f.build.source.gitSource.revision = 'refs/heads/rc';
+      },
+      'WRONG_CLOUD_BUILD_REF',
+    ],
+    [
+      (f) => {
+        f.build.sourceProvenance.resolvedGitSource.revision = 'b'.repeat(40);
+      },
+      'WRONG_CLOUD_BUILD_REF',
+    ],
+    [
+      (f) => {
+        f.build.source.gitSource.dir = 'nested';
+      },
+      'ROOT_BUILD_SOURCE_REQUIRED',
+    ],
+    [
+      (f) => {
+        f.build.source.gitSource.extra = true;
+      },
+      'INVALID_CONNECTED_BUILD_SOURCE',
+    ],
+    [
+      (f) => {
+        f.build.source.connectedRepository = {
+          repository: f.repository.name,
+          revision: f.build.source.gitSource.revision,
+        };
+      },
+      'CONNECTED_BUILD_SOURCE_REQUIRED',
+    ],
+    [
+      (f) => {
+        f.build.sourceProvenance.resolvedConnectedRepository = {
+          repository: f.repository.name,
+          revision: f.build.source.gitSource.revision,
+        };
+      },
+      'AMBIGUOUS_CLOUD_BUILD_SOURCE',
+    ],
+    [
+      (f) => {
+        f.trigger.sourceToBuild.repository = f.repository.name.replace(
+          '/repositories/backend',
+          '/repositories/other',
+        );
+      },
+      'CLOUD_BUILD_REPOSITORY_DISAGREES',
+    ],
+    [
+      (f) => {
+        f.trigger.eventType = 'PUSH';
+      },
+      'MANUAL_CLOUD_BUILD_TRIGGER_REQUIRED',
+    ],
+    [
+      (f) => {
+        f.trigger.sourceToBuild.repoType = 'BITBUCKET';
+      },
+      'CLOUD_BUILD_TRIGGER_SOURCE_DISAGREES',
+    ],
+    [
+      (f) => {
+        delete f.trigger.filename;
+        f.trigger.gitFileSource = {
+          repository: f.repository.name,
+          repoType: 'BITBUCKET',
+          path: 'cloudbuild.yaml',
+        };
+      },
+      'CLOUD_BUILD_REPOSITORY_RECIPE_REQUIRED',
+    ],
+  ];
+  for (const [index, [mutate, code]] of mutations.entries()) {
+    const f = useGitSource(cloudFixture());
+    mutate(f);
+    assert.throws(
+      () => verifyCloudBuildContext(f),
+      { code },
+      'mutation ' + index,
     );
   }
 });

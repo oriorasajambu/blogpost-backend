@@ -27,6 +27,7 @@ import {
   resultProvider,
   observed,
 } from './cloudbuild-result-fixtures.mjs';
+import { useGitSource } from './cloudbuild-fixtures.mjs';
 
 for (const environment of ['staging', 'production']) {
   test(
@@ -619,5 +620,25 @@ test('newer verifier can check a reviewed recovery ancestor and detects a moving
       },
     }),
     { code: 'RECOVERY_RESULT_AUTHORIZED_BRANCH_ADVANCED' },
+  );
+});
+
+test('completed gitSource build binds its repository through the trigger', () => {
+  const f = resultFixture();
+  const connected = verifyRecoveryResult(f.inputs, f.observations, observed);
+  useGitSource(f);
+  const proof = verifyRecoveryResult(f.inputs, f.observations, observed);
+  assert.equal(proof.status, 'VERIFIED');
+  assert.deepEqual(
+    proof.images.map((image) => image.digest),
+    connected.images.map((image) => image.digest),
+  );
+  f.build.sourceProvenance.resolvedGitSource.url =
+    'https://github.com/other/backend.git';
+  assert.throws(
+    () => verifyRecoveryResult(f.inputs, f.observations, observed),
+    {
+      code: 'CLOUD_BUILD_SOURCE_DISAGREES',
+    },
   );
 });

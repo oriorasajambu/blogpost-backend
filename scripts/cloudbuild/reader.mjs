@@ -1,6 +1,7 @@
 import { canonical, digest } from '../../src/platform/config/build-model.ts';
 import { fail } from '../ci/policy.mjs';
 import {
+  cloudBuildRepositoryName,
   cloudBuildRequest,
   cloudBuildTime,
   inspectCloudBuild,
@@ -121,10 +122,11 @@ export async function verifyLiveCloudBuildContext({
   const build = await get(buildUrl);
   const refs = inspectCloudBuild(request, projects, build, clock());
   const triggerUrl = 'https://cloudbuild.googleapis.com/v1/' + refs.triggerName;
+  const trigger = await get(triggerUrl);
   const repositoryUrl =
-    'https://cloudbuild.googleapis.com/v2/' + refs.connectedRepository;
-  const trigger = await get(triggerUrl),
-    repository = await get(repositoryUrl);
+    'https://cloudbuild.googleapis.com/v2/' +
+    cloudBuildRepositoryName(refs, trigger);
+  const repository = await get(repositoryUrl);
   const input = { request, projects, repositoryConfig, metadataEmail, project };
   const first = verifyCloudBuildContext({
     ...input,
