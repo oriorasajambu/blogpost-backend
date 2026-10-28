@@ -26,9 +26,9 @@
     "bootstrap": "blogpost-bootstrap@blogpost-staging.iam.gserviceaccount.com"
   },
   "secretVersions": {
-    "SQL_APP_PASSWORD": "projects/blogpost-staging/secrets/blogpost-db-app-password/versions/1",
-    "SQL_MIGRATOR_PASSWORD": "projects/blogpost-staging/secrets/blogpost-db-migrator-password/versions/1",
-    "SQL_ROOT_PASSWORD": "projects/blogpost-staging/secrets/blogpost-db-root-password/versions/1",
-    "CURSOR_SIGNING_KEY": "projects/blogpost-staging/secrets/blogpost-cursor-signing-key/versions/1"
+    "SQL_APP_PASSWORD": "projects/blogpost-staging/secrets/blogpost-db-app-password/versions/2",
+    "SQL_MIGRATOR_PASSWORD": "projects/blogpost-staging/secrets/blogpost-db-migrator-password/versions/2",
+    "SQL_ROOT_PASSWORD": "projects/blogpost-staging/secrets/blogpost-db-root-password/versions/2",
+    "CURSOR_SIGNING_KEY": "projects/blogpost-staging/secrets/blogpost-cursor-signing-key/versions/2"
   }
 }

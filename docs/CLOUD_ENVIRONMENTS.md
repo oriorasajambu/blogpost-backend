@@ -26,14 +26,22 @@ On 28 October 2026, the owner selected keeping the budget proposal as an estimat
 
 Later on 28 October 2026, the owner separately authorized Staging provisioning, including Cloud SQL. Production remains unprovisioned and no budget was configured. Staging resources created through the Cloud SDK:
 
-| Resource            | Staging value                                                                                                           |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Service accounts    | `blogpost-build`, `-api`, `-migrate`, `-ops`, `-bootstrap`, `-web`, `-scheduler`; no keys, no Owner/Editor              |
-| Custom roles        | `BlogpostIdentitySession` (`blogpost-api`), `BlogpostIdentityLookup` (`blogpost-bootstrap`)                             |
-| Media bucket        | `blogpost-staging-blogpost-media`; Jakarta Standard, uniform access, public access prevention, 7-day soft delete        |
-| Artifact Registry   | `blogpost` Docker repository, Jakarta, immutable tags; `blogpost-build` writer only                                     |
-| Cloud SQL           | `blogpost-db`, PostgreSQL 17 Enterprise `db-f1-micro`, zonal, no authorized networks, 3 daily backups, no PITR          |
-| Secrets (version 1) | `blogpost-db-root-password`, `blogpost-db-app-password`, `blogpost-db-migrator-password`, `blogpost-cursor-signing-key` |
-| Cloud Build         | 2nd gen GitHub connection `blogpost-backend` linking this repository                                                    |
+| Resource            | Staging value                                                                                                                                       |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Service accounts    | `blogpost-build`, `-api`, `-migrate`, `-ops`, `-bootstrap`, `-web`, `-scheduler`; no keys, no Owner/Editor                                          |
+| Custom roles        | `BlogpostIdentitySession` (`blogpost-api`), `BlogpostIdentityLookup` (`blogpost-bootstrap`), `BlogpostBuildContextReader` (`blogpost-build`)        |
+| Media bucket        | `blogpost-staging-blogpost-media`; Jakarta Standard, uniform access, public access prevention, 7-day soft delete                                    |
+| Artifact Registry   | `blogpost` Docker repository, Jakarta, immutable tags; `blogpost-build` writer only                                                                 |
+| Cloud SQL           | `blogpost-db`, PostgreSQL 17 Enterprise `db-f1-micro`, zonal, no authorized networks, 3 daily backups, no PITR                                      |
+| Secrets (version 2) | `blogpost-db-root-password`, `blogpost-db-app-password`, `blogpost-db-migrator-password`, `blogpost-cursor-signing-key`; version 1 of each disabled |
+| Cloud Build         | 2nd gen GitHub connection `blogpost-backend`; manual trigger `blogpost-backend-manual` on `rc` with `_APP_ENV=staging`                              |
+| Operations jobs     | `blogpost-migrate`, `blogpost-verify-db`; `blogpost-bootstrap-db` ran once and was deleted                                                          |
+| Identity Platform   | Enabled; Google provider only, email/password, anonymous and phone sign-in off                                                                      |
 
-The committed [Staging profile](../config/environments/staging.json) records these nonsecret references. The migrator account is `blogpost-migrate`, matching the Console guide rather than the synthetic example. Identity Platform, the `blogpost-backend-manual` trigger, operations jobs and the API service are not yet configured; the planned origins remain unobserved.
+The committed [Staging profile](../config/environments/staging.json) records these nonsecret references. The migrator account is `blogpost-migrate`, matching the Console guide rather than the synthetic example.
+
+The first app, migrator and cursor secret versions were generated with a trailing carriage return (Windows `openssl` CRLF output), which the API rejected at startup (`Invalid CURSOR_SIGNING_KEY`). They were replaced by version 2 values of exactly 64 lowercase hexadecimal characters, the database role passwords were changed to match through a one-off `postgres` job, and every version 1 was disabled. The rotated `postgres` password is root version 2, readable by no runtime identity. When generating secret values, strip both `
+` and `
+` and check the length before storing.
+
+The Staging database has been bootstrapped, migrated (five migrations) and verified. The `blogpost-api` service exists but is not yet serving; it is private until public access is explicitly approved. The first administrator is not yet bootstrapped and the planned origins remain unobserved.
