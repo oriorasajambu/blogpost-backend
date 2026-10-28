@@ -139,7 +139,7 @@ The sizes beside individual images include shared layers; use `docker system df`
 
 ## Implementation and release status
 
-See [implementation status](docs/IMPLEMENTATION_STATUS.md) for completed work and the remaining sequence, [CI validation](docs/CI_VALIDATION.md) for checks and closed delivery gates, and [repository setup](docs/REPOSITORY_SETUP.md) for the published policy-only main/RC root. Cloud delivery and release remain unavailable. Application version is `0.1.0` with `publish:true` on the integration branch, pending Staging validation and promotion; the owner chose to keep the public source unlicensed.
+See [implementation status](docs/IMPLEMENTATION_STATUS.md) for completed work and the remaining sequence, [CI validation](docs/CI_VALIDATION.md) for checks and closed delivery gates, and [repository setup](docs/REPOSITORY_SETUP.md) for the published policy-only main/RC root. Cloud delivery and release remain unavailable. Application version remains `0.0.0` with `publish:false`; the owner chose to keep the public source unlicensed.
 
 CI runs only on push/PR, with read-only permissions and no cloud credentials. Work PRs target `rc`; production promotion currently fails closed because staging receipts and owner validation do not exist yet. The minimal policy-only main/RC bootstrap is published; application work follows `chore/repository-foundation` → `rc`. Owner inspection and merge remain required by the shared VCS guideline.
 

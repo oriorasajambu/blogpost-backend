@@ -1,6 +1,6 @@
 {
   "application": "backend",
-  "version": "0.1.0",
-  "publish": true,
+  "version": "0.0.0",
+  "publish": false,
   "apiContractVersion": "1.0.0"
 }
