@@ -40,8 +40,9 @@ await runJob(async () => {
       )
         throw new Error('Existing role is privileged');
     }
-    await createOwnedSchema(client, 'blogpost', 'blogpost_migrator');
-    await client.query('REVOKE ALL ON SCHEMA blogpost FROM PUBLIC');
+    await createOwnedSchema(client, 'blogpost', 'blogpost_migrator', [
+      'blogpost_app',
+    ]);
     await client.query('REVOKE CREATE ON SCHEMA public FROM PUBLIC');
     const database = pg.escapeIdentifier(connection('root').database!);
     await client.query(
@@ -57,7 +58,6 @@ await runJob(async () => {
     await client.query(
       `ALTER ROLE blogpost_migrator IN DATABASE ${database} SET statement_timeout='60s'`,
     );
-    await client.query('GRANT USAGE ON SCHEMA blogpost TO blogpost_app');
     await client.query('COMMIT');
   } catch (error) {
     await client.query('ROLLBACK');
