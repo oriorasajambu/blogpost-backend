@@ -476,6 +476,7 @@ test(
         const id = randomUUID().replaceAll('-', '').slice(0, 12);
         const actor = 'cloudsql_root_' + id,
           owner = 'cloudsql_owner_' + id,
+          reader = 'cloudsql_app_' + id,
           schema = 'cloudsql_schema_' + id;
         try {
           await client.query('BEGIN');
@@ -492,25 +493,49 @@ test(
           );
           await client.query(`SET ROLE ${actor}`);
           await client.query(`CREATE ROLE ${owner} NOLOGIN NOINHERIT`);
+          await client.query(`CREATE ROLE ${reader} NOLOGIN NOINHERIT`);
           await client.query('SAVEPOINT plain');
           await assert.rejects(
             client.query(`CREATE SCHEMA ${schema} AUTHORIZATION ${owner}`),
             { code: '42501' },
           );
           await client.query('ROLLBACK TO plain');
-          await createOwnedSchema(client, schema, owner);
-          // Reruns on an existing schema still need the temporary SET grant.
-          await createOwnedSchema(client, schema, owner);
-          const owned = await client.query<{ owner: string }>(
-            'SELECT pg_get_userbyid(nspowner) AS owner FROM pg_namespace WHERE nspname = $1',
+          // Only the owner may change schema privileges, so a SET-only grant
+          // revoked before them is not enough.
+          await client.query(
+            `GRANT ${owner} TO CURRENT_USER WITH INHERIT FALSE, SET TRUE`,
+          );
+          await client.query(`CREATE SCHEMA ${schema} AUTHORIZATION ${owner}`);
+          await client.query(`REVOKE ${owner} FROM CURRENT_USER`);
+          await assert.rejects(
+            client.query(`REVOKE ALL ON SCHEMA ${schema} FROM PUBLIC`),
+            { code: '42501' },
+          );
+          await client.query('ROLLBACK TO plain');
+          await createOwnedSchema(client, schema, owner, [reader]);
+          // Reruns on an existing schema still need the temporary grant.
+          await createOwnedSchema(client, schema, owner, [reader]);
+          const owned = await client.query<{ owner: string; acl: string }>(
+            `SELECT pg_get_userbyid(nspowner) AS owner, nspacl::text AS acl
+               FROM pg_namespace WHERE nspname = $1`,
             [schema],
           );
           assert.equal(owned.rows[0]?.owner, owner);
+          assert.doesNotMatch(owned.rows[0]!.acl, /[{,]=/);
+          const access = await client.query<{
+            usage: boolean;
+            create: boolean;
+          }>(
+            `SELECT has_schema_privilege($1, $2, 'USAGE') AS usage,
+                    has_schema_privilege($1, $2, 'CREATE') AS create`,
+            [reader, schema],
+          );
+          assert.deepEqual(access.rows[0], { usage: true, create: false });
           const residual = await client.query<{ count: number }>(
             `SELECT count(*)::int AS count FROM pg_auth_members
               WHERE (roleid = $1::regrole AND (set_option OR inherit_option))
-                 OR member = $1::regrole`,
-            [owner],
+                 OR member IN ($1::regrole, $2::regrole)`,
+            [owner, reader],
           );
           assert.equal(residual.rows[0]?.count, 0);
         } finally {
