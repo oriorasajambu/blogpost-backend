@@ -109,6 +109,8 @@ jobs:
           package-manager-cache: false
       - name: Verify real SDK and SQL on disposable isolated infrastructure
         run: npm run test:identity -- --build --compiled-operations
+      - name: Rehearse populated SQL upgrade and backup restoration
+        run: npm run test:recovery
   kotlin-contract:
     runs-on: ubuntu-24.04
     timeout-minutes: 20

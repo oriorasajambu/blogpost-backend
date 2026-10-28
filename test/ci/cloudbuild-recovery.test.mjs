@@ -17,6 +17,7 @@ async function recovery(
     invalidRecipe = false,
     failCheck = false,
     sqlPatch = {},
+    recoveryPatch = {},
     swapImage = false,
     catalogMode = 'INITIAL_DRAFT',
   } = {},
@@ -141,6 +142,31 @@ async function recovery(
           JSON.stringify(report),
         );
       }
+      if (args.includes('test:recovery')) {
+        const { provenance } = await prepareProvenance(
+          options.cwd,
+          'development',
+          null,
+          {},
+        );
+        await writeFile(
+          resolve(options.cwd, '.local/conformance/database-recovery.json'),
+          JSON.stringify({
+            schemaVersion: 1,
+            status: 'PASSED',
+            scope: 'disposable-development-recovery-rehearsal',
+            runId: 'abcdef012345',
+            checks: Array.from(
+              { length: 15 },
+              (_, i) => 'synthetic-recovery-check-' + i,
+            ),
+            mediaObjects: 3,
+            artifact: provenance,
+            candidateSource: provenance,
+            ...recoveryPatch,
+          }),
+        );
+      }
       return '';
     }
     if (command === 'docker' && args[0] === 'image') {
@@ -201,6 +227,12 @@ test('recovery captures real Git source once and two-target orchestration uses i
     call.args.includes('test:identity'),
   );
   assert.ok(sqlIndex > 0 && sqlIndex < f.calls.indexOf(builds[0]));
+  const recoveryIndex = f.calls.findIndex((call) =>
+    call.args.includes('test:recovery'),
+  );
+  assert.ok(
+    recoveryIndex > sqlIndex && recoveryIndex < f.calls.indexOf(builds[0]),
+  );
   for (const smoke of f.calls.filter(
     (call) => call.command === 'docker' && call.args[0] === 'run',
   )) {
@@ -242,6 +274,8 @@ test('recovery does not build publication images after a failed disposable SQL c
     { sqlPatch: { compiledOperationsSuitePassed: false } },
     { sqlPatch: { observedOperations: [] } },
     { sqlPatch: { candidate: { sourceSha: 'b'.repeat(40) } } },
+    { recoveryPatch: { checks: [] } },
+    { recoveryPatch: { artifact: { sourceSha: 'b'.repeat(40) } } },
   ]) {
     const f = await recovery(t, options);
     await f.invoke('capture');

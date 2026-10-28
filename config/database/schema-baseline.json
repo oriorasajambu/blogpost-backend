@@ -1958,7 +1958,7 @@
       {
         "deferrable": false,
         "deferred": false,
-        "definition": "CHECK (state <> 'READY'::blogpost.\"MediaState\" OR width IS NOT NULL AND height IS NOT NULL AND \"mimeType\" IS NOT NULL AND (\"mimeType\"::text = ANY (ARRAY['image/jpeg'::character varying, 'image/png'::character varying, 'image/webp'::character varying]::text[])) AND jsonb_array_length(variants) = 3)",
+        "definition": "CHECK (state <> 'READY'::blogpost.\"MediaState\" OR width IS NOT NULL AND height IS NOT NULL AND \"mimeType\" IS NOT NULL AND (\"mimeType\"::text = ANY (ARRAY['image/jpeg'::character varying::text, 'image/png'::character varying::text, 'image/webp'::character varying::text])) AND jsonb_array_length(variants) = 3)",
         "kind": "c",
         "name": "media_ready",
         "relation": "MediaAsset",
@@ -4780,6 +4780,6 @@
   "migrationDigest": "7c90cb3d3b05c26e6d7acf03dda94cf3ac6b24c6ee20f1a55508ea08df98c1e8",
   "permissionDigest": "6848e1f4d00f6bf94a173a5f99f9abd40d5255c18067bc627160444576a8b8cd",
   "postgresMajor": 17,
-  "schemaDigest": "7eeb4aefbc6f5b4e8d0bc3c75f7842c5a18e855140853240a0e1acc755874c4a",
+  "schemaDigest": "f7c08d12cd9ffd1ad500e6b65ab0384becabed69caf76a6f673378d8e4731d54",
   "schemaVersion": 1
 }

@@ -100,6 +100,13 @@ test('root and migration fixture credentials exist only in the disposable databa
       foundation.services.postgres.options,
       /^--health-cmd pg_isready --health-interval 3s --health-timeout 3s --health-retries 20$/,
     );
+    const steps = (await read('.github/workflows/' + file)).jobs['identity-sql']
+      .steps;
+    assert.equal(steps.at(-1).run, 'npm run test:recovery');
+    assert.equal(
+      steps.at(-2).run,
+      'npm run test:identity -- --build --compiled-operations',
+    );
   }
   const quality = await read('.github/actions/quality/action.yml');
   for (const step of quality.runs.steps) {

@@ -206,6 +206,7 @@ export function recoveryChecks(environment, baseSha) {
         '--copy-reports',
       ],
     ],
+    ['npm', ['run', 'test:recovery']],
     ['npm', ['run', 'build']],
     ...[
       [],
@@ -421,6 +422,33 @@ export async function runRecovery({
     sql.artifact?.runtimeInputDigest !== sql.candidate.runtimeInputDigest
   )
     fail('RECOVERY_SQL_ARTIFACT_DISAGREES');
+  const rehearsal = await json(
+    resolve(checks, '.local/conformance/database-recovery.json'),
+  );
+  if (
+    rehearsal.schemaVersion !== 1 ||
+    rehearsal.status !== 'PASSED' ||
+    rehearsal.scope !== 'disposable-development-recovery-rehearsal' ||
+    typeof rehearsal.runId !== 'string' ||
+    /^[a-f0-9]{12}$/.exec(rehearsal.runId)?.[0] !== rehearsal.runId ||
+    !Array.isArray(rehearsal.checks) ||
+    rehearsal.checks.length !== 15 ||
+    new Set(rehearsal.checks).size !== 15 ||
+    rehearsal.mediaObjects !== 3 ||
+    rehearsal.artifact?.sourceSha !== identity.sourceSha ||
+    rehearsal.artifact?.sourceInputDigest !== identity.sourceInputDigest ||
+    rehearsal.artifact?.runtimeInputDigest !==
+      sql.artifact.runtimeInputDigest ||
+    rehearsal.artifact?.dirty !== false ||
+    rehearsal.artifact?.environment !== 'development' ||
+    rehearsal.candidateSource?.sourceSha !== identity.sourceSha ||
+    rehearsal.candidateSource?.sourceInputDigest !==
+      identity.sourceInputDigest ||
+    rehearsal.candidateSource?.dirty !== false ||
+    rehearsal.candidateSource?.runtimeInputDigest !==
+      sql.artifact.runtimeInputDigest
+  )
+    fail('RECOVERY_DATABASE_REHEARSAL_DISAGREES');
   const images = [];
   for (const [index, target] of ['runtime', 'operations'].entries()) {
     const tag = recoveryRecipe(request).images[index];

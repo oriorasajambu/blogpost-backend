@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import type { PoolClient } from 'pg';
+import { canonicalCatalogConstraint } from './catalog-normalization.js';
 import { canonical, digest } from '../platform/config/build-model.js';
 import {
   APP_TABLES,
@@ -106,9 +107,17 @@ export async function schemaSnapshot(client: PoolClient) {
     for (const [name, sql] of Object.entries(queries)) {
       const result = await client.query(sql + ' LIMIT 2001');
       if (result.rows.length > 2000) databaseError('DATABASE_CATALOG_LIMIT');
-      definitions[name] = result.rows.sort((a, b) =>
-        canonical(a) < canonical(b) ? -1 : canonical(a) > canonical(b) ? 1 : 0,
-      );
+      definitions[name] = result.rows
+        .map((row) =>
+          name === 'constraints' ? canonicalCatalogConstraint(row) : row,
+        )
+        .sort((a, b) =>
+          canonical(a) < canonical(b)
+            ? -1
+            : canonical(a) > canonical(b)
+              ? 1
+              : 0,
+        );
     }
     const encoded = canonical(definitions);
     if (Buffer.byteLength(encoded) > 1048576)
