@@ -1,0 +1,156 @@
+name: ${STACK_PROJECT:?Create a stack with npm run dev:stack -- create first}
+x-logging: &logging
+  driver: local
+  options:
+    max-size: '10m'
+    max-file: '3'
+    compress: 'true'
+x-app: &app
+  image: ${BACKEND_IMAGE:-${STACK_PROJECT:?}-backend:development}
+  build:
+    context: ${BACKEND_SOURCE_CONTEXT:-.}
+    target: development
+    additional_contexts:
+      blogpost_metadata: ${BACKEND_BUILD_CONTEXT:-.build-metadata-unprepared}
+  init: true
+  logging: *logging
+  environment: &environment
+    APP_ENV: development
+    NODE_ENV: development
+    PORT: 8080
+    IDENTITY_PROJECT_ID: ${IDENTITY_PROJECT_ID:?}
+    FIREBASE_AUTH_EMULATOR_HOST: auth:9099
+    MEDIA_ADAPTER: local
+    MEDIA_LOCAL_ROOT: /data/media
+    API_ORIGIN: http://localhost:${API_PORT:?}
+    WEB_ORIGIN: http://localhost:${WEB_PORT:?}
+    SQL_HOST: db
+    SQL_DATABASE: blogpost
+    SQL_APP_PASSWORD: ${SQL_APP_PASSWORD:?}
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  db:
+    image: postgres:17.11-bookworm@sha256:858bb5e98eed02eb8cafbcdc007f9a65d1b613972028944a8ec2133ccaf80d27
+    logging: *logging
+    environment:
+      POSTGRES_DB: blogpost
+      POSTGRES_PASSWORD: ${SQL_ROOT_PASSWORD:?}
+    volumes:
+      - sql:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres -d blogpost]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  auth:
+    image: ${AUTH_IMAGE:-${STACK_PROJECT:?}-auth:development}
+    build: ./docker/auth
+    init: true
+    logging: *logging
+    environment:
+      IDENTITY_PROJECT_ID: ${IDENTITY_PROJECT_ID:?}
+    ports:
+      - '127.0.0.1:${AUTH_PORT:?}:9099'
+    volumes:
+      - auth:/emulator/data
+  api:
+    <<: *app
+    environment:
+      <<: *environment
+      CURSOR_SIGNING_KEY: ${CURSOR_SIGNING_KEY:?}
+    command: [sh, -c, 'npm run db:generate && npm run start:dev']
+    ports:
+      - '127.0.0.1:${API_PORT:?}:8080'
+    volumes:
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+      - media:/data/media
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://localhost:8080/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 4s
+      retries: 20
+  mock:
+    image: ${BACKEND_IMAGE:-${STACK_PROJECT:?}-backend:development}
+    build:
+      context: ${BACKEND_SOURCE_CONTEXT:-.}
+      target: development
+      additional_contexts:
+        blogpost_metadata: ${BACKEND_BUILD_CONTEXT:-.build-metadata-unprepared}
+    profiles: [mock]
+    init: true
+    logging: *logging
+    command: [npm, run, mock]
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
+      BUILD_ENV: development
+      MOCK_PROXY_HOST: 0.0.0.0
+      MOCK_WEB_ORIGIN: http://localhost:${WEB_PORT:?}
+    ports:
+      - '127.0.0.1:${MOCK_PORT:-4010}:4010'
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:4010/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 4s
+      start_period: 20s
+      retries: 20
+  bootstrap:
+    <<: *app
+    profiles: [tools]
+    environment:
+      <<: *environment
+      SQL_ROOT_PASSWORD: ${SQL_ROOT_PASSWORD:?}
+      SQL_MIGRATOR_PASSWORD: ${SQL_MIGRATOR_PASSWORD:?}
+    command: [npm, run, db:bootstrap]
+  migrate:
+    <<: *app
+    profiles: [tools]
+    environment:
+      <<: *environment
+      SQL_MIGRATOR_PASSWORD: ${SQL_MIGRATOR_PASSWORD:?}
+    command: [npm, run, db:migrate]
+  bootstrap-admin:
+    <<: *app
+    profiles: [tools]
+    environment:
+      <<: *environment
+      INITIAL_ADMIN_UID: ${INITIAL_ADMIN_UID:-}
+      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL:-}
+      INITIAL_ADMIN_DISPLAY_NAME: ${INITIAL_ADMIN_DISPLAY_NAME:-}
+      INITIAL_ADMIN_HANDLE: ${INITIAL_ADMIN_HANDLE:-}
+    command: [npm, run, db:bootstrap-admin]
+  verify:
+    <<: *app
+    profiles: [tools]
+    command: [npm, run, db:verify]
+  test:
+    <<: *app
+    profiles: [tools]
+    command: [npm, run, test:integration]
+  maintenance:
+    <<: *app
+    profiles: [tools]
+    volumes:
+      - media:/data/media
+    command: [npm, run, db:maintenance]
+
+volumes:
+  sql:
+  media:
+  auth:

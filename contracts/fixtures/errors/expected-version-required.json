@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-10-25T08:20:30.123Z",
+  "responseKey": "ERROR",
+  "statusCode": 428,
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "message": {
+    "title": "Request rejected",
+    "descriptions": "Use the stable error code to handle this response."
+  },
+  "data": null,
+  "error": {
+    "code": "EXPECTED_VERSION_REQUIRED",
+    "fieldErrors": [],
+    "context": null
+  },
+  "meta": {
+    "contractVersion": "1.0.0",
+    "pagination": null,
+    "idempotency": null
+  }
+}

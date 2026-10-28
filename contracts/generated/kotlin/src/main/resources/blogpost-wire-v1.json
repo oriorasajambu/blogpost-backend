@@ -1,0 +1,4936 @@
+{
+  "contractVersion": "1.0.0",
+  "schemas": {
+    "UUID": { "type": "string", "format": "uuid" },
+    "DateTime": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+    },
+    "Version": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+    "Role": { "type": "string", "enum": ["AUTHOR", "EDITOR", "ADMIN"] },
+    "PublicationState": {
+      "type": "string",
+      "enum": ["NEVER_PUBLISHED", "PUBLISHED", "WITHDRAWN"]
+    },
+    "WorkflowState": {
+      "type": "string",
+      "enum": ["DRAFT", "IN_REVIEW", "CHANGES_REQUESTED", "CLEAN"]
+    },
+    "VariantName": { "type": "string", "enum": ["w480", "w960", "w1600"] },
+    "InvitationStatus": {
+      "type": "string",
+      "enum": ["PENDING", "ACCEPTED", "REVOKED", "EXPIRED"]
+    },
+    "AuthorSummary": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "handle": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "displayName": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 80,
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      },
+      "required": ["id", "handle", "displayName"]
+    },
+    "PublicAuthor": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "handle": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "displayName": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 80,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "bio": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 500
+        }
+      },
+      "required": ["id", "handle", "displayName", "bio"]
+    },
+    "Taxon": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 80,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "slug": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "name", "slug", "active"]
+    },
+    "MediaVariant": {
+      "type": "object",
+      "properties": {
+        "name": { "$ref": "#/components/schemas/VariantName" },
+        "apiPath": { "type": "string", "pattern": "^/v1/" },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "mimeType": {
+          "type": "string",
+          "enum": ["image/jpeg", "image/png", "image/webp"]
+        },
+        "byteSize": { "type": "integer", "minimum": 1 }
+      },
+      "required": ["name", "apiPath", "width", "height", "mimeType", "byteSize"]
+    },
+    "MediaDescriptor": {
+      "type": "object",
+      "properties": {
+        "mediaId": { "type": "string", "format": "uuid" },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "mimeType": {
+          "type": "string",
+          "enum": ["image/jpeg", "image/png", "image/webp"]
+        },
+        "variants": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/MediaVariant" },
+          "maxItems": 3,
+          "minItems": 3,
+          "allOf": [
+            {
+              "contains": {
+                "type": "object",
+                "properties": { "name": { "const": "w480" } },
+                "required": ["name"]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "type": "object",
+                "properties": { "name": { "const": "w960" } },
+                "required": ["name"]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "type": "object",
+                "properties": { "name": { "const": "w1600" } },
+                "required": ["name"]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            }
+          ]
+        }
+      },
+      "required": ["mediaId", "width", "height", "mimeType", "variants"]
+    },
+    "ImageReference": {
+      "type": "object",
+      "properties": {
+        "mediaId": { "type": "string", "format": "uuid" },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "mimeType": {
+          "type": "string",
+          "enum": ["image/jpeg", "image/png", "image/webp"]
+        },
+        "variants": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/MediaVariant" },
+          "maxItems": 3,
+          "minItems": 3,
+          "allOf": [
+            {
+              "contains": {
+                "type": "object",
+                "properties": { "name": { "const": "w480" } },
+                "required": ["name"]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "type": "object",
+                "properties": { "name": { "const": "w960" } },
+                "required": ["name"]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "type": "object",
+                "properties": { "name": { "const": "w1600" } },
+                "required": ["name"]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            }
+          ]
+        },
+        "altText": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 300
+        },
+        "decorative": { "type": "boolean" }
+      },
+      "required": [
+        "mediaId",
+        "width",
+        "height",
+        "mimeType",
+        "variants",
+        "altText",
+        "decorative"
+      ],
+      "allOf": [
+        {
+          "if": { "properties": { "decorative": { "const": true } } },
+          "then": { "properties": { "altText": { "const": "" } } },
+          "else": {
+            "properties": {
+              "altText": {
+                "type": "string",
+                "x-unicodeScalarText": true,
+                "maxLength": 300,
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "PublicPostSummary": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "slug": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "title": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "summary": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 320,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "author": { "$ref": "#/components/schemas/AuthorSummary" },
+        "category": { "$ref": "#/components/schemas/Taxon" },
+        "tags": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/Taxon" },
+          "maxItems": 5
+        },
+        "cover": {
+          "anyOf": [
+            { "$ref": "#/components/schemas/ImageReference" },
+            { "type": "null" }
+          ]
+        },
+        "publishedRevisionId": { "type": "string", "format": "uuid" },
+        "firstPublishedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        }
+      },
+      "required": [
+        "id",
+        "slug",
+        "title",
+        "summary",
+        "author",
+        "category",
+        "tags",
+        "cover",
+        "publishedRevisionId",
+        "firstPublishedAt",
+        "updatedAt"
+      ]
+    },
+    "PublicPost": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "slug": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "title": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 160,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "summary": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 320,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "author": { "$ref": "#/components/schemas/AuthorSummary" },
+        "category": { "$ref": "#/components/schemas/Taxon" },
+        "tags": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/Taxon" },
+          "maxItems": 5
+        },
+        "cover": {
+          "anyOf": [
+            { "$ref": "#/components/schemas/ImageReference" },
+            { "type": "null" }
+          ]
+        },
+        "publishedRevisionId": { "type": "string", "format": "uuid" },
+        "firstPublishedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "markdown": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "x-maxUtf8Bytes": 131072
+        },
+        "markdownContractVersion": { "type": "integer", "const": 1 },
+        "media": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/MediaDescriptor" }
+        }
+      },
+      "required": [
+        "id",
+        "slug",
+        "title",
+        "summary",
+        "author",
+        "category",
+        "tags",
+        "cover",
+        "publishedRevisionId",
+        "firstPublishedAt",
+        "updatedAt",
+        "markdown",
+        "markdownContractVersion",
+        "media"
+      ]
+    },
+    "DraftContentInput": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 160
+        },
+        "summary": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 320
+        },
+        "markdown": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "x-maxUtf8Bytes": 131072
+        },
+        "categoryId": {
+          "anyOf": [{ "type": "string", "format": "uuid" }, { "type": "null" }]
+        },
+        "tagIds": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" },
+          "maxItems": 5,
+          "uniqueItems": true
+        },
+        "coverMediaId": {
+          "anyOf": [{ "type": "string", "format": "uuid" }, { "type": "null" }]
+        },
+        "markdownContractVersion": { "type": "integer", "const": 1 },
+        "coverAltText": {
+          "anyOf": [
+            { "type": "string", "x-unicodeScalarText": true, "maxLength": 300 },
+            { "type": "null" }
+          ]
+        },
+        "coverDecorative": { "type": "boolean" }
+      },
+      "required": [
+        "title",
+        "summary",
+        "markdown",
+        "categoryId",
+        "tagIds",
+        "coverMediaId"
+      ],
+      "additionalProperties": false
+    },
+    "DraftContent": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 160
+        },
+        "summary": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 320
+        },
+        "markdown": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "x-maxUtf8Bytes": 131072
+        },
+        "categoryId": {
+          "anyOf": [{ "type": "string", "format": "uuid" }, { "type": "null" }]
+        },
+        "tagIds": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" },
+          "maxItems": 5,
+          "uniqueItems": true
+        },
+        "coverMediaId": {
+          "anyOf": [{ "type": "string", "format": "uuid" }, { "type": "null" }]
+        },
+        "markdownContractVersion": { "type": "integer", "const": 1 },
+        "coverAltText": {
+          "anyOf": [
+            { "type": "string", "x-unicodeScalarText": true, "maxLength": 300 },
+            { "type": "null" }
+          ]
+        },
+        "coverDecorative": { "type": "boolean" }
+      },
+      "required": [
+        "title",
+        "summary",
+        "markdown",
+        "categoryId",
+        "tagIds",
+        "coverMediaId",
+        "markdownContractVersion",
+        "coverAltText",
+        "coverDecorative"
+      ]
+    },
+    "RevisionSummary": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "postId": { "type": "string", "format": "uuid" },
+        "number": { "type": "integer", "minimum": 1 },
+        "title": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 160
+        },
+        "createdBy": { "$ref": "#/components/schemas/AuthorSummary" },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        }
+      },
+      "required": ["id", "postId", "number", "title", "createdBy", "createdAt"]
+    },
+    "Revision": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "postId": { "type": "string", "format": "uuid" },
+        "number": { "type": "integer", "minimum": 1 },
+        "createdBy": { "$ref": "#/components/schemas/AuthorSummary" },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "creditedAuthor": { "$ref": "#/components/schemas/AuthorSummary" },
+        "content": { "$ref": "#/components/schemas/DraftContent" },
+        "media": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/MediaDescriptor" }
+        },
+        "restoredFromRevisionId": {
+          "anyOf": [{ "type": "string", "format": "uuid" }, { "type": "null" }]
+        }
+      },
+      "required": [
+        "id",
+        "postId",
+        "number",
+        "createdBy",
+        "createdAt",
+        "creditedAuthor",
+        "content",
+        "media",
+        "restoredFromRevisionId"
+      ]
+    },
+    "ReviewFeedback": {
+      "type": "object",
+      "properties": {
+        "revisionId": { "type": "string", "format": "uuid" },
+        "actor": { "$ref": "#/components/schemas/AuthorSummary" },
+        "text": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 2000,
+          "minLength": 1
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        }
+      },
+      "required": ["revisionId", "actor", "text", "createdAt"]
+    },
+    "ReviewState": {
+      "type": "object",
+      "properties": {
+        "submittedRevisionId": {
+          "anyOf": [{ "type": "string", "format": "uuid" }, { "type": "null" }]
+        },
+        "submittedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "lastFeedback": {
+          "anyOf": [
+            { "$ref": "#/components/schemas/ReviewFeedback" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": ["submittedRevisionId", "submittedAt", "lastFeedback"]
+    },
+    "WorkspacePostSummary": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "clientDraftId": { "type": "string", "format": "uuid" },
+        "author": { "$ref": "#/components/schemas/AuthorSummary" },
+        "slug": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-unicodeScalarText": true,
+              "maxLength": 120,
+              "minLength": 1,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "publicationState": { "$ref": "#/components/schemas/PublicationState" },
+        "workflowState": { "$ref": "#/components/schemas/WorkflowState" },
+        "version": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "workingRevisionId": {
+          "anyOf": [{ "type": "string", "format": "uuid" }, { "type": "null" }]
+        },
+        "publishedRevisionId": {
+          "anyOf": [{ "type": "string", "format": "uuid" }, { "type": "null" }]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "trashedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "purgeAfter": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "allowedActions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 80,
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "id",
+        "clientDraftId",
+        "author",
+        "slug",
+        "publicationState",
+        "workflowState",
+        "version",
+        "workingRevisionId",
+        "publishedRevisionId",
+        "createdAt",
+        "updatedAt",
+        "trashedAt",
+        "purgeAfter",
+        "allowedActions"
+      ]
+    },
+    "WorkspacePost": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "clientDraftId": { "type": "string", "format": "uuid" },
+        "author": { "$ref": "#/components/schemas/AuthorSummary" },
+        "slug": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-unicodeScalarText": true,
+              "maxLength": 120,
+              "minLength": 1,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "publicationState": { "$ref": "#/components/schemas/PublicationState" },
+        "workflowState": { "$ref": "#/components/schemas/WorkflowState" },
+        "version": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "workingRevisionId": {
+          "anyOf": [{ "type": "string", "format": "uuid" }, { "type": "null" }]
+        },
+        "publishedRevisionId": {
+          "anyOf": [{ "type": "string", "format": "uuid" }, { "type": "null" }]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "trashedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "purgeAfter": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "allowedActions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 80,
+            "minLength": 1
+          }
+        },
+        "workingRevision": {
+          "anyOf": [
+            { "$ref": "#/components/schemas/Revision" },
+            { "type": "null" }
+          ]
+        },
+        "publishedRevision": {
+          "anyOf": [
+            { "$ref": "#/components/schemas/Revision" },
+            { "type": "null" }
+          ]
+        },
+        "review": { "$ref": "#/components/schemas/ReviewState" }
+      },
+      "required": [
+        "id",
+        "clientDraftId",
+        "author",
+        "slug",
+        "publicationState",
+        "workflowState",
+        "version",
+        "workingRevisionId",
+        "publishedRevisionId",
+        "createdAt",
+        "updatedAt",
+        "trashedAt",
+        "purgeAfter",
+        "allowedActions",
+        "workingRevision",
+        "publishedRevision",
+        "review"
+      ]
+    },
+    "ReviewEvent": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "postId": { "type": "string", "format": "uuid" },
+        "revisionId": { "type": "string", "format": "uuid" },
+        "action": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 40,
+          "minLength": 1
+        },
+        "actor": { "$ref": "#/components/schemas/AuthorSummary" },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "feedback": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-unicodeScalarText": true,
+              "maxLength": 2000,
+              "minLength": 1
+            },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "postId",
+        "revisionId",
+        "action",
+        "actor",
+        "createdAt",
+        "feedback"
+      ]
+    },
+    "Me": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "handle": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "displayName": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 80,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "bio": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 500
+        },
+        "email": { "type": "string", "format": "email" },
+        "role": { "$ref": "#/components/schemas/Role" },
+        "active": { "type": "boolean" },
+        "version": { "type": "integer", "minimum": 1, "maximum": 2147483647 }
+      },
+      "required": [
+        "id",
+        "handle",
+        "displayName",
+        "bio",
+        "email",
+        "role",
+        "active",
+        "version"
+      ]
+    },
+    "AdminMember": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "handle": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "displayName": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 80,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "bio": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 500
+        },
+        "email": { "type": "string", "format": "email" },
+        "role": { "$ref": "#/components/schemas/Role" },
+        "active": { "type": "boolean" },
+        "version": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        }
+      },
+      "required": [
+        "id",
+        "handle",
+        "displayName",
+        "bio",
+        "email",
+        "role",
+        "active",
+        "version",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ManagedTaxon": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 80,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "slug": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "active": { "type": "boolean" },
+        "version": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "usage": {
+          "type": "object",
+          "properties": {
+            "publishedCount": { "type": "integer", "minimum": 0 },
+            "draftCount": { "type": "integer", "minimum": 0 }
+          },
+          "required": ["publishedCount", "draftCount"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "slug",
+        "active",
+        "version",
+        "usage",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Invitation": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "$ref": "#/components/schemas/Role" },
+        "status": { "$ref": "#/components/schemas/InvitationStatus" },
+        "version": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "issuedBy": { "$ref": "#/components/schemas/AuthorSummary" },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "acceptedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "revokedAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+            },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "role",
+        "status",
+        "version",
+        "issuedBy",
+        "createdAt",
+        "expiresAt",
+        "acceptedAt",
+        "revokedAt"
+      ]
+    },
+    "InvitationIssueResult": {
+      "type": "object",
+      "properties": {
+        "invitation": { "$ref": "#/components/schemas/Invitation" },
+        "inviteUrl": {
+          "anyOf": [{ "type": "string", "format": "uri" }, { "type": "null" }]
+        },
+        "linkAvailable": { "type": "boolean" }
+      },
+      "required": ["invitation", "inviteUrl", "linkAvailable"]
+    },
+    "MediaAsset": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "postId": { "type": "string", "format": "uuid" },
+        "ready": { "type": "boolean", "const": true },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "mimeType": {
+          "type": "string",
+          "enum": ["image/jpeg", "image/png", "image/webp"]
+        },
+        "variants": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/MediaVariant" },
+          "maxItems": 3,
+          "minItems": 3,
+          "allOf": [
+            {
+              "contains": {
+                "type": "object",
+                "properties": { "name": { "const": "w480" } },
+                "required": ["name"]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "type": "object",
+                "properties": { "name": { "const": "w960" } },
+                "required": ["name"]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "type": "object",
+                "properties": { "name": { "const": "w1600" } },
+                "required": ["name"]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            }
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "unattachedExpiresAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+            },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "postId",
+        "ready",
+        "width",
+        "height",
+        "mimeType",
+        "variants",
+        "createdAt",
+        "unattachedExpiresAt"
+      ]
+    },
+    "AvailabilityItem": {
+      "type": "object",
+      "properties": {
+        "postId": { "type": "string", "format": "uuid" },
+        "available": { "type": "boolean" },
+        "publishedRevisionId": {
+          "anyOf": [{ "type": "string", "format": "uuid" }, { "type": "null" }]
+        }
+      },
+      "required": ["postId", "available", "publishedRevisionId"],
+      "allOf": [
+        {
+          "if": { "properties": { "available": { "const": true } } },
+          "then": {
+            "properties": {
+              "publishedRevisionId": { "type": "string", "format": "uuid" }
+            }
+          },
+          "else": {
+            "properties": { "publishedRevisionId": { "type": "null" } }
+          }
+        }
+      ]
+    },
+    "SlugResolution": {
+      "type": "object",
+      "properties": {
+        "resolution": { "type": "string", "enum": ["CANONICAL", "REDIRECT"] },
+        "canonicalSlug": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "canonicalPath": { "type": "string", "pattern": "^/posts/" },
+        "post": {
+          "anyOf": [
+            { "$ref": "#/components/schemas/PublicPost" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": ["resolution", "canonicalSlug", "canonicalPath", "post"],
+      "allOf": [
+        {
+          "if": { "properties": { "resolution": { "const": "CANONICAL" } } },
+          "then": {
+            "properties": {
+              "post": { "$ref": "#/components/schemas/PublicPost" }
+            }
+          },
+          "else": { "properties": { "post": { "type": "null" } } }
+        }
+      ]
+    },
+    "AuditEvent": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "actor": { "$ref": "#/components/schemas/AuthorSummary" },
+        "action": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 80,
+          "minLength": 1
+        },
+        "subjectType": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 40,
+          "minLength": 1
+        },
+        "subjectId": { "type": "string", "format": "uuid" },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "changes": { "type": "object" }
+      },
+      "required": [
+        "id",
+        "actor",
+        "action",
+        "subjectType",
+        "subjectId",
+        "createdAt",
+        "changes"
+      ]
+    },
+    "WebSession": {
+      "type": "object",
+      "properties": {
+        "sessionCookie": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 16384,
+          "minLength": 1
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "member": { "$ref": "#/components/schemas/Me" }
+      },
+      "required": ["sessionCookie", "expiresAt", "member"]
+    },
+    "ApiLimits": {
+      "type": "object",
+      "properties": {
+        "defaultPageSize": { "type": "integer", "const": 20 },
+        "maxPageSize": { "type": "integer", "const": 50 },
+        "defaultTaxonomyPageSize": { "type": "integer", "const": 50 },
+        "maxSearchResults": { "type": "integer", "const": 1000 },
+        "maxMarkdownBytes": { "type": "integer", "const": 131072 },
+        "maxJsonBodyBytes": { "type": "integer", "const": 1048576 },
+        "maxUploadFileBytes": { "type": "integer", "const": 5242880 },
+        "maxMultipartBodyBytes": { "type": "integer", "const": 6291456 },
+        "maxImagePixels": { "type": "integer", "const": 12000000 },
+        "maxTagsPerPost": { "type": "integer", "const": 5 },
+        "maxAvailabilityIds": { "type": "integer", "const": 50 },
+        "maxActivePostsPerMember": { "type": "integer", "const": 100 },
+        "maxPendingUploadBytesPerMember": {
+          "type": "integer",
+          "const": 104857600
+        },
+        "idempotencyTtlSeconds": { "type": "integer", "const": 86400 },
+        "unattachedMediaTtlSeconds": { "type": "integer", "const": 86400 },
+        "invitationTtlSeconds": { "type": "integer", "const": 604800 }
+      },
+      "required": [
+        "defaultPageSize",
+        "maxPageSize",
+        "defaultTaxonomyPageSize",
+        "maxSearchResults",
+        "maxMarkdownBytes",
+        "maxJsonBodyBytes",
+        "maxUploadFileBytes",
+        "maxMultipartBodyBytes",
+        "maxImagePixels",
+        "maxTagsPerPost",
+        "maxAvailabilityIds",
+        "maxActivePostsPerMember",
+        "maxPendingUploadBytesPerMember",
+        "idempotencyTtlSeconds",
+        "unattachedMediaTtlSeconds",
+        "invitationTtlSeconds"
+      ]
+    },
+    "ApiMeta": {
+      "type": "object",
+      "properties": {
+        "apiMajor": { "type": "integer", "const": 1 },
+        "contractVersion": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 64,
+          "minLength": 1
+        },
+        "markdownContractVersion": { "type": "integer", "const": 1 },
+        "buildSha": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 80,
+          "minLength": 1
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 80,
+            "minLength": 1
+          }
+        },
+        "limits": { "$ref": "#/components/schemas/ApiLimits" },
+        "clients": {
+          "type": "object",
+          "properties": {
+            "web": {
+              "type": "object",
+              "properties": {
+                "recommendedVersion": {
+                  "type": "string",
+                  "x-unicodeScalarText": true,
+                  "maxLength": 64,
+                  "minLength": 1
+                },
+                "minimumSupportedVersion": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "x-unicodeScalarText": true,
+                      "maxLength": 64,
+                      "minLength": 1
+                    },
+                    { "type": "null" }
+                  ]
+                }
+              },
+              "required": ["recommendedVersion", "minimumSupportedVersion"]
+            },
+            "android": {
+              "type": "object",
+              "properties": {
+                "recommendedVersion": {
+                  "type": "string",
+                  "x-unicodeScalarText": true,
+                  "maxLength": 64,
+                  "minLength": 1
+                },
+                "minimumSupportedVersion": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "x-unicodeScalarText": true,
+                      "maxLength": 64,
+                      "minLength": 1
+                    },
+                    { "type": "null" }
+                  ]
+                }
+              },
+              "required": ["recommendedVersion", "minimumSupportedVersion"]
+            }
+          },
+          "required": ["web", "android"]
+        },
+        "lifecycle": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["ACTIVE", "DEPRECATED", "RETIRED"]
+            },
+            "successorApiMajor": {
+              "anyOf": [{ "type": "integer", "minimum": 2 }, { "type": "null" }]
+            },
+            "noticePublishedAt": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                },
+                { "type": "null" }
+              ]
+            },
+            "deprecatedAt": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                },
+                { "type": "null" }
+              ]
+            },
+            "sunsetAt": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+                },
+                { "type": "null" }
+              ]
+            },
+            "migrationGuidePath": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "x-unicodeScalarText": true,
+                  "maxLength": 500,
+                  "minLength": 1
+                },
+                { "type": "null" }
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "successorApiMajor",
+            "noticePublishedAt",
+            "deprecatedAt",
+            "sunsetAt",
+            "migrationGuidePath"
+          ]
+        },
+        "deployment": {
+          "type": "object",
+          "properties": {
+            "environment": {
+              "type": "string",
+              "x-unicodeScalarText": true,
+              "maxLength": 64,
+              "minLength": 1
+            },
+            "revision": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "x-unicodeScalarText": true,
+                  "maxLength": 200,
+                  "minLength": 1
+                },
+                { "type": "null" }
+              ]
+            },
+            "runtimeInputDigest": {
+              "type": "string",
+              "x-unicodeScalarText": true,
+              "maxLength": 64,
+              "minLength": 64,
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "configurationDigest": {
+              "type": "string",
+              "x-unicodeScalarText": true,
+              "maxLength": 64,
+              "minLength": 64,
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "environment",
+            "revision",
+            "runtimeInputDigest",
+            "configurationDigest"
+          ]
+        }
+      },
+      "required": [
+        "apiMajor",
+        "contractVersion",
+        "markdownContractVersion",
+        "buildSha",
+        "features",
+        "limits",
+        "clients",
+        "lifecycle"
+      ]
+    },
+    "FieldIssue": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "type": "string",
+          "enum": ["header", "path", "query", "body"]
+        },
+        "field": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 2048
+        },
+        "code": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 80,
+          "minLength": 1
+        },
+        "params": { "type": "object" }
+      },
+      "required": ["location", "field", "code", "params"]
+    },
+    "ApiError": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 80,
+          "minLength": 1
+        },
+        "fieldErrors": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/FieldIssue" },
+          "maxItems": 50
+        },
+        "context": { "type": ["object", "null"] }
+      },
+      "required": ["code", "fieldErrors", "context"]
+    },
+    "CursorPagination": {
+      "type": "object",
+      "properties": {
+        "kind": { "type": "string", "const": "CURSOR" },
+        "pageSize": { "type": "integer", "minimum": 1, "maximum": 50 },
+        "hasMore": { "type": "boolean" },
+        "nextCursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-unicodeScalarText": true,
+              "maxLength": 2048,
+              "minLength": 1
+            },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": ["kind", "pageSize", "hasMore", "nextCursor"]
+    },
+    "PagePagination": {
+      "type": "object",
+      "properties": {
+        "kind": { "type": "string", "const": "PAGE" },
+        "page": { "type": "integer", "minimum": 1 },
+        "pageSize": { "type": "integer", "minimum": 1, "maximum": 50 },
+        "totalItems": { "type": "integer", "minimum": 0 },
+        "totalPages": { "type": "integer", "minimum": 0 },
+        "hasMore": { "type": "boolean" },
+        "truncated": { "type": "boolean" }
+      },
+      "required": [
+        "kind",
+        "page",
+        "pageSize",
+        "totalItems",
+        "totalPages",
+        "hasMore",
+        "truncated"
+      ]
+    },
+    "IdempotencyMeta": {
+      "type": "object",
+      "properties": {
+        "replayed": { "type": "boolean" },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        }
+      },
+      "required": ["replayed", "expiresAt"]
+    },
+    "ResponseMeta": {
+      "type": "object",
+      "properties": {
+        "contractVersion": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 64,
+          "minLength": 1
+        },
+        "pagination": {
+          "anyOf": [
+            {
+              "oneOf": [
+                { "$ref": "#/components/schemas/CursorPagination" },
+                { "$ref": "#/components/schemas/PagePagination" }
+              ]
+            },
+            { "type": "null" }
+          ]
+        },
+        "idempotency": {
+          "anyOf": [
+            { "$ref": "#/components/schemas/IdempotencyMeta" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": ["contractVersion", "pagination", "idempotency"]
+    },
+    "Health": {
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "enum": ["ok", "unavailable"] }
+      },
+      "required": ["status"]
+    },
+    "EmptyInput": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "WebSessionInput": {
+      "type": "object",
+      "properties": {
+        "idToken": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 65536,
+          "minLength": 1
+        }
+      },
+      "required": ["idToken"],
+      "additionalProperties": false
+    },
+    "UpdateMeInput": {
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 80,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "bio": {
+          "anyOf": [
+            { "type": "string", "x-unicodeScalarText": true, "maxLength": 500 },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "AcceptInvitationInput": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 43,
+          "minLength": 43,
+          "pattern": "^[A-Za-z0-9_-]{43}$"
+        }
+      },
+      "required": ["token"],
+      "additionalProperties": false
+    },
+    "AvailabilityInput": {
+      "type": "object",
+      "properties": {
+        "postIds": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" },
+          "maxItems": 50,
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": ["postIds"],
+      "additionalProperties": false
+    },
+    "CreatePostInput": {
+      "type": "object",
+      "properties": {
+        "clientDraftId": { "type": "string", "format": "uuid" },
+        "draft": { "$ref": "#/components/schemas/DraftContentInput" }
+      },
+      "required": ["clientDraftId", "draft"],
+      "additionalProperties": false
+    },
+    "RevisionActionInput": {
+      "type": "object",
+      "properties": { "revisionId": { "type": "string", "format": "uuid" } },
+      "required": ["revisionId"],
+      "additionalProperties": false
+    },
+    "RejectRevisionInput": {
+      "type": "object",
+      "properties": {
+        "revisionId": { "type": "string", "format": "uuid" },
+        "feedback": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 2000,
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      },
+      "required": ["revisionId", "feedback"],
+      "additionalProperties": false
+    },
+    "ChangeSlugInput": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        }
+      },
+      "required": ["slug"],
+      "additionalProperties": false
+    },
+    "CreateTaxonInput": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 80,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "slug": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 120,
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        }
+      },
+      "required": ["name", "slug"],
+      "additionalProperties": false
+    },
+    "UpdateTaxonInput": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 80,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "active": { "type": "boolean" }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "UpdateMemberInput": {
+      "type": "object",
+      "properties": {
+        "role": { "$ref": "#/components/schemas/Role" },
+        "active": { "type": "boolean" }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "ReassignAuthorInput": {
+      "type": "object",
+      "properties": { "authorId": { "type": "string", "format": "uuid" } },
+      "required": ["authorId"],
+      "additionalProperties": false
+    },
+    "CreateInvitationInput": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 320,
+          "minLength": 3,
+          "format": "email"
+        },
+        "role": { "$ref": "#/components/schemas/Role" }
+      },
+      "required": ["email", "role"],
+      "additionalProperties": false
+    },
+    "StageMediaInput": {
+      "type": "object",
+      "properties": { "file": { "type": "string", "format": "binary" } },
+      "required": ["file"],
+      "additionalProperties": false
+    },
+    "MetaEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/ApiMeta" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ErrorEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "ERROR" },
+        "statusCode": { "type": "integer", "minimum": 400, "maximum": 599 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "type": "null" },
+        "error": { "$ref": "#/components/schemas/ApiError" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": {
+              "anyOf": [
+                { "$ref": "#/components/schemas/IdempotencyMeta" },
+                { "type": "null" }
+              ]
+            }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ListPublicPostsEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/PublicPostSummary" },
+          "maxItems": 50
+        },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "$ref": "#/components/schemas/CursorPagination" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "GetPublicPostEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/PublicPost" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ResolvePublicPostSlugEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/SlugResolution" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "SearchPublicPostsEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/PublicPostSummary" },
+          "maxItems": 50
+        },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "$ref": "#/components/schemas/PagePagination" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ListPublicCategoriesEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/Taxon" },
+          "maxItems": 50
+        },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "$ref": "#/components/schemas/PagePagination" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ListPublicTagsEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/Taxon" },
+          "maxItems": 50
+        },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "$ref": "#/components/schemas/PagePagination" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "GetPublicAuthorEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/PublicAuthor" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "CheckPublicPostAvailabilityEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/AvailabilityItem" },
+          "maxItems": 50
+        },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "CreateWebSessionEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/WebSession" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "GetMeEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/Me" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "UpdateMeEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/Me" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "AcceptInvitationEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/Me" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ListWorkspacePostsEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/WorkspacePostSummary" },
+          "maxItems": 50
+        },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "$ref": "#/components/schemas/CursorPagination" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "CreatePostEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 201 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/WorkspacePost" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "GetPostByClientDraftIdEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/WorkspacePost" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "GetWorkspacePostEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/WorkspacePost" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "SavePostDraftEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/WorkspacePost" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "SubmitPostForReviewEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/WorkspacePost" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "WithdrawPostReviewEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/WorkspacePost" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "RejectPostRevisionEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/WorkspacePost" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "PublishPostRevisionEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/WorkspacePost" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "UnpublishPostEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/WorkspacePost" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ListPostRevisionsEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/RevisionSummary" },
+          "maxItems": 50
+        },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "$ref": "#/components/schemas/CursorPagination" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "GetPostRevisionEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/Revision" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ListPostReviewEventsEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/ReviewEvent" },
+          "maxItems": 50
+        },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "$ref": "#/components/schemas/CursorPagination" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "RestorePostRevisionEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/WorkspacePost" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "TrashPostEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/WorkspacePost" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "RestoreTrashedPostEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/WorkspacePost" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ChangePostSlugEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/WorkspacePost" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "StagePostMediaEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 201 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/MediaAsset" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "GetPostMediaMetadataEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/MediaAsset" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ListManagedCategoriesEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/ManagedTaxon" },
+          "maxItems": 50
+        },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "$ref": "#/components/schemas/PagePagination" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "GetManagedCategoryEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/ManagedTaxon" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "CreateCategoryEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 201 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/ManagedTaxon" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "UpdateCategoryEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/ManagedTaxon" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ListManagedTagsEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/ManagedTaxon" },
+          "maxItems": 50
+        },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "$ref": "#/components/schemas/PagePagination" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "GetManagedTagEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/ManagedTaxon" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "CreateTagEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 201 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/ManagedTaxon" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "UpdateTagEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/ManagedTaxon" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ListMembersEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/AdminMember" },
+          "maxItems": 50
+        },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "$ref": "#/components/schemas/CursorPagination" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "GetMemberEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/AdminMember" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "UpdateMemberEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/AdminMember" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ReassignPostAuthorEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/WorkspacePost" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ListInvitationsEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/Invitation" },
+          "maxItems": 50
+        },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "$ref": "#/components/schemas/CursorPagination" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "GetInvitationEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/Invitation" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "CreateInvitationEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 201 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/InvitationIssueResult" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "RevokeInvitationEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/Invitation" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ReissueInvitationEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 201 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/InvitationIssueResult" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ListAuditEventsEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": {
+          "type": "array",
+          "items": { "$ref": "#/components/schemas/AuditEvent" },
+          "maxItems": 50
+        },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "$ref": "#/components/schemas/CursorPagination" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    }
+  },
+  "operations": {
+    "getApiMeta": {
+      "method": "GET",
+      "path": "/v1/meta",
+      "operationId": "getApiMeta",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/MetaEnvelope" }
+    },
+    "listPublicPosts": {
+      "method": "GET",
+      "path": "/v1/public/posts",
+      "operationId": "listPublicPosts",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/ListPublicPostsEnvelope" }
+    },
+    "getPublicPost": {
+      "method": "GET",
+      "path": "/v1/public/posts/{postId}",
+      "operationId": "getPublicPost",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/GetPublicPostEnvelope" }
+    },
+    "resolvePublicPostSlug": {
+      "method": "GET",
+      "path": "/v1/public/posts/by-slug/{slug}",
+      "operationId": "resolvePublicPostSlug",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": {
+        "$ref": "#/components/schemas/ResolvePublicPostSlugEnvelope"
+      }
+    },
+    "searchPublicPosts": {
+      "method": "GET",
+      "path": "/v1/public/search",
+      "operationId": "searchPublicPosts",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/SearchPublicPostsEnvelope" }
+    },
+    "listPublicCategories": {
+      "method": "GET",
+      "path": "/v1/public/categories",
+      "operationId": "listPublicCategories",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": {
+        "$ref": "#/components/schemas/ListPublicCategoriesEnvelope"
+      }
+    },
+    "listPublicTags": {
+      "method": "GET",
+      "path": "/v1/public/tags",
+      "operationId": "listPublicTags",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/ListPublicTagsEnvelope" }
+    },
+    "getPublicAuthor": {
+      "method": "GET",
+      "path": "/v1/public/authors/{handle}",
+      "operationId": "getPublicAuthor",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/GetPublicAuthorEnvelope" }
+    },
+    "checkPublicPostAvailability": {
+      "method": "POST",
+      "path": "/v1/public/posts/availability",
+      "operationId": "checkPublicPostAvailability",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": { "$ref": "#/components/schemas/AvailabilityInput" },
+      "response": {
+        "$ref": "#/components/schemas/CheckPublicPostAvailabilityEnvelope"
+      }
+    },
+    "getPublicPostMedia": {
+      "method": "GET",
+      "path": "/v1/public/posts/{postId}/media/{mediaId}/{variant}",
+      "operationId": "getPublicPostMedia",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": true,
+      "resourceVersion": false,
+      "request": null,
+      "response": null
+    },
+    "createWebSession": {
+      "method": "POST",
+      "path": "/v1/auth/web-session",
+      "operationId": "createWebSession",
+      "access": "RECENT_IDENTITY",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": { "$ref": "#/components/schemas/WebSessionInput" },
+      "response": { "$ref": "#/components/schemas/CreateWebSessionEnvelope" }
+    },
+    "getMe": {
+      "method": "GET",
+      "path": "/v1/me",
+      "operationId": "getMe",
+      "access": "MEMBER",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/GetMeEnvelope" }
+    },
+    "updateMe": {
+      "method": "PATCH",
+      "path": "/v1/me",
+      "operationId": "updateMe",
+      "access": "MEMBER",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/UpdateMeInput" },
+      "response": { "$ref": "#/components/schemas/UpdateMeEnvelope" }
+    },
+    "acceptInvitation": {
+      "method": "POST",
+      "path": "/v1/invitations/accept",
+      "operationId": "acceptInvitation",
+      "access": "VERIFIED_IDENTITY",
+      "expectedVersion": false,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/AcceptInvitationInput" },
+      "response": { "$ref": "#/components/schemas/AcceptInvitationEnvelope" }
+    },
+    "listWorkspacePosts": {
+      "method": "GET",
+      "path": "/v1/posts",
+      "operationId": "listWorkspacePosts",
+      "access": "MEMBER",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/ListWorkspacePostsEnvelope" }
+    },
+    "createPost": {
+      "method": "POST",
+      "path": "/v1/posts",
+      "operationId": "createPost",
+      "access": "MEMBER",
+      "expectedVersion": false,
+      "idempotent": true,
+      "status": 201,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/CreatePostInput" },
+      "response": { "$ref": "#/components/schemas/CreatePostEnvelope" }
+    },
+    "getPostByClientDraftId": {
+      "method": "GET",
+      "path": "/v1/posts/by-client-draft-id/{clientDraftId}",
+      "operationId": "getPostByClientDraftId",
+      "access": "CREATOR_WITH_ACCESS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": null,
+      "response": {
+        "$ref": "#/components/schemas/GetPostByClientDraftIdEnvelope"
+      }
+    },
+    "getWorkspacePost": {
+      "method": "GET",
+      "path": "/v1/posts/{postId}",
+      "operationId": "getWorkspacePost",
+      "access": "OWNER_OR_EDITOR",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/GetWorkspacePostEnvelope" }
+    },
+    "savePostDraft": {
+      "method": "PUT",
+      "path": "/v1/posts/{postId}/draft",
+      "operationId": "savePostDraft",
+      "access": "OWNER_OR_EDITOR",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/DraftContentInput" },
+      "response": { "$ref": "#/components/schemas/SavePostDraftEnvelope" }
+    },
+    "submitPostForReview": {
+      "method": "POST",
+      "path": "/v1/posts/{postId}/submit",
+      "operationId": "submitPostForReview",
+      "access": "OWNER_OR_EDITOR",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/RevisionActionInput" },
+      "response": { "$ref": "#/components/schemas/SubmitPostForReviewEnvelope" }
+    },
+    "withdrawPostReview": {
+      "method": "POST",
+      "path": "/v1/posts/{postId}/withdraw-review",
+      "operationId": "withdrawPostReview",
+      "access": "OWNER_OR_EDITOR",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/EmptyInput" },
+      "response": { "$ref": "#/components/schemas/WithdrawPostReviewEnvelope" }
+    },
+    "rejectPostRevision": {
+      "method": "POST",
+      "path": "/v1/posts/{postId}/reject",
+      "operationId": "rejectPostRevision",
+      "access": "EDITOR",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/RejectRevisionInput" },
+      "response": { "$ref": "#/components/schemas/RejectPostRevisionEnvelope" }
+    },
+    "publishPostRevision": {
+      "method": "POST",
+      "path": "/v1/posts/{postId}/publish",
+      "operationId": "publishPostRevision",
+      "access": "EDITOR",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/RevisionActionInput" },
+      "response": { "$ref": "#/components/schemas/PublishPostRevisionEnvelope" }
+    },
+    "unpublishPost": {
+      "method": "POST",
+      "path": "/v1/posts/{postId}/unpublish",
+      "operationId": "unpublishPost",
+      "access": "EDITOR",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/EmptyInput" },
+      "response": { "$ref": "#/components/schemas/UnpublishPostEnvelope" }
+    },
+    "listPostRevisions": {
+      "method": "GET",
+      "path": "/v1/posts/{postId}/revisions",
+      "operationId": "listPostRevisions",
+      "access": "OWNER_OR_EDITOR",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/ListPostRevisionsEnvelope" }
+    },
+    "getPostRevision": {
+      "method": "GET",
+      "path": "/v1/posts/{postId}/revisions/{revisionId}",
+      "operationId": "getPostRevision",
+      "access": "OWNER_OR_EDITOR",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/GetPostRevisionEnvelope" }
+    },
+    "listPostReviewEvents": {
+      "method": "GET",
+      "path": "/v1/posts/{postId}/review-events",
+      "operationId": "listPostReviewEvents",
+      "access": "OWNER_OR_EDITOR",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": {
+        "$ref": "#/components/schemas/ListPostReviewEventsEnvelope"
+      }
+    },
+    "restorePostRevision": {
+      "method": "POST",
+      "path": "/v1/posts/{postId}/restore-revision",
+      "operationId": "restorePostRevision",
+      "access": "OWNER_OR_EDITOR",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/RevisionActionInput" },
+      "response": { "$ref": "#/components/schemas/RestorePostRevisionEnvelope" }
+    },
+    "trashPost": {
+      "method": "DELETE",
+      "path": "/v1/posts/{postId}",
+      "operationId": "trashPost",
+      "access": "OWNER_NEVER_PUBLISHED_OR_EDITOR",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/TrashPostEnvelope" }
+    },
+    "restoreTrashedPost": {
+      "method": "POST",
+      "path": "/v1/posts/{postId}/restore",
+      "operationId": "restoreTrashedPost",
+      "access": "OWNER_NEVER_PUBLISHED_OR_EDITOR",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/EmptyInput" },
+      "response": { "$ref": "#/components/schemas/RestoreTrashedPostEnvelope" }
+    },
+    "changePostSlug": {
+      "method": "PATCH",
+      "path": "/v1/posts/{postId}/slug",
+      "operationId": "changePostSlug",
+      "access": "EDITOR",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/ChangeSlugInput" },
+      "response": { "$ref": "#/components/schemas/ChangePostSlugEnvelope" }
+    },
+    "stagePostMedia": {
+      "method": "POST",
+      "path": "/v1/posts/{postId}/media",
+      "operationId": "stagePostMedia",
+      "access": "OWNER_OR_EDITOR",
+      "expectedVersion": false,
+      "idempotent": true,
+      "status": 201,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/StagePostMediaEnvelope" }
+    },
+    "getPostMediaMetadata": {
+      "method": "GET",
+      "path": "/v1/posts/{postId}/media/{mediaId}",
+      "operationId": "getPostMediaMetadata",
+      "access": "OWNER_OR_EDITOR",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": {
+        "$ref": "#/components/schemas/GetPostMediaMetadataEnvelope"
+      }
+    },
+    "getPrivatePostMedia": {
+      "method": "GET",
+      "path": "/v1/posts/{postId}/media/{mediaId}/{variant}",
+      "operationId": "getPrivatePostMedia",
+      "access": "OWNER_OR_EDITOR",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": true,
+      "resourceVersion": false,
+      "request": null,
+      "response": null
+    },
+    "listManagedCategories": {
+      "method": "GET",
+      "path": "/v1/categories",
+      "operationId": "listManagedCategories",
+      "access": "EDITOR",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": {
+        "$ref": "#/components/schemas/ListManagedCategoriesEnvelope"
+      }
+    },
+    "getManagedCategory": {
+      "method": "GET",
+      "path": "/v1/categories/{categoryId}",
+      "operationId": "getManagedCategory",
+      "access": "EDITOR",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/GetManagedCategoryEnvelope" }
+    },
+    "createCategory": {
+      "method": "POST",
+      "path": "/v1/categories",
+      "operationId": "createCategory",
+      "access": "EDITOR",
+      "expectedVersion": false,
+      "idempotent": true,
+      "status": 201,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/CreateTaxonInput" },
+      "response": { "$ref": "#/components/schemas/CreateCategoryEnvelope" }
+    },
+    "updateCategory": {
+      "method": "PATCH",
+      "path": "/v1/categories/{categoryId}",
+      "operationId": "updateCategory",
+      "access": "EDITOR",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/UpdateTaxonInput" },
+      "response": { "$ref": "#/components/schemas/UpdateCategoryEnvelope" }
+    },
+    "listManagedTags": {
+      "method": "GET",
+      "path": "/v1/tags",
+      "operationId": "listManagedTags",
+      "access": "EDITOR",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/ListManagedTagsEnvelope" }
+    },
+    "getManagedTag": {
+      "method": "GET",
+      "path": "/v1/tags/{tagId}",
+      "operationId": "getManagedTag",
+      "access": "EDITOR",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/GetManagedTagEnvelope" }
+    },
+    "createTag": {
+      "method": "POST",
+      "path": "/v1/tags",
+      "operationId": "createTag",
+      "access": "EDITOR",
+      "expectedVersion": false,
+      "idempotent": true,
+      "status": 201,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/CreateTaxonInput" },
+      "response": { "$ref": "#/components/schemas/CreateTagEnvelope" }
+    },
+    "updateTag": {
+      "method": "PATCH",
+      "path": "/v1/tags/{tagId}",
+      "operationId": "updateTag",
+      "access": "EDITOR",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/UpdateTaxonInput" },
+      "response": { "$ref": "#/components/schemas/UpdateTagEnvelope" }
+    },
+    "listMembers": {
+      "method": "GET",
+      "path": "/v1/admin/members",
+      "operationId": "listMembers",
+      "access": "ADMIN",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/ListMembersEnvelope" }
+    },
+    "getMember": {
+      "method": "GET",
+      "path": "/v1/admin/members/{memberId}",
+      "operationId": "getMember",
+      "access": "ADMIN",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/GetMemberEnvelope" }
+    },
+    "updateMember": {
+      "method": "PATCH",
+      "path": "/v1/admin/members/{memberId}",
+      "operationId": "updateMember",
+      "access": "ADMIN",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/UpdateMemberInput" },
+      "response": { "$ref": "#/components/schemas/UpdateMemberEnvelope" }
+    },
+    "reassignPostAuthor": {
+      "method": "PATCH",
+      "path": "/v1/admin/posts/{postId}/author",
+      "operationId": "reassignPostAuthor",
+      "access": "ADMIN",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/ReassignAuthorInput" },
+      "response": { "$ref": "#/components/schemas/ReassignPostAuthorEnvelope" }
+    },
+    "listInvitations": {
+      "method": "GET",
+      "path": "/v1/admin/invitations",
+      "operationId": "listInvitations",
+      "access": "ADMIN",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/ListInvitationsEnvelope" }
+    },
+    "getInvitation": {
+      "method": "GET",
+      "path": "/v1/admin/invitations/{invitationId}",
+      "operationId": "getInvitation",
+      "access": "ADMIN",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/GetInvitationEnvelope" }
+    },
+    "createInvitation": {
+      "method": "POST",
+      "path": "/v1/admin/invitations",
+      "operationId": "createInvitation",
+      "access": "ADMIN",
+      "expectedVersion": false,
+      "idempotent": true,
+      "status": 201,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/CreateInvitationInput" },
+      "response": { "$ref": "#/components/schemas/CreateInvitationEnvelope" }
+    },
+    "revokeInvitation": {
+      "method": "POST",
+      "path": "/v1/admin/invitations/{invitationId}/revoke",
+      "operationId": "revokeInvitation",
+      "access": "ADMIN",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/EmptyInput" },
+      "response": { "$ref": "#/components/schemas/RevokeInvitationEnvelope" }
+    },
+    "reissueInvitation": {
+      "method": "POST",
+      "path": "/v1/admin/invitations/{invitationId}/reissue",
+      "operationId": "reissueInvitation",
+      "access": "ADMIN",
+      "expectedVersion": true,
+      "idempotent": true,
+      "status": 201,
+      "binary": false,
+      "resourceVersion": true,
+      "request": { "$ref": "#/components/schemas/EmptyInput" },
+      "response": { "$ref": "#/components/schemas/ReissueInvitationEnvelope" }
+    },
+    "listAuditEvents": {
+      "method": "GET",
+      "path": "/v1/admin/audit-events",
+      "operationId": "listAuditEvents",
+      "access": "ADMIN",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": null,
+      "response": { "$ref": "#/components/schemas/ListAuditEventsEnvelope" }
+    }
+  }
+}

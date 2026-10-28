@@ -1,0 +1,28 @@
+{
+  "method": "POST",
+  "path": "/v1/posts",
+  "headers": {
+    "X-Device-ID": "8d5ca46a-7f59-4f64-9d91-fedc41b59e7a",
+    "X-Device-OS": "ANDROID",
+    "X-Device-Version": "unknown",
+    "X-App-Version": "0.0.0+fixture.1",
+    "X-App-Language": "en",
+    "Authorization": "Bearer SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL",
+    "Idempotency-Key": "83c9a1ca-6d20-48c5-8476-bb6a60677377"
+  },
+  "query": {},
+  "body": {
+    "clientDraftId": "10000000-0000-4000-8000-000000000002",
+    "draft": {
+      "title": "A first article",
+      "summary": "A useful summary.",
+      "markdown": "# Hello\n\nBody text.",
+      "categoryId": "30000000-0000-4000-8000-000000000001",
+      "tagIds": ["30000000-0000-4000-8000-000000000002"],
+      "coverMediaId": null,
+      "markdownContractVersion": 1,
+      "coverAltText": null,
+      "coverDecorative": false
+    }
+  }
+}

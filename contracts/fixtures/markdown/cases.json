@@ -1,0 +1,150 @@
+[
+  {
+    "name": "core-formatting",
+    "markdown": "# Heading\n\n**Strong**, *emphasis* and `code`.\n\n> A quotation\n\n1. First\n2. Second\n\n```typescript\nconst answer = 42;\n```",
+    "valid": true,
+    "media": [],
+    "plainIncludes": ["Heading", "answer = 42"]
+  },
+  {
+    "name": "simple-table",
+    "markdown": "| Name | Value |\n| --- | --- |\n| One | Two |",
+    "valid": true,
+    "media": [],
+    "plainIncludes": ["Name", "One"]
+  },
+  {
+    "name": "informative-image",
+    "markdown": "![A diagram](media://50000000-0000-4000-8000-000000000001)",
+    "valid": true,
+    "media": [
+      {
+        "mediaId": "50000000-0000-4000-8000-000000000001",
+        "altText": "A diagram",
+        "decorative": false
+      }
+    ]
+  },
+  {
+    "name": "decorative-image",
+    "markdown": "![](media://50000000-0000-4000-8000-000000000001 \"decorative\")",
+    "valid": true,
+    "media": [
+      {
+        "mediaId": "50000000-0000-4000-8000-000000000001",
+        "altText": "",
+        "decorative": true
+      }
+    ]
+  },
+  {
+    "name": "reference-image",
+    "markdown": "![A diagram][asset]\n\n[asset]: media://50000000-0000-4000-8000-000000000001",
+    "valid": true,
+    "media": [
+      {
+        "mediaId": "50000000-0000-4000-8000-000000000001",
+        "altText": "A diagram",
+        "decorative": false
+      }
+    ]
+  },
+  {
+    "name": "html-is-literal-text",
+    "markdown": "<script>alert('literal')</script>\n\n<img src=\"https://external.example/pixel.png\">",
+    "valid": true,
+    "media": [],
+    "plainIncludes": ["<script>", "<img"],
+    "noHtmlNodes": true
+  },
+  {
+    "name": "external-https-link",
+    "markdown": "Read [the article](https://example.com/article?q=one).",
+    "valid": true,
+    "media": []
+  },
+  {
+    "name": "internal-link",
+    "markdown": "Read [a post](/posts/an-article) or [a section](#section).",
+    "valid": true,
+    "media": []
+  },
+  {
+    "name": "external-image-rejected",
+    "markdown": "![Bad](https://example.com/image.png)",
+    "valid": false,
+    "codes": ["INVALID_MEDIA_REFERENCE"]
+  },
+  {
+    "name": "missing-alt-rejected",
+    "markdown": "![](media://50000000-0000-4000-8000-000000000001)",
+    "valid": false,
+    "codes": ["ALT_TEXT_REQUIRED"]
+  },
+  {
+    "name": "decorative-with-alt-rejected",
+    "markdown": "![Not empty](media://50000000-0000-4000-8000-000000000001 \"decorative\")",
+    "valid": false,
+    "codes": ["DECORATIVE_ALT_MUST_BE_EMPTY"]
+  },
+  {
+    "name": "javascript-link-rejected",
+    "markdown": "[Bad](javascript:alert%281%29)",
+    "valid": false,
+    "codes": ["UNSAFE_LINK_URL"]
+  },
+  {
+    "name": "entity-obfuscated-scheme-rejected",
+    "markdown": "[Bad](java&#x73;cript:alert%281%29)",
+    "valid": false,
+    "codes": ["UNSAFE_LINK_URL"]
+  },
+  {
+    "name": "first-reference-definition-wins",
+    "markdown": "[Bad][link]\n\n[link]: javascript:alert%281%29\n[link]: https://example.com",
+    "valid": false,
+    "codes": ["UNSAFE_LINK_URL"]
+  },
+  {
+    "name": "protocol-relative-link-rejected",
+    "markdown": "[Bad](//external.example/path)",
+    "valid": false,
+    "codes": ["UNSAFE_LINK_URL"]
+  },
+  {
+    "name": "http-link-rejected",
+    "markdown": "[Bad](http://example.com/path)",
+    "valid": false,
+    "codes": ["UNSAFE_LINK_URL"]
+  },
+  {
+    "name": "strikethrough-unsupported",
+    "markdown": "~~unsupported~~",
+    "valid": false,
+    "codes": ["UNSUPPORTED_MARKDOWN_NODE"]
+  },
+  {
+    "name": "task-list-unsupported",
+    "markdown": "- [x] Unsupported task",
+    "valid": false,
+    "codes": ["TASK_LIST_UNSUPPORTED"]
+  },
+  {
+    "name": "footnote-unsupported",
+    "markdown": "Text[^note]\n\n[^note]: Footnote",
+    "valid": false,
+    "codes": ["UNSUPPORTED_MARKDOWN_NODE"]
+  },
+  {
+    "name": "code-metadata-unsupported",
+    "markdown": "```typescript title=hello\nconst value = 1;\n```",
+    "valid": false,
+    "codes": ["CODE_METADATA_UNSUPPORTED"]
+  },
+  {
+    "name": "indented-code-unsupported",
+    "markdown": "    const value = 1;",
+    "valid": false,
+    "codes": ["FENCED_CODE_REQUIRED"]
+  }
+]

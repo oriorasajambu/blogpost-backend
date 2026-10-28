@@ -1,0 +1,55 @@
+{
+  "timestamp": "2026-10-25T08:20:30.123Z",
+  "responseKey": "SUCCESS",
+  "statusCode": 201,
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "message": {
+    "title": "Request completed",
+    "descriptions": "The request completed successfully."
+  },
+  "data": {
+    "id": "50000000-0000-4000-8000-000000000001",
+    "postId": "10000000-0000-4000-8000-000000000001",
+    "ready": true,
+    "width": 1,
+    "height": 1,
+    "mimeType": "image/png",
+    "variants": [
+      {
+        "name": "w480",
+        "apiPath": "/v1/posts/10000000-0000-4000-8000-000000000001/media/50000000-0000-4000-8000-000000000001/w480",
+        "width": 1,
+        "height": 1,
+        "mimeType": "image/png",
+        "byteSize": 70
+      },
+      {
+        "name": "w960",
+        "apiPath": "/v1/posts/10000000-0000-4000-8000-000000000001/media/50000000-0000-4000-8000-000000000001/w960",
+        "width": 1,
+        "height": 1,
+        "mimeType": "image/png",
+        "byteSize": 70
+      },
+      {
+        "name": "w1600",
+        "apiPath": "/v1/posts/10000000-0000-4000-8000-000000000001/media/50000000-0000-4000-8000-000000000001/w1600",
+        "width": 1,
+        "height": 1,
+        "mimeType": "image/png",
+        "byteSize": 70
+      }
+    ],
+    "createdAt": "2026-10-25T08:20:30.123Z",
+    "unattachedExpiresAt": "2026-10-26T08:20:30.123Z"
+  },
+  "error": null,
+  "meta": {
+    "contractVersion": "1.0.0",
+    "pagination": null,
+    "idempotency": {
+      "replayed": false,
+      "expiresAt": "2026-10-26T08:20:30.123Z"
+    }
+  }
+}

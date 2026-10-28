@@ -1,0 +1,16 @@
+{
+  "method": "POST",
+  "path": "/v1/posts/10000000-0000-4000-8000-000000000001/unpublish",
+  "headers": {
+    "X-Device-ID": "8d5ca46a-7f59-4f64-9d91-fedc41b59e7a",
+    "X-Device-OS": "ANDROID",
+    "X-Device-Version": "unknown",
+    "X-App-Version": "0.0.0+fixture.1",
+    "X-App-Language": "en",
+    "Authorization": "Bearer SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL",
+    "X-Expected-Version": "4",
+    "Idempotency-Key": "83c9a1ca-6d20-48c5-8476-bb6a60677377"
+  },
+  "query": {},
+  "body": {}
+}

@@ -1,0 +1,39 @@
+{
+  "timestamp": "2026-10-25T08:20:30.123Z",
+  "responseKey": "SUCCESS",
+  "statusCode": 201,
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "message": {
+    "title": "Request completed",
+    "descriptions": "The request completed successfully."
+  },
+  "data": {
+    "invitation": {
+      "id": "60000000-0000-4000-8000-000000000002",
+      "email": "invited@example.test",
+      "role": "AUTHOR",
+      "status": "PENDING",
+      "version": 1,
+      "issuedBy": {
+        "id": "40000000-0000-4000-8000-000000000003",
+        "handle": "synthetic-admin",
+        "displayName": "Synthetic admin"
+      },
+      "createdAt": "2026-10-25T08:20:30.123Z",
+      "expiresAt": "2026-11-01T08:20:30.123Z",
+      "acceptedAt": null,
+      "revokedAt": null
+    },
+    "inviteUrl": "https://web.example.test/invitations/accept?token=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "linkAvailable": true
+  },
+  "error": null,
+  "meta": {
+    "contractVersion": "1.0.0",
+    "pagination": null,
+    "idempotency": {
+      "replayed": false,
+      "expiresAt": "2026-10-26T08:20:30.123Z"
+    }
+  }
+}

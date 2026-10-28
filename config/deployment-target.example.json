@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "purpose": "api",
+  "region": "asia-southeast2",
+  "resourceId": "blogpost-api",
+  "image": "asia-southeast2-docker.pkg.dev/example-blogpost-staging/blogpost/backend@sha256:0000000000000000000000000000000000000000000000000000000000000000"
+}

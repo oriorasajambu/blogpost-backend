@@ -1,0 +1,74 @@
+{
+  "timestamp": "2026-10-25T08:20:30.123Z",
+  "responseKey": "SUCCESS",
+  "statusCode": 201,
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "message": {
+    "title": "Request completed",
+    "descriptions": "The request completed successfully."
+  },
+  "data": {
+    "id": "10000000-0000-4000-8000-000000000001",
+    "clientDraftId": "10000000-0000-4000-8000-000000000002",
+    "author": {
+      "id": "40000000-0000-4000-8000-000000000001",
+      "handle": "synthetic-author",
+      "displayName": "Synthetic author"
+    },
+    "slug": null,
+    "publicationState": "NEVER_PUBLISHED",
+    "workflowState": "DRAFT",
+    "version": 1,
+    "workingRevisionId": "20000000-0000-4000-8000-000000000001",
+    "publishedRevisionId": null,
+    "createdAt": "2026-10-25T08:20:30.123Z",
+    "updatedAt": "2026-10-25T08:20:30.123Z",
+    "trashedAt": null,
+    "purgeAfter": null,
+    "allowedActions": ["EDIT_DRAFT", "SUBMIT", "TRASH"],
+    "workingRevision": {
+      "id": "20000000-0000-4000-8000-000000000001",
+      "postId": "10000000-0000-4000-8000-000000000001",
+      "number": 1,
+      "createdBy": {
+        "id": "40000000-0000-4000-8000-000000000001",
+        "handle": "synthetic-author",
+        "displayName": "Synthetic author"
+      },
+      "createdAt": "2026-10-25T08:20:30.123Z",
+      "creditedAuthor": {
+        "id": "40000000-0000-4000-8000-000000000001",
+        "handle": "synthetic-author",
+        "displayName": "Synthetic author"
+      },
+      "content": {
+        "title": "A first article",
+        "summary": "A useful summary.",
+        "markdown": "# Hello\n\nBody text.",
+        "categoryId": "30000000-0000-4000-8000-000000000001",
+        "tagIds": ["30000000-0000-4000-8000-000000000002"],
+        "coverMediaId": null,
+        "markdownContractVersion": 1,
+        "coverAltText": null,
+        "coverDecorative": false
+      },
+      "media": [],
+      "restoredFromRevisionId": null
+    },
+    "publishedRevision": null,
+    "review": {
+      "submittedRevisionId": null,
+      "submittedAt": null,
+      "lastFeedback": null
+    }
+  },
+  "error": null,
+  "meta": {
+    "contractVersion": "1.0.0",
+    "pagination": null,
+    "idempotency": {
+      "replayed": false,
+      "expiresAt": "2026-10-26T08:20:30.123Z"
+    }
+  }
+}

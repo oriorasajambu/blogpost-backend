@@ -1,0 +1,49 @@
+{
+  "timestamp": "2026-10-25T08:20:30.123Z",
+  "responseKey": "SUCCESS",
+  "statusCode": 200,
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "message": {
+    "title": "Request completed",
+    "descriptions": "The request completed successfully."
+  },
+  "data": [
+    {
+      "id": "10000000-0000-4000-8000-000000000001",
+      "clientDraftId": "10000000-0000-4000-8000-000000000002",
+      "author": {
+        "id": "40000000-0000-4000-8000-000000000001",
+        "handle": "synthetic-author",
+        "displayName": "Synthetic author"
+      },
+      "slug": "a-reviewed-article",
+      "publicationState": "PUBLISHED",
+      "workflowState": "CLEAN",
+      "version": 4,
+      "workingRevisionId": "20000000-0000-4000-8000-000000000002",
+      "publishedRevisionId": "20000000-0000-4000-8000-000000000002",
+      "createdAt": "2026-10-25T08:20:30.123Z",
+      "updatedAt": "2026-10-25T08:20:30.123Z",
+      "trashedAt": null,
+      "purgeAfter": null,
+      "allowedActions": [
+        "EDIT_DRAFT",
+        "UNPUBLISH",
+        "TRASH",
+        "CHANGE_SLUG",
+        "REASSIGN_AUTHOR"
+      ]
+    }
+  ],
+  "error": null,
+  "meta": {
+    "contractVersion": "1.0.0",
+    "pagination": {
+      "kind": "CURSOR",
+      "pageSize": 20,
+      "hasMore": false,
+      "nextCursor": null
+    },
+    "idempotency": null
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "status": "DRAFT",
+  "generatorVersion": "7.26.0",
+  "generatorSha256": "1760050094997b9cc790cc1350be095f15da8c08a996b184d3eadc4ccda5e35e",
+  "sourceOpenApiSha256": "24c9e216afdd6335d4a242af55a6388d44a9d8d6624a22868ff02db71dd3d753",
+  "projectionPolicy": 1,
+  "operationCount": 52,
+  "configuration": {
+    "generatorName": "kotlin",
+    "library": "jvm-retrofit2",
+    "typeMappings": { "UUID": "kotlin.String" },
+    "additionalProperties": {
+      "serializationLibrary": "gson",
+      "useCoroutines": true,
+      "useResponseAsReturnType": true,
+      "enumUnknownDefaultCase": true,
+      "enumPropertyNaming": "UPPERCASE",
+      "modelMutable": false,
+      "dateLibrary": "string",
+      "hideGenerationTimestamp": true,
+      "packageName": "com.blogpost.contract.generated",
+      "apiPackage": "com.blogpost.contract.generated.api",
+      "modelPackage": "com.blogpost.contract.generated.model"
+    }
+  },
+  "validationRulesSha256": "09a8a11614dfca882b3989e6e4a23892f46546a16f0330da448d48cb0516f01e",
+  "kotlinSourceFiles": 127
+}

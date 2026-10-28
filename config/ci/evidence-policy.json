@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "receiptMaxAgeSeconds": 86400,
+  "manualMaxAgeSeconds": 604800,
+  "clockSkewSeconds": 300,
+  "maxArchiveBytes": 1048576,
+  "maxReceiptBytes": 65536,
+  "maxReuseDepth": 16
+}

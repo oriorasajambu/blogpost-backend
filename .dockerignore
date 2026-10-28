@@ -1,0 +1,19 @@
+.git
+.local
+.build
+.env
+.env.*
+**/node_modules
+**/.gradle
+**/.kotlin
+**/build
+# Build orchestration is source; Kotlin/Gradle output directories remain excluded.
+!scripts/build
+!scripts/build/**
+dist
+coverage
+src/generated
+docs
+.github
+.release
+README.md

@@ -1,0 +1,46 @@
+[
+  {
+    "name": "ascii",
+    "sample": "a",
+    "repeat": 160,
+    "wellFormed": true,
+    "codePoints": 160,
+    "utf8Bytes": 160
+  },
+  {
+    "name": "astral-emoji",
+    "sample": "😀",
+    "repeat": 160,
+    "wellFormed": true,
+    "codePoints": 160,
+    "utf8Bytes": 640
+  },
+  {
+    "name": "combining-marks",
+    "sample": "é",
+    "repeat": 80,
+    "wellFormed": true,
+    "codePoints": 160,
+    "utf8Bytes": 240
+  },
+  {
+    "name": "markdown-byte-limit",
+    "sample": "😀",
+    "repeat": 32768,
+    "wellFormed": true,
+    "codePoints": 32768,
+    "utf8Bytes": 131072
+  },
+  {
+    "name": "unpaired-high-surrogate",
+    "sample": "\ud800",
+    "repeat": 1,
+    "wellFormed": false
+  },
+  {
+    "name": "unpaired-low-surrogate",
+    "sample": "\udc00",
+    "repeat": 1,
+    "wellFormed": false
+  }
+]
