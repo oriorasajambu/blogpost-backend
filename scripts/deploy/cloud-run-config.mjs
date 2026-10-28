@@ -326,6 +326,28 @@ export function verifyCloudRunTaskTemplate({
     image: target.image,
   };
 }
+export function verifyCloudRunRevisionTemplate({
+  provenance,
+  target,
+  project,
+  template,
+}) {
+  const { build, profile, kind } = inputs(provenance, target);
+  if (kind !== 'services') fail('SERVICE_TARGET_REQUIRED');
+  const projection = taskProjection(
+    build,
+    target,
+    projectIdentity(project, profile),
+    kind,
+    object(template),
+    null,
+  );
+  return {
+    deploymentBindingDigest: digest(projection),
+    configurationDigest: digest(profile),
+    image: target.image,
+  };
+}
 export function verifyCloudRunConfiguration({
   provenance,
   target,
