@@ -207,6 +207,36 @@ test('GitHub run/artifact evidence endpoints are fixed reads and cannot mutate o
   ])
     await assert.rejects(read(path));
 });
+
+test('repository dot segments cannot escape the GitHub API scope', async () => {
+  for (const fullName of [
+    'fixture/..',
+    '../backend',
+    'fixture/.',
+    './backend',
+  ]) {
+    const invalid = { ...config, fullName };
+    assert.throws(
+      () =>
+        githubReader(invalid, null, () => {
+          throw new Error('must not call');
+        }),
+      { code: 'INVALID_GITHUB_REPOSITORY' },
+    );
+    await assert.rejects(
+      readOwnerPullRequest(invalid, 9, null, () => {
+        throw new Error('must not call');
+      }),
+      { code: 'INVALID_GITHUB_REPOSITORY' },
+    );
+    await assert.rejects(
+      readArtifactArchive(invalid, '200', null, policy, () => {
+        throw new Error('must not call');
+      }),
+      { code: 'INVALID_GITHUB_REPOSITORY' },
+    );
+  }
+});
 test('manual JSON rejects duplicate and escaped duplicate fields before values are discarded', () => {
   assert.deepEqual(uniqueJson('{"a":{"b":1},"b":[{"a":2}]}'), {
     a: { b: 1 },
@@ -215,4 +245,91 @@ test('manual JSON rejects duplicate and escaped duplicate fields before values a
   assert.throws(() => uniqueJson('{"a":1,"a":2}'), /DUPLICATE/);
   assert.throws(() => uniqueJson('{"a":1,"\\u0061":2}'), /DUPLICATE/);
   assert.throws(() => uniqueJson('{"a":{"b":1,"b":2}}'), /DUPLICATE/);
+});
+
+test('live GitHub and staging JSON reject duplicate fields before source attribution', async () => {
+  const read = githubReader(
+    config,
+    null,
+    async () => new Response('{"sha":"safe","sha":"ambiguous"}'),
+  );
+  await assert.rejects(read('/pulls/1'), {
+    code: 'GITHUB_EVIDENCE_UNAVAILABLE',
+  });
+  await assert.rejects(
+    readOwnerPullRequest(
+      config,
+      9,
+      null,
+      async () => new Response('{"data":{},"data":{}}'),
+    ),
+    { code: 'OWNER_ATTRIBUTION_UNAVAILABLE' },
+  );
+  let count = 0;
+  await assert.rejects(
+    readPublicStaging(
+      configuration,
+      async () =>
+        new Response(
+          ++count === 3
+            ? '{"statusCode":200,"statusCode":200,"responseKey":"SUCCESS","data":{}}'
+            : '{}',
+          { headers: { 'cache-control': 'no-store' } },
+        ),
+    ),
+    { code: 'STAGING_PUBLIC_PROBE_FAILED' },
+  );
+});
+
+test('evidence reads stop waiting for uncooperative transport, streams and cancellation', async () => {
+  const never = () => new Promise(() => {});
+  let canceled = 0;
+  const stalledBody = () =>
+    new Response(
+      new ReadableStream({
+        cancel() {
+          canceled++;
+          return never();
+        },
+      }),
+    );
+  const keepAlive = setInterval(() => {}, 1000);
+  try {
+    let archiveCalls = 0;
+    const start = Date.now();
+    await Promise.all([
+      assert.rejects(githubReader(config, null, never)('/pulls/1'), {
+        code: 'GITHUB_EVIDENCE_UNAVAILABLE',
+      }),
+      assert.rejects(
+        githubReader(config, null, async () => stalledBody())('/pulls/1'),
+        { code: 'GITHUB_EVIDENCE_UNAVAILABLE' },
+      ),
+      assert.rejects(readOwnerPullRequest(config, 9, null, never), {
+        code: 'OWNER_ATTRIBUTION_UNAVAILABLE',
+      }),
+      assert.rejects(
+        readPublicStaging(configuration, async () => stalledBody()),
+        { code: 'STAGING_PUBLIC_PROBE_FAILED' },
+      ),
+      assert.rejects(
+        readArtifactArchive(config, '200', null, policy, async () =>
+          ++archiveCalls === 1
+            ? new Response(null, {
+                status: 302,
+                headers: {
+                  location:
+                    'https://productionresultsfixture.blob.core.windows.net/x',
+                },
+              })
+            : stalledBody(),
+        ),
+        { code: 'ARTIFACT_DOWNLOAD_UNAVAILABLE' },
+      ),
+    ]);
+    assert.equal(canceled, 3);
+    assert.ok(Date.now() - start < 19000);
+  } finally {
+    clearInterval(keepAlive);
+  }
 });

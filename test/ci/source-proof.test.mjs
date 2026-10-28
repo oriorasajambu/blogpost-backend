@@ -101,6 +101,7 @@ test('GitHub evidence reader uses bounded, nonredirecting GETs and never reads a
   );
   assert.equal(calls[0].options.method, 'GET');
   assert.equal(calls[0].options.redirect, 'error');
+  assert.equal(calls[0].options.credentials, 'omit');
   for (const suffix of [
     'https://evil.test',
     '/pulls/1/comments',
