@@ -81,6 +81,12 @@ const config = readConfig(env);
 assert.equal(config.configurationDigest, expected.configurationDigest);
 assert.equal(config.buildSha, build.sourceSha);
 assert.equal(config.runtimeInputDigest, build.runtimeInputDigest);
+// Derived from the real profile, so it must not assume a particular version.
+const latestAppSecret = profile.secretVersions.SQL_APP_PASSWORD.replace(
+  /\/versions\/[1-9][0-9]*$/,
+  '/versions/latest',
+);
+assert.notEqual(latestAppSecret, profile.secretVersions.SQL_APP_PASSWORD);
 for (const patch of [
   {
     APP_ENV: build.environment === 'staging' ? 'production' : 'staging',
@@ -90,12 +96,7 @@ for (const patch of [
   { RUNTIME_INPUT_DIGEST: '0'.repeat(64) },
   { API_ORIGIN: 'https://another.example.test' },
   { RUNTIME_SERVICE_ACCOUNT: profile.serviceAccounts.ops },
-  {
-    SQL_APP_SECRET_REF: profile.secretVersions.SQL_APP_PASSWORD.replace(
-      '/1',
-      '/latest',
-    ),
-  },
+  { SQL_APP_SECRET_REF: latestAppSecret },
   { FIREBASE_AUTH_EMULATOR_HOST: '127.0.0.1:9099' },
 ])
   assert.throws(() => readConfig({ ...env, ...patch }));
