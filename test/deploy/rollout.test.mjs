@@ -10,6 +10,8 @@ import {
   recoverCloudRunRollout,
 } from '../../scripts/deploy/rollout.mjs';
 import { fileRolloutJournal } from '../../scripts/deploy/rollout-journal.mjs';
+import { probeFixture } from './probe-fixtures.mjs';
+import { contractSha256 } from '../../scripts/deploy/wire-contract.mjs';
 
 const REVISION = 'TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION';
 const clone = structuredClone;
@@ -344,6 +346,39 @@ test('one failed round resets after a healthy round', async () => {
   h.state.probe = ({ phase }) => phase !== 'observation' || ++count !== 1;
   assert.equal((await executeCloudRunRollout(h.options)).status, 'succeeded');
   assert.equal(h.state.patches.length, 2);
+});
+
+test('observation starts remain thirty seconds apart when probes take time', async () => {
+  const h = harness();
+  const starts = [];
+  h.state.probe = ({ phase }) => {
+    if (phase === 'observation') {
+      starts.push(h.state.now);
+      h.state.now += 5000;
+    }
+    return true;
+  };
+  const result = await executeCloudRunRollout(h.options);
+  assert.equal(result.success, true);
+  assert.equal(starts.length, 30);
+  assert.ok(
+    starts.slice(1).every((time, index) => time - starts[index] === 30000),
+  );
+});
+
+test('missed observation slots cannot report success or trigger automatic recovery', async () => {
+  const h = harness();
+  h.state.probe = ({ phase }) => {
+    if (phase === 'observation') h.state.now += 45000;
+    return true;
+  };
+  const result = await executeCloudRunRollout(h.options);
+  assert.equal(result.phase, 'observation_incomplete');
+  assert.equal(result.reason, 'OBSERVATION_CADENCE_MISSED');
+  assert.equal(h.state.patches.length, 2);
+  await assert.rejects(recoverCloudRunRollout(h.options), {
+    code: 'OBSERVATION_REQUIRES_OPERATOR',
+  });
 });
 
 test('an unconfirmed last probe failure cannot report success', async () => {
@@ -745,6 +780,45 @@ test('unverifiable template fields and a current revision mismatch fail before m
     assert.equal(h.state.patches.length, 0);
   }
 });
+
+for (const shouldFail of [false, true])
+  test(
+    'rollout uses the real read-only wire adapter through ' +
+      (shouldFail
+        ? 'failed observation and recovery'
+        : 'successful observation'),
+    async () => {
+      const h = harness();
+      h.options.request.provenance.contractSha256 = contractSha256;
+      for (const previous of h.options.request.previous)
+        previous.provenance.contractSha256 = contractSha256;
+      const http = probeFixture();
+      http.state.mutation = (response) => {
+        if (
+          shouldFail &&
+          http.state.input.phase === 'observation' &&
+          response.path === '/v1/public/posts'
+        )
+          response.headers['cache-control'] = 'public';
+      };
+      h.options.probe = async (input) => {
+        http.state.input = input;
+        return http.probe(input);
+      };
+      const result = await executeCloudRunRollout(h.options);
+      assert.equal(result.status, shouldFail ? 'rolled_back' : 'succeeded');
+      assert.equal(result.success, !shouldFail);
+      assert.ok(http.state.calls.length >= 8 * 8);
+      assert.ok(
+        http.state.calls.every(
+          (call) =>
+            call.method === 'GET' &&
+            !call.headers.Authorization &&
+            !call.headers.Cookie,
+        ),
+      );
+    },
+  );
 
 test('private file journal persists atomically, enforces CAS and detects corruption', async () => {
   const root = await mkdtemp(join(tmpdir(), 'blogpost-rollout-'));

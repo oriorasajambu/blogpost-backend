@@ -12,12 +12,13 @@ import {
   isNonexecutingDocumentation,
   isForbiddenSourcePath,
 } from '../../src/platform/config/input-policy.ts';
-function git(root, args, optional = false, input) {
+function git(root, args, optional = false, input, timeout) {
   try {
     return execFileSync('git', ['-C', root, ...args], {
       input,
       maxBuffer: 220 * 1024 * 1024,
       stdio: ['pipe', 'pipe', 'pipe'],
+      ...(timeout === undefined ? {} : { timeout }),
     });
   } catch {
     if (optional) return null;
@@ -168,8 +169,15 @@ export async function workingFiles(root) {
   }
   return files;
 }
-export function committedFiles(root, sha) {
-  const tree = decode(git(root, ['ls-tree', '-rlz', sha]))
+export function committedFiles(root, sha, { timeoutMs } = {}) {
+  if (
+    timeoutMs !== undefined &&
+    (!Number.isInteger(timeoutMs) || timeoutMs < 1000 || timeoutMs > 30000)
+  )
+    throw new Error('Invalid source read timeout');
+  const tree = decode(
+    git(root, ['ls-tree', '-rlz', sha], false, undefined, timeoutMs),
+  )
     .split('\0')
     .filter(Boolean)
     .map((record) => {
@@ -197,6 +205,7 @@ export function committedFiles(root, sha) {
     ['cat-file', '--batch'],
     false,
     tree.map((file) => file.oid).join('\n') + '\n',
+    timeoutMs,
   );
   let offset = 0;
   return tree.map((file) => {

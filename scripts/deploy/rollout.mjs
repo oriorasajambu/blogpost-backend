@@ -792,9 +792,17 @@ export async function executeCloudRunRollout(options) {
     });
     let failed = 0;
     let metricsMissing = false;
+    let cadenceMissed = false;
     let rounds = 0;
+    let nextProbeAt = started + INTERVAL;
     do {
-      await ctx.clock.sleep(INTERVAL);
+      const now = ctx.clock.now();
+      if (now > nextProbeAt) {
+        nextProbeAt += Math.ceil((now - nextProbeAt) / INTERVAL) * INTERVAL;
+        cadenceMissed = true;
+      }
+      if (nextProbeAt > started + OBSERVE) break;
+      await ctx.clock.sleep(Math.max(0, nextProbeAt - ctx.clock.now()));
       await live(ctx, record, promotedTraffic(record));
       failed = (await probe(
         ctx,
@@ -825,13 +833,12 @@ export async function executeCloudRunRollout(options) {
       record = await persist(ctx, record, 'observing', {
         observationRounds: rounds,
         metricsMissing,
+        cadenceMissed,
       });
-    } while (
-      ctx.clock.now() - started < OBSERVE &&
-      rounds < OBSERVE / INTERVAL
-    );
+      nextProbeAt += INTERVAL;
+    } while (nextProbeAt <= started + OBSERVE && rounds < OBSERVE / INTERVAL);
     await live(ctx, record, promotedTraffic(record));
-    const incomplete = metricsMissing || failed > 0;
+    const incomplete = metricsMissing || failed > 0 || cadenceMissed;
     return persist(
       ctx,
       record,
@@ -839,11 +846,14 @@ export async function executeCloudRunRollout(options) {
       {
         status: incomplete ? 'failed' : 'succeeded',
         success: !incomplete,
+        cadenceMissed,
         reason: metricsMissing
           ? 'METRICS_UNAVAILABLE'
           : failed
             ? 'PROBES_UNCONFIRMED'
-            : null,
+            : cadenceMissed
+              ? 'OBSERVATION_CADENCE_MISSED'
+              : null,
       },
     );
   } catch (error) {
