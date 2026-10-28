@@ -18,6 +18,8 @@ The caller supplies five mandatory adapters:
 
 `authorize` remains an integration interface for its cloud proof collectors. The [read-only HTTP probe](ROLLOUT_PROBES.md) and [Cloud Monitoring collector](ROLLOUT_METRICS.md) implement `probe` and `metrics` and are connected to the executor with synthetic transport. JSON booleans cannot replace these functions. A callback returning success is not independent evidence: the future trusted workflow must authenticate and archive the collected evidence and retain the existing independent source/image/database capability checks. The local journal checksum detects corruption; it does not authenticate a downloaded deployment archive or grant permission to restore traffic.
 
+The [Git ancestry evaluator](DEPLOYMENT_ANCESTRY.md) implements the comparison needed to identify stale and unrelated deployment histories. It is not connected to `authorize`: a complete authenticated deployment ledger and fresh actual serving-revision collection are still required before it can support a mutation decision.
+
 The probe receives no OAuth token. Its implementation must forbid redirects, cookies, authorization headers and mutable/user data operations, enforce transport/body/time limits and use only known safe fixtures. The provider-observed candidate URL must be HTTPS under `run.app`, have the exact candidate tag/service prefix and contain no credentials, path, port or query. Stable-origin probes use the reviewed baked API origin. A candidate tag is publicly reachable when the service is public; zero allocated traffic does not replace application authorization.
 
 ## Execution
