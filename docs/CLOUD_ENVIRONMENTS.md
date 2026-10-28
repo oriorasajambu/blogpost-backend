@@ -23,3 +23,17 @@ Before the actual profiles can be finalized, provision/verify the approved regio
 The [two-project cost estimate](CLOUD_COST_ESTIMATE.md) records observed Jakarta rates, explicit workload/retention assumptions and proposed IDR budget amounts. Read-only checks confirm billing enabled and IDR billing currency for both projects. Existing budgets could not be inspected while the Budget API is disabled; neither absence nor completed budget setup is claimed. Budget amounts/recipients and native IDR creation estimates still require review before paid resources are created.
 
 On 28 October 2026, the owner selected keeping the budget proposal as an estimate only. No Budget API enablement, budget/recipient configuration or paid resource creation is authorized by that proposal. Continue local implementation and retain the setup gates.
+
+Later on 28 October 2026, the owner separately authorized Staging provisioning, including Cloud SQL. Production remains unprovisioned and no budget was configured. Staging resources created through the Cloud SDK:
+
+| Resource            | Staging value                                                                                                           |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Service accounts    | `blogpost-build`, `-api`, `-migrate`, `-ops`, `-bootstrap`, `-web`, `-scheduler`; no keys, no Owner/Editor              |
+| Custom roles        | `BlogpostIdentitySession` (`blogpost-api`), `BlogpostIdentityLookup` (`blogpost-bootstrap`)                             |
+| Media bucket        | `blogpost-staging-blogpost-media`; Jakarta Standard, uniform access, public access prevention, 7-day soft delete        |
+| Artifact Registry   | `blogpost` Docker repository, Jakarta, immutable tags; `blogpost-build` writer only                                     |
+| Cloud SQL           | `blogpost-db`, PostgreSQL 17 Enterprise `db-f1-micro`, zonal, no authorized networks, 3 daily backups, no PITR          |
+| Secrets (version 1) | `blogpost-db-root-password`, `blogpost-db-app-password`, `blogpost-db-migrator-password`, `blogpost-cursor-signing-key` |
+| Cloud Build         | 2nd gen GitHub connection `blogpost-backend` linking this repository                                                    |
+
+The committed [Staging profile](../config/environments/staging.json) records these nonsecret references. The migrator account is `blogpost-migrate`, matching the Console guide rather than the synthetic example. Identity Platform, the `blogpost-backend-manual` trigger, operations jobs and the API service are not yet configured; the planned origins remain unobserved.
