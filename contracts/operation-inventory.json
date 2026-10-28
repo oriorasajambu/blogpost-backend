@@ -1,0 +1,418 @@
+[
+  {
+    "method": "GET",
+    "path": "/v1/meta",
+    "operationId": "getApiMeta",
+    "access": "ANONYMOUS",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/public/posts",
+    "operationId": "listPublicPosts",
+    "access": "ANONYMOUS",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/public/posts/{postId}",
+    "operationId": "getPublicPost",
+    "access": "ANONYMOUS",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/public/posts/by-slug/{slug}",
+    "operationId": "resolvePublicPostSlug",
+    "access": "ANONYMOUS",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/public/search",
+    "operationId": "searchPublicPosts",
+    "access": "ANONYMOUS",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/public/categories",
+    "operationId": "listPublicCategories",
+    "access": "ANONYMOUS",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/public/tags",
+    "operationId": "listPublicTags",
+    "access": "ANONYMOUS",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/public/authors/{handle}",
+    "operationId": "getPublicAuthor",
+    "access": "ANONYMOUS",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "POST",
+    "path": "/v1/public/posts/availability",
+    "operationId": "checkPublicPostAvailability",
+    "access": "ANONYMOUS",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/public/posts/{postId}/media/{mediaId}/{variant}",
+    "operationId": "getPublicPostMedia",
+    "access": "ANONYMOUS",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "POST",
+    "path": "/v1/auth/web-session",
+    "operationId": "createWebSession",
+    "access": "RECENT_IDENTITY",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/me",
+    "operationId": "getMe",
+    "access": "MEMBER",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "PATCH",
+    "path": "/v1/me",
+    "operationId": "updateMe",
+    "access": "MEMBER",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "POST",
+    "path": "/v1/invitations/accept",
+    "operationId": "acceptInvitation",
+    "access": "VERIFIED_IDENTITY",
+    "expectedVersion": false,
+    "idempotent": true
+  },
+  {
+    "method": "GET",
+    "path": "/v1/posts",
+    "operationId": "listWorkspacePosts",
+    "access": "MEMBER",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "POST",
+    "path": "/v1/posts",
+    "operationId": "createPost",
+    "access": "MEMBER",
+    "expectedVersion": false,
+    "idempotent": true
+  },
+  {
+    "method": "GET",
+    "path": "/v1/posts/by-client-draft-id/{clientDraftId}",
+    "operationId": "getPostByClientDraftId",
+    "access": "CREATOR_WITH_ACCESS",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/posts/{postId}",
+    "operationId": "getWorkspacePost",
+    "access": "OWNER_OR_EDITOR",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "PUT",
+    "path": "/v1/posts/{postId}/draft",
+    "operationId": "savePostDraft",
+    "access": "OWNER_OR_EDITOR",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "POST",
+    "path": "/v1/posts/{postId}/submit",
+    "operationId": "submitPostForReview",
+    "access": "OWNER_OR_EDITOR",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "POST",
+    "path": "/v1/posts/{postId}/withdraw-review",
+    "operationId": "withdrawPostReview",
+    "access": "OWNER_OR_EDITOR",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "POST",
+    "path": "/v1/posts/{postId}/reject",
+    "operationId": "rejectPostRevision",
+    "access": "EDITOR",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "POST",
+    "path": "/v1/posts/{postId}/publish",
+    "operationId": "publishPostRevision",
+    "access": "EDITOR",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "POST",
+    "path": "/v1/posts/{postId}/unpublish",
+    "operationId": "unpublishPost",
+    "access": "EDITOR",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "GET",
+    "path": "/v1/posts/{postId}/revisions",
+    "operationId": "listPostRevisions",
+    "access": "OWNER_OR_EDITOR",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/posts/{postId}/revisions/{revisionId}",
+    "operationId": "getPostRevision",
+    "access": "OWNER_OR_EDITOR",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/posts/{postId}/review-events",
+    "operationId": "listPostReviewEvents",
+    "access": "OWNER_OR_EDITOR",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "POST",
+    "path": "/v1/posts/{postId}/restore-revision",
+    "operationId": "restorePostRevision",
+    "access": "OWNER_OR_EDITOR",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "DELETE",
+    "path": "/v1/posts/{postId}",
+    "operationId": "trashPost",
+    "access": "OWNER_NEVER_PUBLISHED_OR_EDITOR",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "POST",
+    "path": "/v1/posts/{postId}/restore",
+    "operationId": "restoreTrashedPost",
+    "access": "OWNER_NEVER_PUBLISHED_OR_EDITOR",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "PATCH",
+    "path": "/v1/posts/{postId}/slug",
+    "operationId": "changePostSlug",
+    "access": "EDITOR",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "POST",
+    "path": "/v1/posts/{postId}/media",
+    "operationId": "stagePostMedia",
+    "access": "OWNER_OR_EDITOR",
+    "expectedVersion": false,
+    "idempotent": true
+  },
+  {
+    "method": "GET",
+    "path": "/v1/posts/{postId}/media/{mediaId}",
+    "operationId": "getPostMediaMetadata",
+    "access": "OWNER_OR_EDITOR",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/posts/{postId}/media/{mediaId}/{variant}",
+    "operationId": "getPrivatePostMedia",
+    "access": "OWNER_OR_EDITOR",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/categories",
+    "operationId": "listManagedCategories",
+    "access": "EDITOR",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/categories/{categoryId}",
+    "operationId": "getManagedCategory",
+    "access": "EDITOR",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "POST",
+    "path": "/v1/categories",
+    "operationId": "createCategory",
+    "access": "EDITOR",
+    "expectedVersion": false,
+    "idempotent": true
+  },
+  {
+    "method": "PATCH",
+    "path": "/v1/categories/{categoryId}",
+    "operationId": "updateCategory",
+    "access": "EDITOR",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "GET",
+    "path": "/v1/tags",
+    "operationId": "listManagedTags",
+    "access": "EDITOR",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/tags/{tagId}",
+    "operationId": "getManagedTag",
+    "access": "EDITOR",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "POST",
+    "path": "/v1/tags",
+    "operationId": "createTag",
+    "access": "EDITOR",
+    "expectedVersion": false,
+    "idempotent": true
+  },
+  {
+    "method": "PATCH",
+    "path": "/v1/tags/{tagId}",
+    "operationId": "updateTag",
+    "access": "EDITOR",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "GET",
+    "path": "/v1/admin/members",
+    "operationId": "listMembers",
+    "access": "ADMIN",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/admin/members/{memberId}",
+    "operationId": "getMember",
+    "access": "ADMIN",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "PATCH",
+    "path": "/v1/admin/members/{memberId}",
+    "operationId": "updateMember",
+    "access": "ADMIN",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "PATCH",
+    "path": "/v1/admin/posts/{postId}/author",
+    "operationId": "reassignPostAuthor",
+    "access": "ADMIN",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "GET",
+    "path": "/v1/admin/invitations",
+    "operationId": "listInvitations",
+    "access": "ADMIN",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "GET",
+    "path": "/v1/admin/invitations/{invitationId}",
+    "operationId": "getInvitation",
+    "access": "ADMIN",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "POST",
+    "path": "/v1/admin/invitations",
+    "operationId": "createInvitation",
+    "access": "ADMIN",
+    "expectedVersion": false,
+    "idempotent": true
+  },
+  {
+    "method": "POST",
+    "path": "/v1/admin/invitations/{invitationId}/revoke",
+    "operationId": "revokeInvitation",
+    "access": "ADMIN",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "POST",
+    "path": "/v1/admin/invitations/{invitationId}/reissue",
+    "operationId": "reissueInvitation",
+    "access": "ADMIN",
+    "expectedVersion": true,
+    "idempotent": true
+  },
+  {
+    "method": "GET",
+    "path": "/v1/admin/audit-events",
+    "operationId": "listAuditEvents",
+    "access": "ADMIN",
+    "expectedVersion": false,
+    "idempotent": false
+  }
+]

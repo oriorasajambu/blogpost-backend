@@ -1,0 +1,7 @@
+{
+  "name": "@blogpost/unsupported-postman",
+  "version": "0.0.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "index.cjs"
+}

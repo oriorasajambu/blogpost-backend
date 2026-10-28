@@ -1,0 +1,23 @@
+{
+  "generator": {
+    "version": "7.26.0",
+    "url": "https://repo.maven.apache.org/maven2/org/openapitools/openapi-generator-cli/7.26.0/openapi-generator-cli-7.26.0.jar",
+    "sha256": "1760050094997b9cc790cc1350be095f15da8c08a996b184d3eadc4ccda5e35e",
+    "publishedSha1": "b96b148fcf482808037f68fbad99cb4d7e65d40b"
+  },
+  "gradle": {
+    "version": "9.6.1",
+    "url": "https://downloads.gradle.org/distributions/gradle-9.6.1-bin.zip",
+    "sha256": "9c0f7faeeb306cb14e4279a3e084ca6b596894089a0638e68a07c945a32c9e14"
+  },
+  "consumer": {
+    "kotlin": "2.4.0",
+    "retrofit": "3.0.0",
+    "okhttp": "5.4.0",
+    "gson": "2.14.0",
+    "coroutines": "1.11.0",
+    "junit": "4.13.2",
+    "jvmTarget": 11,
+    "runtimeJavaMinimum": 17
+  }
+}

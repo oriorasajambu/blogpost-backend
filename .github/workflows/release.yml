@@ -1,0 +1,212 @@
+name: Main release
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.repository }}
+  queue: max
+  cancel-in-progress: false
+jobs:
+  policy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    outputs:
+      docs_only: ${{ steps.policy.outputs.docs_only }}
+      classification: ${{ steps.policy.outputs.classification }}
+      promotion: ${{ steps.policy.outputs.promotion }}
+      draft: ${{ steps.policy.outputs.draft }}
+      source_sha: ${{ steps.policy.outputs.source_sha }}
+      base_sha: ${{ steps.policy.outputs.base_sha }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - id: policy
+        run: node scripts/ci/run-policy.mjs
+      - run: node scripts/ci/security.mjs
+  docs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs:
+      - policy
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - run: node scripts/ci/run-policy.mjs
+      - run: node scripts/ci/docs.mjs
+  foundation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs:
+      - policy
+    if: needs.policy.outputs.docs_only == 'false'
+    services:
+      postgres:
+        image: postgres:17.11-bookworm@sha256:858bb5e98eed02eb8cafbcdc007f9a65d1b613972028944a8ec2133ccaf80d27
+        env:
+          POSTGRES_DB: blogpost
+          POSTGRES_PASSWORD: disposable-ci-root
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 3s
+          --health-timeout 3s --health-retries 20
+    env:
+      APP_ENV: development
+      NODE_ENV: development
+      IDENTITY_PROJECT_ID: demo-blogpost-ci
+      FIREBASE_AUTH_EMULATOR_HOST: 127.0.0.1:9099
+      MEDIA_ADAPTER: local
+      MEDIA_LOCAL_ROOT: .local/ci-media
+      API_ORIGIN: http://localhost:8080
+      WEB_ORIGIN: http://localhost:3000
+      SQL_HOST: 127.0.0.1
+      SQL_DATABASE: blogpost
+      SQL_APP_PASSWORD: disposable-ci-app
+      CURSOR_SIGNING_KEY: '3333333333333333333333333333333333333333333333333333333333333333'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - uses: ./.github/actions/quality
+  identity-sql:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs:
+      - policy
+    if: needs.policy.outputs.docs_only == 'false'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Verify real SDK and SQL on disposable isolated infrastructure
+        run: npm run test:identity -- --build --compiled-operations
+      - name: Rehearse populated SQL upgrade and backup restoration
+        run: npm run test:recovery
+  kotlin-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs:
+      - policy
+    if: needs.policy.outputs.docs_only == 'false'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - name: Verify generated Kotlin and defensive consumer
+        shell: bash
+        run: >
+          export BLOGPOST_JAVA_HOME="${JAVA_HOME_17_X64:?The runner must provide
+          JDK 17}"
+
+          npm run contract:kotlin -- --check
+
+          npm run contract:kotlin:test
+  source-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs:
+      - policy
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: node scripts/ci/source-proof.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+  delivery:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs:
+      - policy
+      - docs
+      - foundation
+      - identity-sql
+      - kotlin-contract
+      - source-proof
+    if: always() && needs.policy.result == 'success' && needs.docs.result ==
+      'success' && needs.source-proof.result == 'success' &&
+      (needs.policy.outputs.docs_only == 'true' || (needs.foundation.result ==
+      'success' && needs.identity-sql.result == 'success' &&
+      needs.kotlin-contract.result == 'success'))
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: node scripts/ci/delivery-unavailable.mjs
+  release-validation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    if: always()
+    needs:
+      - policy
+      - docs
+      - foundation
+      - identity-sql
+      - kotlin-contract
+      - source-proof
+      - delivery
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: node scripts/ci/gate.mjs
+        env:
+          CI_NEEDS_JSON: ${{ toJSON(needs) }}
+          CI_GATE_KIND: release

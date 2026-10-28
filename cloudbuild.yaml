@@ -1,0 +1,63 @@
+steps:
+  - id: capture
+    name: node:24.22.1-bookworm@sha256:f9b3548b20b15b705b66aeecaeac7dd690c73d5e4661357aac02e60e3d38c88a
+    entrypoint: node
+    dir: /workspace
+    timeout: 600s
+    waitFor: ['-']
+    args:
+      - scripts/cloudbuild/recover.mjs
+      - capture
+      - --project-id
+      - $PROJECT_ID
+      - --build-id
+      - $BUILD_ID
+      - --region
+      - $LOCATION
+      - --environment
+      - ${_APP_ENV}
+  - id: tools
+    name: gcr.io/cloud-builders/docker@sha256:0aca0f95e1ba8f9107263d3e9782d5ce99a5b60d35b3f8985e4534b65552636f
+    entrypoint: docker
+    dir: /workspace
+    timeout: 900s
+    waitFor: [capture]
+    args:
+      - build
+      - --platform
+      - linux/amd64
+      - --file
+      - /workspace/.local/cloudbuild/$BUILD_ID/source/docker/cloudbuild/Dockerfile
+      - --tag
+      - blogpost-cloudbuild-tools:$BUILD_ID
+      - /workspace/.local/cloudbuild/$BUILD_ID/source
+  - id: check-build
+    name: blogpost-cloudbuild-tools:$BUILD_ID
+    entrypoint: node
+    dir: /workspace
+    timeout: 2700s
+    waitFor: [tools]
+    args:
+      - /workspace/.local/cloudbuild/$BUILD_ID/source/scripts/cloudbuild/recover.mjs
+      - check-build
+      - --project-id
+      - $PROJECT_ID
+      - --build-id
+      - $BUILD_ID
+      - --region
+      - $LOCATION
+      - --environment
+      - ${_APP_ENV}
+images:
+  - asia-southeast2-docker.pkg.dev/$PROJECT_ID/blogpost/backend:build-$BUILD_ID
+  - asia-southeast2-docker.pkg.dev/$PROJECT_ID/blogpost/backend-operations:build-$BUILD_ID
+serviceAccount: projects/$PROJECT_ID/serviceAccounts/blogpost-build@$PROJECT_ID.iam.gserviceaccount.com
+timeout: 3600s
+queueTtl: 900s
+options:
+  logging: CLOUD_LOGGING_ONLY
+  automapSubstitutions: false
+  sourceProvenanceHash: [SHA256]
+  requestedVerifyOption: VERIFIED
+substitutions:
+  _APP_ENV: UNSELECTED

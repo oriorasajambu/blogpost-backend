@@ -1,0 +1,64 @@
+name: Backend foundation validation
+description: Secret-free checks using the pinned runtime and disposable PostgreSQL.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: npm ci
+    - shell: bash
+      run: npm run build:native
+    - shell: bash
+      run: npm run test:ci
+    - shell: bash
+      run: npm run security:test
+    - shell: bash
+      run: npm run test:build
+    - shell: bash
+      run: npm run test:deploy
+    - shell: bash
+      run: npm run db:validate
+    - shell: bash
+      run: npm run db:generate
+    - shell: bash
+      run: npm run contract:build -- --check
+    - shell: bash
+      run: npm run contract:typescript -- --check
+    - shell: bash
+      run: npm run contract:compatibility:test
+    - shell: bash
+      run: npm run format:check
+    - shell: bash
+      run: npm run typecheck
+    - shell: bash
+      run: npm test
+    - shell: bash
+      run: npm run mock:smoke
+    - shell: bash
+      run: node scripts/contract-manifest.mjs --check
+    - shell: bash
+      run: npm run db:bootstrap
+      env:
+        SQL_ROOT_PASSWORD: disposable-ci-root
+        SQL_MIGRATOR_PASSWORD: disposable-ci-migrator
+    - shell: bash
+      run: npm run db:migrate
+      env:
+        SQL_MIGRATOR_PASSWORD: disposable-ci-migrator
+    - shell: bash
+      run: npm run db:migrate
+      env:
+        SQL_MIGRATOR_PASSWORD: disposable-ci-migrator
+    - shell: bash
+      run: npm run db:verify
+    - shell: bash
+      run: npm run test:integration
+    - shell: bash
+      run: npm run build
+    - shell: bash
+      run: npm audit --audit-level=moderate
+    - shell: bash
+      run: npm audit --prefix docker/auth --audit-level=moderate
+    - shell: bash
+      run: npm audit --prefix docker/operations --audit-level=moderate
+    - shell: bash
+      run: npm audit --prefix tools/mock --audit-level=moderate

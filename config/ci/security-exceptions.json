@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "exceptions": [
+    {
+      "rule": "generic-api-key",
+      "literal": "24c9e216afdd6335d4a242af55a6388d44a9d8d6624a22868ff02db71dd3d753",
+      "reason": "Public SHA-256 of the authored OpenAPI document recorded by consumer generation; not an API key.",
+      "expires": "2027-01-25"
+    },
+    {
+      "rule": "generic-api-key",
+      "literal": "83c9a1ca-6d20-48c5-8476-bb6a60677377",
+      "reason": "Public UUIDv4 idempotency example in the authored contract and synthetic consumers; it grants no authentication.",
+      "expires": "2027-01-25"
+    },
+    {
+      "rule": "generic-api-key",
+      "literal": "MAX_UTF8_BYTES",
+      "reason": "Public validation issue name passed to issue(key, code); not credential material.",
+      "expires": "2027-01-25"
+    }
+  ]
+}

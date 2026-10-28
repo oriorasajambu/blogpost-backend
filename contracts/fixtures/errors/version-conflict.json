@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-10-25T08:20:30.123Z",
+  "responseKey": "ERROR",
+  "statusCode": 412,
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "message": {
+    "title": "Request rejected",
+    "descriptions": "Use the stable error code to handle this response."
+  },
+  "data": null,
+  "error": {
+    "code": "VERSION_CONFLICT",
+    "fieldErrors": [],
+    "context": {
+      "resourceType": "POST",
+      "resourceId": "10000000-0000-4000-8000-000000000001",
+      "expectedVersion": 1,
+      "currentVersion": 2,
+      "currentRevisionId": "20000000-0000-4000-8000-000000000002",
+      "resourcePath": "/v1/posts/10000000-0000-4000-8000-000000000001"
+    }
+  },
+  "meta": {
+    "contractVersion": "1.0.0",
+    "pagination": null,
+    "idempotency": null
+  }
+}

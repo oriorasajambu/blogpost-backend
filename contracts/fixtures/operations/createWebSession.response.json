@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-10-25T08:20:30.123Z",
+  "responseKey": "SUCCESS",
+  "statusCode": 200,
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "message": {
+    "title": "Request completed",
+    "descriptions": "The request completed successfully."
+  },
+  "data": {
+    "sessionCookie": "SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL",
+    "expiresAt": "2026-10-30T08:20:30.123Z",
+    "member": {
+      "id": "40000000-0000-4000-8000-000000000001",
+      "handle": "synthetic-author",
+      "displayName": "Synthetic author",
+      "bio": "",
+      "email": "author@example.test",
+      "role": "AUTHOR",
+      "active": true,
+      "version": 1
+    }
+  },
+  "error": null,
+  "meta": {
+    "contractVersion": "1.0.0",
+    "pagination": null,
+    "idempotency": null
+  }
+}

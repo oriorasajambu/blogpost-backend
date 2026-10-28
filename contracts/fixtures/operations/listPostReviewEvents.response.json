@@ -1,0 +1,36 @@
+{
+  "timestamp": "2026-10-25T08:20:30.123Z",
+  "responseKey": "SUCCESS",
+  "statusCode": 200,
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "message": {
+    "title": "Request completed",
+    "descriptions": "The request completed successfully."
+  },
+  "data": [
+    {
+      "id": "70000000-0000-4000-8000-000000000001",
+      "postId": "10000000-0000-4000-8000-000000000001",
+      "revisionId": "20000000-0000-4000-8000-000000000002",
+      "action": "PUBLISHED",
+      "actor": {
+        "id": "40000000-0000-4000-8000-000000000002",
+        "handle": "synthetic-editor",
+        "displayName": "Synthetic editor"
+      },
+      "createdAt": "2026-10-25T08:20:30.123Z",
+      "feedback": null
+    }
+  ],
+  "error": null,
+  "meta": {
+    "contractVersion": "1.0.0",
+    "pagination": {
+      "kind": "CURSOR",
+      "pageSize": 20,
+      "hasMore": false,
+      "nextCursor": null
+    },
+    "idempotency": null
+  }
+}
