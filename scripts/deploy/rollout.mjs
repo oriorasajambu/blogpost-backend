@@ -6,11 +6,15 @@ import {
   verifyCloudRunRevisionTemplate,
 } from './cloud-run-config.mjs';
 import { refuse, RolloutError } from './rollout-client.mjs';
+import {
+  assessServiceMetrics,
+  OBSERVATION_DURATION as OBSERVE,
+  METRICS_MAX_DRAIN,
+} from './metrics-policy.mjs';
 
 const REVISION = 'TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION';
 const POLL = 5000;
 const STARTUP = 300000;
-const OBSERVE = 900000;
 const INTERVAL = 30000;
 const OUTPUT = new Set([
   'uid',
@@ -244,6 +248,20 @@ function serviceIdentity(service, project, target, uid) {
   )
     refuse('SERVICE_IDENTITY_CHANGED');
 }
+function serviceCreation(service) {
+  const value = service.createTime;
+  const time = typeof value === 'string' ? Date.parse(value) : NaN;
+  if (
+    !Number.isSafeInteger(time) ||
+    time <= 0 ||
+    !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,9})?Z$/.test(value) ||
+    new Date(time).toISOString().slice(0, 19) !== value.slice(0, 19)
+  )
+    refuse('SERVICE_IDENTITY_CHANGED');
+  // Upper-bound sub-millisecond provider precision; a metric window must not
+  // include a previous incarnation of the same service name.
+  return time + 1;
+}
 async function revisionCheck(client, service, project, artifact, expectedHash) {
   const id = artifact.revision;
   const revision = await client.revision(service.name + '/revisions/' + id);
@@ -396,6 +414,8 @@ async function live(ctx, record, expectedTraffic, checkSettled = true) {
     refuse('PROJECT_MISMATCH');
   const service = await ctx.client.service();
   serviceIdentity(service, project, ctx.request.target, record?.serviceUid);
+  if (record && serviceCreation(service) !== record.serviceCreatedAt)
+    refuse('SERVICE_IDENTITY_CHANGED');
   if (record && invariant(service) !== record.serviceInvariant)
     refuse('SERVICE_CONFIGURATION_CHANGED');
   if (checkSettled) settled(service);
@@ -555,23 +575,6 @@ async function stableProbes(ctx, record, phase, origin, artifacts) {
   }
   return false;
 }
-function metricSample(sample, now) {
-  if (!sample || sample.available !== true) return null;
-  if (
-    !Number.isSafeInteger(sample.requests) ||
-    !Number.isSafeInteger(sample.serverErrors) ||
-    sample.requests < 0 ||
-    sample.serverErrors < 0 ||
-    sample.serverErrors > sample.requests ||
-    !Number.isSafeInteger(sample.windowStart) ||
-    !Number.isSafeInteger(sample.windowEnd) ||
-    sample.windowEnd - sample.windowStart !== 300000 ||
-    sample.windowEnd > now ||
-    now - sample.windowEnd > 60000
-  )
-    refuse('INVALID_METRIC_SAMPLE');
-  return sample.requests >= 20 && sample.serverErrors / sample.requests > 0.05;
-}
 async function previousRevisions(ctx, record, service, project) {
   for (const previous of record.previousRevisions) {
     const artifact = ctx.expected.previous.get(previous.revision);
@@ -706,6 +709,8 @@ export async function executeCloudRunRollout(options) {
     );
     verifyCloudRunRevisionTemplate({ ...ctx.request, project, template });
     const createdAt = ctx.clock.now();
+    if (serviceCreation(service) > createdAt)
+      refuse('SERVICE_IDENTITY_CHANGED');
     let record = {
       schemaVersion: 1,
       id: ctx.request.attemptId,
@@ -722,6 +727,7 @@ export async function executeCloudRunRollout(options) {
       serviceName: service.name,
       serviceId: ctx.request.target.resourceId,
       serviceUid: service.uid,
+      serviceCreatedAt: serviceCreation(service),
       serviceInvariant: invariant(service),
       previousTraffic,
       previousRevisions: previous,
@@ -793,6 +799,9 @@ export async function executeCloudRunRollout(options) {
     let failed = 0;
     let metricsMissing = false;
     let cadenceMissed = false;
+    let metricsCoveredFrom = null;
+    let metricsCoveredUntil = null;
+    const metricObservations = [];
     let rounds = 0;
     let nextProbeAt = started + INTERVAL;
     do {
@@ -801,7 +810,9 @@ export async function executeCloudRunRollout(options) {
         nextProbeAt += Math.ceil((now - nextProbeAt) / INTERVAL) * INTERVAL;
         cadenceMissed = true;
       }
-      if (nextProbeAt > started + OBSERVE) break;
+      if (nextProbeAt > started + OBSERVE + METRICS_MAX_DRAIN) break;
+      if (nextProbeAt > started + OBSERVE && (metricsMissing || cadenceMissed))
+        break;
       await ctx.clock.sleep(Math.max(0, nextProbeAt - ctx.clock.now()));
       await live(ctx, record, promotedTraffic(record));
       failed = (await probe(
@@ -817,28 +828,90 @@ export async function executeCloudRunRollout(options) {
         return await rollback(ctx, record, 'POST_SWITCH_PROBES_FAILED');
       let sample;
       try {
-        sample = await ctx.metrics({
-          request: clone(ctx.request),
-          record: clone(record),
-          now: ctx.clock.now(),
-        });
+        sample = clone(
+          await ctx.metrics({
+            request: clone(ctx.request),
+            record: clone(record),
+            now: ctx.clock.now(),
+          }),
+        );
       } catch {
         sample = { available: false };
       }
-      const highErrors = metricSample(sample, ctx.clock.now());
-      if (highErrors === null) metricsMissing = true;
-      if (highErrors)
-        return await rollback(ctx, record, 'SERVICE_5XX_THRESHOLD');
-      rounds++;
-      record = await persist(ctx, record, 'observing', {
-        observationRounds: rounds,
-        metricsMissing,
-        cadenceMissed,
+      const assessment = assessServiceMetrics(sample, {
+        request: ctx.request,
+        record,
+        now: ctx.clock.now(),
       });
+      if (assessment.state === 'unavailable') metricsMissing = true;
+      if (assessment.state === 'available') {
+        if (metricsCoveredFrom === null) {
+          metricsCoveredFrom = assessment.windowStart;
+          if (metricsCoveredFrom > started) metricsMissing = true;
+        } else if (assessment.windowStart > metricsCoveredUntil)
+          metricsMissing = true;
+        metricsCoveredUntil = Math.max(
+          metricsCoveredUntil ?? 0,
+          assessment.windowEnd,
+        );
+        metricObservations.push({
+          state: 'available',
+          requestedAt: sample.requestedAt,
+          windowStart: assessment.windowStart,
+          windowEnd: assessment.windowEnd,
+          requests: assessment.requests,
+          serverErrors: assessment.serverErrors,
+          buckets: Array.from({ length: 5 }, (_, index) => ({
+            end: sample.buckets[index].end,
+            requests: sample.buckets[index].requests,
+            serverErrors: sample.buckets[index].serverErrors,
+          })),
+        });
+      } else
+        metricObservations.push({
+          state: assessment.state,
+          observedAt: ctx.clock.now(),
+          ...(assessment.state === 'warming'
+            ? { readyAt: assessment.readyAt }
+            : { reason: assessment.reason }),
+        });
+      rounds++;
+      record = await persist(
+        ctx,
+        record,
+        ctx.clock.now() >= started + OBSERVE ? 'metrics_draining' : 'observing',
+        {
+          observationRounds: rounds,
+          metricsMissing,
+          cadenceMissed,
+          metricsCoveredFrom,
+          metricsCoveredUntil,
+          metricObservations,
+        },
+      );
+      if (assessment.state === 'available' && assessment.highErrors)
+        return await rollback(ctx, record, 'SERVICE_5XX_THRESHOLD');
+      const coverageComplete =
+        metricsCoveredFrom !== null &&
+        metricsCoveredFrom <= started &&
+        metricsCoveredUntil >= started + OBSERVE;
+      if (
+        ctx.clock.now() >= started + OBSERVE &&
+        (coverageComplete || metricsMissing || cadenceMissed)
+      )
+        break;
       nextProbeAt += INTERVAL;
-    } while (nextProbeAt <= started + OBSERVE && rounds < OBSERVE / INTERVAL);
+    } while (
+      nextProbeAt <= started + OBSERVE + METRICS_MAX_DRAIN &&
+      rounds < (OBSERVE + METRICS_MAX_DRAIN) / INTERVAL
+    );
     await live(ctx, record, promotedTraffic(record));
-    const incomplete = metricsMissing || failed > 0 || cadenceMissed;
+    const metricsComplete =
+      metricsCoveredFrom !== null &&
+      metricsCoveredFrom <= started &&
+      metricsCoveredUntil >= started + OBSERVE;
+    const incomplete =
+      metricsMissing || !metricsComplete || failed > 0 || cadenceMissed;
     return persist(
       ctx,
       record,
@@ -847,12 +920,13 @@ export async function executeCloudRunRollout(options) {
         status: incomplete ? 'failed' : 'succeeded',
         success: !incomplete,
         cadenceMissed,
-        reason: metricsMissing
-          ? 'METRICS_UNAVAILABLE'
+        metricsComplete,
+        reason: cadenceMissed
+          ? 'OBSERVATION_CADENCE_MISSED'
           : failed
             ? 'PROBES_UNCONFIRMED'
-            : cadenceMissed
-              ? 'OBSERVATION_CADENCE_MISSED'
+            : metricsMissing || !metricsComplete
+              ? 'METRICS_UNAVAILABLE'
               : null,
       },
     );

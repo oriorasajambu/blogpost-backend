@@ -12,11 +12,17 @@ import {
 import { fileRolloutJournal } from '../../scripts/deploy/rollout-journal.mjs';
 import { probeFixture } from './probe-fixtures.mjs';
 import { contractSha256 } from '../../scripts/deploy/wire-contract.mjs';
+import { metricSample, metricsFixture } from './metrics-fixtures.mjs';
+import {
+  OBSERVATION_DURATION,
+  METRICS_MAX_DRAIN,
+} from '../../scripts/deploy/metrics-policy.mjs';
 
 const REVISION = 'TRAFFIC_TARGET_ALLOCATION_TYPE_REVISION';
 const clone = structuredClone;
 function harness(environment = 'staging') {
   const old = fixture(environment);
+  old.resource.createTime = '2026-10-27T00:00:00Z';
   const previous = 'blogpost-api-known-good';
   old.resource.template.revision = previous;
   old.resource.template.labels = { team: 'editorial' };
@@ -204,15 +210,7 @@ function harness(environment = 'staging') {
     },
     metrics: async (input) => {
       state.metrics.push(input);
-      return state.metric
-        ? state.metric(input)
-        : {
-            available: true,
-            requests: 20,
-            serverErrors: 0,
-            windowStart: input.now - 300000,
-            windowEnd: input.now,
-          };
+      return metricSample(input, state.metric ? state.metric(input) : {});
     },
   };
   return { options, state, old, candidate, previous, json, fetchImpl };
@@ -228,7 +226,17 @@ for (const env of ['staging', 'production'])
       const result = await executeCloudRunRollout(h.options);
       assert.equal(result.status, 'succeeded');
       assert.equal(result.success, true);
-      assert.equal(result.observationRounds, 30);
+      assert.equal(result.observationRounds, 38);
+      assert.equal(result.metricsComplete, true);
+      assert.ok(result.metricsCoveredFrom <= result.observationStartedAt);
+      assert.ok(
+        result.metricsCoveredUntil >=
+          result.observationStartedAt + OBSERVATION_DURATION,
+      );
+      assert.ok(
+        result.updatedAt - result.observationStartedAt <=
+          OBSERVATION_DURATION + METRICS_MAX_DRAIN,
+      );
       assert.ok(result.updatedAt - result.observationStartedAt >= 900000);
       assert.deepEqual(h.state.authorizations, ['candidate', 'promote']);
       assert.equal(h.state.patches.length, 2);
@@ -360,7 +368,7 @@ test('observation starts remain thirty seconds apart when probes take time', asy
   };
   const result = await executeCloudRunRollout(h.options);
   assert.equal(result.success, true);
-  assert.equal(starts.length, 30);
+  assert.equal(starts.length, 38);
   assert.ok(
     starts.slice(1).every((time, index) => time - starts[index] === 30000),
   );
@@ -383,8 +391,12 @@ test('missed observation slots cannot report success or trigger automatic recove
 
 test('an unconfirmed last probe failure cannot report success', async () => {
   const h = harness();
-  let count = 0;
-  h.state.probe = ({ phase }) => phase !== 'observation' || ++count !== 30;
+  h.state.probe = ({ phase }) =>
+    phase !== 'observation' ||
+    h.state.now <
+      h.state.record.observationStartedAt +
+        OBSERVATION_DURATION +
+        METRICS_MAX_DRAIN;
   const result = await executeCloudRunRollout(h.options);
   assert.equal(result.reason, 'PROBES_UNCONFIRMED');
   assert.equal(result.success, false);
@@ -400,13 +412,7 @@ for (const [requests, errors, rollback] of [
     '5xx threshold: ' + requests + ' requests, ' + errors + ' errors',
     async () => {
       const h = harness();
-      h.state.metric = ({ now }) => ({
-        available: true,
-        requests,
-        serverErrors: errors,
-        windowStart: now - 300000,
-        windowEnd: now,
-      });
+      h.state.metric = () => ({ requests, serverErrors: errors });
       const result = await executeCloudRunRollout(h.options);
       assert.equal(result.status, rollback ? 'rolled_back' : 'succeeded');
       if (rollback) assert.equal(result.reason, 'SERVICE_5XX_THRESHOLD');
@@ -439,8 +445,11 @@ test('invalid metrics cannot trigger success or an automatic rollback', async ()
     windowEnd: now,
   });
   const result = await executeCloudRunRollout(h.options);
-  assert.equal(result.phase, 'recovery_required');
-  assert.equal(result.reason, 'INVALID_METRIC_SAMPLE');
+  assert.equal(result.phase, 'observation_incomplete');
+  assert.equal(result.reason, 'METRICS_UNAVAILABLE');
+  await assert.rejects(recoverCloudRunRollout(h.options), {
+    code: 'OBSERVATION_REQUIRES_OPERATOR',
+  });
   assert.equal(h.state.patches.length, 2);
 });
 
@@ -819,6 +828,122 @@ for (const shouldFail of [false, true])
       );
     },
   );
+
+for (const mode of ['success', 'late-errors', 'missing-final-minute'])
+  test(
+    'rollout connects the Monitoring collector through ' + mode,
+    async () => {
+      const h = harness();
+      const metrics = metricsFixture();
+      h.options.metrics = async (input) => {
+        metrics.state.input = input;
+        const targetEnd =
+          Math.ceil(
+            (input.record.observationStartedAt + OBSERVATION_DURATION) / 60000,
+          ) * 60000;
+        if (mode === 'late-errors') {
+          metrics.state.errorsAt = targetEnd;
+          metrics.state.errors = 2;
+        }
+        if (mode === 'missing-final-minute')
+          metrics.state.mutation = (page) => {
+            if (
+              page.timeSeries[0].points[0].interval.endTime ===
+              new Date(targetEnd).toISOString()
+            )
+              page.timeSeries[0].points.shift();
+          };
+        return metrics.collector(input);
+      };
+      const result = await executeCloudRunRollout(h.options);
+      assert.ok(metrics.state.calls.length > 0);
+      assert.equal(metrics.state.calls.length, metrics.state.tokenCalls);
+      assert.ok(
+        metrics.state.calls.every(
+          (call) =>
+            new URL(call.url).origin === 'https://monitoring.googleapis.com' &&
+            call.options.method === 'GET',
+        ),
+      );
+      assert.ok(
+        result.metricObservations.some((sample) => sample.state === 'warming'),
+      );
+      if (mode === 'success') {
+        assert.equal(result.status, 'succeeded');
+        assert.equal(result.metricsComplete, true);
+        assert.ok(
+          result.metricsCoveredUntil >=
+            result.observationStartedAt + OBSERVATION_DURATION,
+        );
+        assert.ok(
+          result.updatedAt - result.observationStartedAt <=
+            OBSERVATION_DURATION + METRICS_MAX_DRAIN,
+        );
+      } else if (mode === 'late-errors') {
+        assert.equal(result.status, 'rolled_back');
+        assert.equal(result.reason, 'SERVICE_5XX_THRESHOLD');
+        assert.equal(result.metricObservations.at(-1).serverErrors, 2);
+        assert.ok(
+          result.metricObservations.at(-1).windowEnd >=
+            result.observationStartedAt + OBSERVATION_DURATION,
+        );
+        assert.equal(h.state.patches.length, 3);
+      } else {
+        assert.equal(result.phase, 'observation_incomplete');
+        assert.equal(result.metricsComplete, false);
+        assert.equal(result.reason, 'METRICS_UNAVAILABLE');
+        assert.equal(h.state.patches.length, 2);
+        await assert.rejects(recoverCloudRunRollout(h.options), {
+          code: 'OBSERVATION_REQUIRES_OPERATOR',
+        });
+      }
+    },
+  );
+
+test('HTTP failures during the metrics drain still use guarded rollback', async () => {
+  const h = harness();
+  h.state.probe = ({ phase }) =>
+    phase !== 'observation' ||
+    h.state.now <= h.state.record.observationStartedAt + OBSERVATION_DURATION;
+  const result = await executeCloudRunRollout(h.options);
+  assert.equal(result.status, 'rolled_back');
+  assert.equal(result.reason, 'POST_SWITCH_PROBES_FAILED');
+  assert.ok(
+    result.updatedAt - result.observationStartedAt > OBSERVATION_DURATION,
+  );
+});
+
+test('provider creation timestamps are recorded and future or missing identities cannot start mutation', async () => {
+  for (const time of [undefined, '2027-10-28T00:00:00Z']) {
+    const h = harness();
+    h.state.service.createTime = time;
+    await assert.rejects(executeCloudRunRollout(h.options), {
+      code: 'SERVICE_IDENTITY_CHANGED',
+    });
+    assert.equal(h.state.patches.length, 0);
+  }
+});
+
+test('metric journal records only validated count fields and never callback diagnostics', async () => {
+  const h = harness();
+  h.state.metric = (input) => {
+    const base = metricSample(input);
+    return base.available
+      ? {
+          buckets: base.buckets.map((bucket) => ({
+            ...bucket,
+            diagnostic: 'private-token-diagnostic',
+          })),
+        }
+      : {};
+  };
+  const result = await executeCloudRunRollout(h.options);
+  assert.equal(result.status, 'succeeded');
+  assert.ok(!JSON.stringify(result).includes('private-token-diagnostic'));
+  assert.ok(
+    !JSON.stringify(h.state.saves).includes('private-token-diagnostic'),
+  );
+});
 
 test('private file journal persists atomically, enforces CAS and detects corruption', async () => {
   const root = await mkdtemp(join(tmpdir(), 'blogpost-rollout-'));
