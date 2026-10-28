@@ -72,6 +72,7 @@ try {
   const build = await prepareBuild(root);
   docker([
     'build',
+    '--load',
     '--platform',
     'linux/amd64',
     '--target',

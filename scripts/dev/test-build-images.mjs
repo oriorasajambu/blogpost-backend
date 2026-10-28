@@ -115,6 +115,7 @@ try {
       const tag = tags[target === 'runtime' ? 0 : 1];
       docker([
         'build',
+        '--load',
         '--platform',
         'linux/amd64',
         '--target',
