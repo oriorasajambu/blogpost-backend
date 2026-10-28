@@ -22,6 +22,8 @@ import {
 } from './provenance.mjs';
 
 const liveResults = new WeakMap();
+// Cloud Build also records an unsigned `provenance` occurrence per image; only
+// the signed in-toto occurrence is evidence, and exactly one must exist.
 function occurrences(observations) {
   if (
     !Array.isArray(observations.occurrencePages) ||
@@ -31,11 +33,22 @@ function occurrences(observations) {
         !page ||
         page.nextPageToken ||
         !Array.isArray(page.occurrences) ||
-        page.occurrences.length !== 1,
+        page.occurrences.length > 20 ||
+        page.occurrences.some(
+          (occurrence) =>
+            !occurrence ||
+            typeof occurrence !== 'object' ||
+            Array.isArray(occurrence),
+        ) ||
+        page.occurrences.filter(
+          (occurrence) => occurrence.envelope !== undefined,
+        ).length !== 1,
     )
   )
     fail('UNAMBIGUOUS_BUILD_PROVENANCE_REQUIRED');
-  return observations.occurrencePages.map((page) => page.occurrences[0]);
+  return observations.occurrencePages.map((page) =>
+    page.occurrences.find((occurrence) => occurrence.envelope !== undefined),
+  );
 }
 export function verifyRecoveryResult(inputs, observations, now = Date.now()) {
   if (

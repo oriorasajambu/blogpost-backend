@@ -32,9 +32,13 @@ export function completedBuildImages(
     !Array.isArray(build.results.buildStepImages) ||
     build.results.buildStepImages.length !== 3 ||
     build.results.buildStepImages.some(
-      (value) =>
+      (value, index) =>
         typeof value !== 'string' ||
-        /^sha256:[a-f0-9]{64}$/.exec(value)?.[0] !== value,
+        // check-build runs the invocation-local tools image, which has no
+        // registry digest; Cloud Build records it as an empty string.
+        (index === 2 && value === ''
+          ? false
+          : /^sha256:[a-f0-9]{64}$/.exec(value)?.[0] !== value),
     )
   )
     fail('COMPLETED_BUILD_RESULTS_REQUIRED');
@@ -126,14 +130,10 @@ export function verifyRegistryImage(plan, expected, image, now = Date.now()) {
     uploadTime: image.uploadTime,
   };
 }
+// Container Analysis rejects filters on nested provenance fields with
+// INVALID_ARGUMENT, so the build invocation is checked in the signed statement.
 export function provenanceListUrl(plan, buildName, image) {
-  const invocation = 'https://cloudbuild.googleapis.com/v1/' + buildName;
-  const filter =
-    'kind="BUILD" AND resourceUri="https://' +
-    image.uri +
-    '" AND build.inTotoSlsaProvenanceV1.predicate.runDetails.metadata.invocationId="' +
-    invocation +
-    '"';
+  const filter = 'kind="BUILD" AND resourceUri="https://' + image.uri + '"';
   return (
     'https://containeranalysis.googleapis.com/v1/projects/' +
     plan.projectId +

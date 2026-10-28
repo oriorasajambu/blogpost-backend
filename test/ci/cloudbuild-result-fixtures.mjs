@@ -49,6 +49,163 @@ export function envelope(statement, text = JSON.stringify(statement)) {
     ],
   };
 }
+// Key names and signing inputs observed on a real asia-southeast2 build:
+// provenanceSigner signs the DSSE envelope, builtByGCB signs the raw payload,
+// and the post-quantum signature cannot be verified (its key is not readable).
+export const legacyKeyNames = {
+  envelope:
+    'projects/verified-builder/locations/global/keyRings/attestor/cryptoKeys/provenanceSigner/cryptoKeyVersions/1',
+  payload:
+    'projects/verified-builder/locations/asia/keyRings/attestor/cryptoKeys/builtByGCB/cryptoKeyVersions/1',
+  pqc: 'projects/verified-builder/locations/global/keyRings/attestor/cryptoKeys/pqcProvenanceSigner/cryptoKeyVersions/1',
+};
+const payloadPair = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
+const payloadPem = payloadPair.publicKey
+  .export({ type: 'spki', format: 'pem' })
+  .toString();
+export function legacyEnvelope(statement, text = JSON.stringify(statement)) {
+  const signed = envelope(statement, text);
+  const bytes = Buffer.from(text);
+  signed.signatures = [
+    { keyid: legacyKeyNames.envelope, sig: signed.signatures[0].sig },
+    {
+      keyid: legacyKeyNames.pqc,
+      sig: Buffer.alloc(3309, 7).toString('base64'),
+    },
+    {
+      keyid: legacyKeyNames.payload,
+      sig: sign('sha256', bytes, payloadPair.privateKey).toString('base64'),
+    },
+  ];
+  return signed;
+}
+export function legacyKeys() {
+  return {
+    [legacyKeyNames.envelope]: {
+      ...structuredClone(publicKey),
+      name: legacyKeyNames.envelope,
+    },
+    [legacyKeyNames.payload]: {
+      name: legacyKeyNames.payload,
+      algorithm: 'EC_SIGN_P256_SHA256',
+      pem: payloadPem,
+      pemCrc32c: String(crc32c(Buffer.from(payloadPem))),
+    },
+  };
+}
+export function legacyStatement(f) {
+  const { context, sourceSha } = f,
+    { plan } = context;
+  const predicate = {
+    builder: {
+      id: 'https://cloudbuild.googleapis.com/GoogleHostedWorker@v0.3',
+    },
+    materials: [
+      {
+        uri: 'git+https://github.com/fixture/backend',
+        digest: { sha1: sourceSha },
+      },
+    ],
+    metadata: {
+      buildInvocationId: plan.buildId,
+      buildStartedOn: f.build.startTime,
+      buildFinishedOn: f.build.finishTime,
+    },
+    recipe: {
+      type: 'https://cloudbuild.googleapis.com/CloudBuildYaml@v0.1',
+      entryPoint: 'cloudbuild.yaml',
+      arguments: {
+        '@type': 'type.googleapis.com/google.devtools.cloudbuild.v1.Build',
+        id: plan.buildId,
+        name:
+          'projects/' +
+          plan.projectNumber +
+          '/locations/' +
+          plan.region +
+          '/builds/' +
+          plan.buildId,
+        options: {
+          dynamicSubstitutions: true,
+          logging: 'CLOUD_LOGGING_ONLY',
+          pool: {},
+          requestedVerifyOption: 'VERIFIED',
+          sourceProvenanceHash: ['SHA256'],
+          substitutionOption: 'ALLOW_LOOSE',
+          workerRelease: 'legacy',
+        },
+        sourceProvenance: {
+          resolvedGitSource: {
+            revision: sourceSha,
+            url: 'https://github.com/fixture/backend.git',
+          },
+        },
+        steps: recoveryRecipe(plan).steps.map((step) => ({
+          ...step,
+          status: 'SUCCESS',
+          timing: { startTime: f.build.startTime, endTime: f.build.finishTime },
+          pullTiming: {
+            startTime: f.build.startTime,
+            endTime: f.build.startTime,
+          },
+        })),
+        substitutions: {
+          BRANCH_NAME: plan.branch,
+          COMMIT_SHA: sourceSha,
+          REF_NAME: plan.branch,
+          REPO_FULL_NAME: 'fixture/backend',
+          REPO_NAME: 'backend',
+          REVISION_ID: sourceSha,
+          SHORT_SHA: sourceSha.slice(0, 7),
+          TRIGGER_BUILD_CONFIG_PATH: 'cloudbuild.yaml',
+          TRIGGER_NAME: 'blogpost-backend-manual',
+          _APP_ENV: plan.environment,
+        },
+        tags: ['trigger-' + context.result.triggerId],
+      },
+    },
+  };
+  return {
+    _type: 'https://in-toto.io/Statement/v0.1',
+    predicateType: 'https://slsa.dev/provenance/v0.1',
+    subject: f.statement.subject,
+    predicate,
+    slsaProvenance: structuredClone(predicate),
+  };
+}
+// Replaces the v1 observations with the real Cloud Build shape: a local tools
+// step without a registry digest, and per image one unsigned provenance
+// occurrence beside the signed v0.1 statement.
+export function useLegacyProvenance(f, statement = legacyStatement(f)) {
+  f.build.results.buildStepImages[2] = '';
+  f.observations.occurrencePages = f.context.images.map((image, i) => ({
+    occurrences: [
+      {
+        name:
+          'projects/' + f.context.plan.projectId + '/occurrences/unsigned-' + i,
+        kind: 'BUILD',
+        resourceUri: 'https://' + image.uri,
+        noteName: 'projects/verified-builder/notes/' + f.context.plan.buildId,
+        build: { provenance: { id: f.context.plan.buildId } },
+      },
+      {
+        name:
+          'projects/' +
+          f.context.plan.projectId +
+          '/occurrences/synthetic-' +
+          i,
+        kind: 'BUILD',
+        resourceUri: 'https://' + image.uri,
+        noteName:
+          'projects/verified-builder/notes/intoto_' + f.context.plan.buildId,
+        createTime: f.build.finishTime,
+        updateTime: f.build.finishTime,
+        envelope: legacyEnvelope(statement),
+      },
+    ],
+  }));
+  f.observations.keys = legacyKeys();
+  return f;
+}
 export function resultFixture(
   environment = 'staging',
   sourceSha = 'a'.repeat(40),
@@ -269,10 +426,10 @@ export function resultProvider(f, transform = (response) => response) {
       provenanceListUrl(plan, context.result.buildName, image),
       o.occurrencePages[i],
     ]),
-    [
-      'https://cloudkms.googleapis.com/v1/' + keyName + '/publicKey',
-      o.keys[keyName],
-    ],
+    ...Object.entries(o.keys).map(([name, key]) => [
+      'https://cloudkms.googleapis.com/v1/' + name + '/publicKey',
+      key,
+    ]),
   ];
   const resources = new Map(entries),
     calls = [],

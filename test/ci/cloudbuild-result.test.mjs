@@ -26,6 +26,10 @@ import {
   resultRepository,
   resultProvider,
   observed,
+  legacyEnvelope,
+  legacyKeyNames,
+  legacyStatement,
+  useLegacyProvenance,
 } from './cloudbuild-result-fixtures.mjs';
 import { useGitSource } from './cloudbuild-fixtures.mjs';
 
@@ -640,5 +644,258 @@ test('completed gitSource build binds its repository through the trigger', () =>
     {
       code: 'CLOUD_BUILD_SOURCE_DISAGREES',
     },
+  );
+});
+
+for (const environment of ['staging', 'production'])
+  test(
+    environment +
+      ' SLSA v0.1 provenance from the real Cloud Build shape verifies provided and live',
+    async (t) => {
+      const f = useLegacyProvenance(resultFixture(environment));
+      const proof = verifyRecoveryResult(f.inputs, f.observations, observed);
+      assert.equal(proof.status, 'VERIFIED');
+      for (const image of proof.images) {
+        assert.equal(
+          image.provenance.predicateType,
+          'https://slsa.dev/provenance/v0.1',
+        );
+        // The unverifiable post-quantum signature is never trusted.
+        assert.deepEqual(
+          image.provenance.signatures.map((signature) => signature.keyName),
+          [legacyKeyNames.envelope, legacyKeyNames.payload],
+        );
+      }
+      const live = useLegacyProvenance(await resultRepository(t, environment)),
+        p = resultProvider(live);
+      const liveProof = await verifyLiveRecoveryResult({
+        root: live.root,
+        request: live.request,
+        sourceSha: live.merge,
+        accessToken: 'synthetic-test-token',
+        transport: p.transport,
+        githubTransport: p.githubTransport,
+        now: observed,
+      });
+      assert.equal(liveProof.evidenceSource, 'live-api');
+      assert.equal(
+        liveProof.images[0].provenance.keyAuthority,
+        'live-google-kms',
+      );
+      assert.ok(!p.calls.some(({ url }) => url.includes(legacyKeyNames.pqc)));
+    },
+  );
+
+test('SLSA v0.1 statement must bind the exact recipe, source, trigger and images', () => {
+  const both = (change) => (statement) => {
+    change(statement.predicate);
+    change(statement.slsaProvenance);
+  };
+  const otherBuild = '99999999-9999-4999-8999-999999999999';
+  const mutations = [
+    [
+      (statement) => {
+        statement.subject[0].digest.sha256 = 'f'.repeat(64);
+      },
+      'SIGNED_IMAGE_SUBJECT_DISAGREES',
+    ],
+    [
+      both((p) => {
+        p.metadata.buildInvocationId = otherBuild;
+      }),
+      'SIGNED_BUILD_INVOCATION_DISAGREES',
+    ],
+    [
+      both((p) => {
+        p.recipe.arguments.name = p.recipe.arguments.name.replace(
+          /builds\/.*/,
+          'builds/' + otherBuild,
+        );
+      }),
+      'SIGNED_BUILD_INVOCATION_DISAGREES',
+    ],
+    [
+      both((p) => {
+        p.metadata.buildFinishedOn = '2026-10-29T00:00:00Z';
+      }),
+      'SIGNED_BUILD_TIME_DISAGREES',
+    ],
+    [
+      both((p) => {
+        p.recipe.arguments.steps[1].args.push('--no-cache');
+      }),
+      'UNAPPROVED_SIGNED_BUILD_DEPENDENCY',
+    ],
+    [
+      both((p) => {
+        p.recipe.arguments.steps[0].name = 'node:24.22.1-bookworm';
+      }),
+      'UNAPPROVED_SIGNED_BUILD_DEPENDENCY',
+    ],
+    [
+      both((p) => {
+        p.recipe.arguments.steps[2].env = ['EXTRA=1'];
+      }),
+      'UNAPPROVED_SIGNED_BUILD_DEPENDENCY',
+    ],
+    [
+      both((p) => {
+        p.recipe.arguments.steps[2].status = 'FAILURE';
+      }),
+      'UNAPPROVED_SIGNED_BUILD_DEPENDENCY',
+    ],
+    [
+      both((p) => {
+        p.recipe.arguments.steps.pop();
+      }),
+      'UNAPPROVED_SIGNED_BUILD_DEPENDENCY',
+    ],
+    [
+      both((p) => {
+        p.recipe.arguments.sourceProvenance.resolvedGitSource.revision =
+          'b'.repeat(40);
+      }),
+      'SIGNED_APPLICATION_SOURCE_DISAGREES',
+    ],
+    [
+      both((p) => {
+        p.recipe.arguments.sourceProvenance.resolvedGitSource.url =
+          'https://github.com/other/backend.git';
+      }),
+      'SIGNED_APPLICATION_SOURCE_DISAGREES',
+    ],
+    [
+      both((p) => {
+        p.materials[0].digest.sha1 = 'b'.repeat(40);
+      }),
+      'SIGNED_SOURCE_DEPENDENCY_DISAGREES',
+    ],
+    [
+      both((p) => {
+        p.recipe.arguments.tags = ['trigger-' + otherBuild];
+      }),
+      'SIGNED_TRIGGER_DISAGREES',
+    ],
+    [
+      both((p) => {
+        p.recipe.arguments.substitutions._EXTRA = 'value';
+      }),
+      'SIGNED_BUILD_SUBSTITUTIONS_DISAGREE',
+    ],
+    [
+      both((p) => {
+        p.recipe.arguments.substitutions._APP_ENV = 'production';
+      }),
+      'SIGNED_BUILD_SUBSTITUTIONS_DISAGREE',
+    ],
+    [
+      both((p) => {
+        p.recipe.arguments.options.pool = { name: 'private' };
+      }),
+      'UNAPPROVED_SIGNED_BUILD_PARAMETERS',
+    ],
+    [
+      both((p) => {
+        p.recipe.arguments.options.requestedVerifyOption = 'NOT_VERIFIED';
+      }),
+      'UNAPPROVED_SIGNED_BUILD_PARAMETERS',
+    ],
+    [
+      both((p) => {
+        p.recipe.arguments.availableSecrets = {};
+      }),
+      'UNAPPROVED_SIGNED_BUILD_PARAMETERS',
+    ],
+    [
+      (statement) => {
+        statement.slsaProvenance.recipe.arguments.substitutions._EXTRA =
+          'value';
+      },
+      'SIGNED_PROVENANCE_MIRROR_DISAGREES',
+    ],
+    [
+      both((p) => {
+        p.builder.id = 'https://example.test/builder';
+      }),
+      'UNAPPROVED_SIGNED_BUILD_TYPE',
+    ],
+  ];
+  for (const [index, [mutate, code]] of mutations.entries()) {
+    const f = resultFixture();
+    const statement = legacyStatement(f);
+    mutate(statement);
+    useLegacyProvenance(f, statement);
+    assert.throws(
+      () => verifyRecoveryResult(f.inputs, f.observations, observed),
+      { code },
+      'mutation ' + index,
+    );
+  }
+});
+
+test('SLSA v0.1 signatures need Google keys over their exact signing input', () => {
+  const signed = (change) => {
+    const f = useLegacyProvenance(resultFixture());
+    for (const page of f.observations.occurrencePages)
+      change(page.occurrences[1].envelope);
+    return f;
+  };
+  // builtByGCB signs the raw payload; its signature over other bytes is invalid.
+  const wrongInput = signed((envelope) => {
+    const other = legacyEnvelope(legacyStatement(resultFixture()), '{}');
+    envelope.signatures[2].sig = other.signatures[2].sig;
+  });
+  // Only the unverifiable post-quantum signature is not Google evidence.
+  const pqcOnly = signed((envelope) => {
+    envelope.signatures = [envelope.signatures[1]];
+  });
+  // A lookalike key outside the verified-builder project is ignored.
+  const foreign = signed((envelope) => {
+    envelope.signatures = [
+      {
+        ...envelope.signatures[0],
+        keyid: legacyKeyNames.envelope.replace('verified-builder', 'attacker'),
+      },
+    ];
+  });
+  for (const [f, code] of [
+    [wrongInput, 'INVALID_BUILD_PROVENANCE_SIGNATURE'],
+    [pqcOnly, 'SIGNED_GOOGLE_BUILD_PROVENANCE_REQUIRED'],
+    [foreign, 'SIGNED_GOOGLE_BUILD_PROVENANCE_REQUIRED'],
+  ])
+    assert.throws(
+      () => verifyRecoveryResult(f.inputs, f.observations, observed),
+      {
+        code,
+      },
+    );
+});
+
+test('only one signed occurrence per image is accepted; unsigned records are ignored', () => {
+  const f = useLegacyProvenance(resultFixture());
+  const twice = structuredClone(f.observations);
+  twice.occurrencePages[0].occurrences.push(
+    structuredClone(twice.occurrencePages[0].occurrences[1]),
+  );
+  const unsignedOnly = structuredClone(f.observations);
+  unsignedOnly.occurrencePages[0].occurrences.pop();
+  for (const observations of [twice, unsignedOnly])
+    assert.throws(
+      () => verifyRecoveryResult(f.inputs, observations, observed),
+      {
+        code: 'UNAMBIGUOUS_BUILD_PROVENANCE_REQUIRED',
+      },
+    );
+  // Only the check-build step's local tools image may lack a registry digest.
+  const digestRequired = useLegacyProvenance(resultFixture());
+  digestRequired.build.results.buildStepImages[0] = '';
+  assert.throws(
+    () =>
+      verifyRecoveryResult(
+        digestRequired.inputs,
+        digestRequired.observations,
+        observed,
+      ),
+    { code: 'COMPLETED_BUILD_RESULTS_REQUIRED' },
   );
 });
