@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { lstat, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join, posix, resolve } from 'node:path';
-import { gzipSync, gunzipSync } from 'node:zlib';
+import { gzipSync, inflateRawSync, crc32 } from 'node:zlib';
 import { pathToFileURL } from 'node:url';
 
 const MAX_BYTES = 32 * 1024 * 1024;
@@ -256,11 +256,36 @@ export async function buildContractPackage(root = process.cwd()) {
 }
 
 export function verifyContractPackage(archive) {
-  if (!Buffer.isBuffer(archive) || archive.length > MAX_BYTES)
+  if (
+    !Buffer.isBuffer(archive) ||
+    archive.length < 18 ||
+    archive.length > MAX_BYTES
+  )
     fail('invalid archive size');
   let tar;
   try {
-    tar = gunzipSync(archive, { maxOutputLength: MAX_BYTES });
+    // Require the normalized gzip wrapper, but do not re-compress trusted
+    // contents: a valid deflate representation may differ between zlib versions.
+    if (
+      !archive
+        .subarray(0, 8)
+        .equals(Buffer.from([31, 139, 8, 0, 0, 0, 0, 0])) ||
+      ![0, 2, 4].includes(archive[8]) ||
+      archive[9] !== 255
+    )
+      fail('noncanonical gzip header');
+    const decoded = inflateRawSync(archive.subarray(10), {
+      info: true,
+      maxOutputLength: MAX_BYTES,
+    });
+    const trailer = 10 + decoded.engine.bytesWritten;
+    if (
+      trailer + 8 !== archive.length ||
+      crc32(decoded.buffer) !== archive.readUInt32LE(trailer) ||
+      decoded.buffer.length !== archive.readUInt32LE(trailer + 4)
+    )
+      fail('invalid gzip framing or checksum');
+    tar = decoded.buffer;
   } catch {
     fail('invalid or excessive gzip stream');
   }
@@ -280,9 +305,7 @@ export function verifyContractPackage(archive) {
     const path = [stringAt(header, 345, 155), stringAt(header, 0, 100)]
       .filter(Boolean)
       .join('/');
-    const parts = path.split('/');
-    packageName ??= parts.shift();
-    if (parts[0] === packageName) parts.shift();
+    packageName ??= path.split('/')[0];
     const relative = path.slice(packageName.length + 1);
     const sizeText = stringAt(header, 124, 12);
     if (
@@ -313,7 +336,7 @@ export function verifyContractPackage(archive) {
     tar.length !== offset + 1024 ||
     tar.subarray(offset).some(Boolean) ||
     new Set(entries.map((entry) => entry.path)).size !== entries.length ||
-    !encode(entries, packageName).equals(archive)
+    ordered(entries).some((entry, index) => entry.path !== entries[index].path)
   )
     fail('noncanonical or duplicate archive');
   const lookup = new Map(entries.map((entry) => [entry.path, entry.bytes]));
@@ -386,15 +409,21 @@ export function verifyContractPackage(archive) {
 }
 
 export async function verifyContractPackageFile(path) {
-  const archive = await readFile(path);
-  const verified = verifyContractPackage(archive);
-  const filename = verified.packageName + '.tar.gz';
-  const sums = await readFile(join(dirname(path), 'SHA256SUMS'), 'utf8');
+  const filename = path.split(/[\\/]/).at(-1);
   if (
-    sums !== sha256(archive) + '  ' + filename + '\n' ||
-    path.split(/[\\/]/).at(-1) !== filename
+    !/^blogpost-api-contract-(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.tar\.gz$/.test(
+      filename ?? '',
+    )
   )
+    fail('invalid archive filename');
+  if ((await lstat(path)).size > MAX_BYTES) fail('invalid archive size');
+  const archive = await readFile(path);
+  const sums = await readFile(join(dirname(path), 'SHA256SUMS'), 'utf8');
+  if (sums !== sha256(archive) + '  ' + filename + '\n')
     fail('external archive checksum disagrees');
+  const verified = verifyContractPackage(archive);
+  if (filename !== verified.packageName + '.tar.gz')
+    fail('archive filename and contract identity disagree');
   return verified;
 }
 
