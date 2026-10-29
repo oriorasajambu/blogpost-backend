@@ -36,6 +36,12 @@ runs:
     - shell: bash
       run: node scripts/contract-manifest.mjs --check
     - shell: bash
+      run: npm run contract:package
+    - shell: bash
+      run: npm run contract:package -- --check
+    - shell: bash
+      run: npm run contract:package:verify -- .local/contracts/blogpost-api-contract-1.0.0/blogpost-api-contract-1.0.0.tar.gz
+    - shell: bash
       run: npm run db:bootstrap
       env:
         SQL_ROOT_PASSWORD: disposable-ci-root

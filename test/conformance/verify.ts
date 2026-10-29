@@ -1,10 +1,10 @@
 import {
+  assertConforms as verifyExchange,
   catalog,
   contractSha256,
 } from '../../scripts/deploy/wire-contract.mjs';
 import { backendScenarios } from './backend-scenarios.js';
 export {
-  assertConforms,
   wireOperation,
   operationFor,
   catalog,
@@ -25,6 +25,30 @@ export interface Exchange {
   status: number;
   headers: Record<string, string | string[] | number | undefined>;
   body: string | Buffer;
+}
+export interface VerifiedObservation {
+  operationId: string;
+  status: number;
+  errorCode: string | null;
+  replayed: boolean;
+  binary: boolean;
+  count: number;
+}
+const observations = new Map<string, VerifiedObservation>();
+/** Records only exchanges which passed the independent checker; never bodies or headers. */
+export function assertConforms(operationId: string, exchange: Exchange) {
+  const body = verifyExchange(operationId, exchange);
+  const observation = {
+    operationId,
+    status: exchange.status,
+    errorCode: (body.error?.code as string | undefined) ?? null,
+    replayed: body.meta?.idempotency?.replayed === true,
+    binary: body.binary === true,
+  };
+  const key = JSON.stringify(observation);
+  const previous = observations.get(key);
+  observations.set(key, { ...observation, count: (previous?.count ?? 0) + 1 });
+  return body;
 }
 const operations = new Map(
   catalog.map((operation) => [operation.operationId, operation]),
@@ -51,5 +75,12 @@ export function coverage(
     complete: pending.length === 0,
     pending,
     configuredBackendOperations: [...backendScenarios.keys()],
+    verifiedObservations: [...observations.values()].sort(
+      (a, b) =>
+        a.operationId.localeCompare(b.operationId) ||
+        a.status - b.status ||
+        String(a.errorCode).localeCompare(String(b.errorCode)) ||
+        Number(a.replayed) - Number(b.replayed),
+    ),
   };
 }

@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { mkdir, readFile, writeFile, unlink, chmod } from 'node:fs/promises';
 import { prepareBuild } from '../build/prepare.mjs';
+import { fullConformanceReport } from '../../test/conformance/report.mjs';
 
 // All credentials and identities below belong only to this newly created, internal test network.
 // No saved stack env file, published port or persistent volume is used.
@@ -49,6 +50,9 @@ const publicPath = resolve(reportDirectory, `public-taxonomy-${suffix}.json`);
 const mediaPath = resolve(reportDirectory, `media-${suffix}.json`);
 const maintenancePath = resolve(reportDirectory, `maintenance-${suffix}.json`);
 const databasePath = resolve(reportDirectory, `database-${suffix}.json`);
+const boundaryPath = resolve(reportDirectory, `boundary-${suffix}.json`);
+await writeFile(boundaryPath, '{}\n', { flag: 'wx' });
+await chmod(boundaryPath, 0o666);
 // Only this nonsecret, random evidence file needs container write access on Linux CI hosts.
 await writeFile(observedPath, '{}\n', { flag: 'wx' });
 await chmod(observedPath, 0o666);
@@ -160,7 +164,9 @@ const run = (command, extraEnv = {}, artifact = backendArtifact) => {
       throw new Error('Disposable test container failed');
     if (extraEnv.BLOGPOST_IDENTITY_RUN_ID) {
       const suite = command.find((part) =>
-        /^test\/(?:operations|identity)\/[a-z-]+\.test\.ts$/.test(part),
+        /^test\/(?:operations|identity|conformance)\/[a-z-]+\.test\.ts$/.test(
+          part,
+        ),
       );
       const name = suite?.split('/').at(-1).replace('.test.ts', '');
       if (
@@ -172,6 +178,7 @@ const run = (command, extraEnv = {}, artifact = backendArtifact) => {
           'public-taxonomy',
           'media',
           'maintenance',
+          'boundary',
         ].includes(name)
       )
         throw new Error('Unrecognized disposable evidence suite');
@@ -374,6 +381,15 @@ try {
     SQL_MIGRATOR_PASSWORD: 'disposable-identity-migrator',
   });
   run(['npm', 'run', 'db:verify']);
+  run(
+    [
+      'node',
+      'node_modules/tsx/dist/cli.mjs',
+      '--test',
+      'test/conformance/boundary.test.ts',
+    ],
+    { BLOGPOST_DISPOSABLE_IDENTITY: '1', BLOGPOST_IDENTITY_RUN_ID: suffix },
+  );
   if (operationsArtifact) {
     run(
       ['node', 'dist/ops/bootstrap-db.js'],
@@ -510,6 +526,7 @@ try {
     ],
     { BLOGPOST_DISPOSABLE_IDENTITY: '1', BLOGPOST_IDENTITY_RUN_ID: suffix },
   );
+  const boundary = JSON.parse(await readFile(boundaryPath, 'utf8'));
   const observed = JSON.parse(await readFile(observedPath, 'utf8'));
   const administration = JSON.parse(await readFile(administrationPath, 'utf8'));
   const editorial = JSON.parse(await readFile(editorialPath, 'utf8'));
@@ -577,6 +594,31 @@ try {
     throw new Error('Maintenance evidence is stale or mismatched');
   if (executed.size !== inventory.length || pending.length !== 0)
     throw new Error('Incomplete isolated backend operation coverage');
+  const full = fullConformanceReport({
+    catalog: inventory,
+    reports: [observed, administration, editorial, publicTaxonomy, media],
+    boundary,
+    runId: suffix,
+    project,
+    contractSha256: baked.contractSha256,
+  });
+  await writeFile(
+    resolve(reportDirectory, 'backend-full.json'),
+    JSON.stringify(
+      {
+        ...full,
+        artifact: {
+          ...baked,
+          imageId: backendArtifact,
+          authImageId: authArtifact,
+        },
+        candidate: build.provenance,
+        observedAt: new Date().toISOString(),
+      },
+      null,
+      2,
+    ) + '\n',
+  );
   await writeFile(
     reportPath,
     JSON.stringify(
@@ -625,6 +667,7 @@ try {
   await unlink(mediaPath);
   await unlink(maintenancePath);
   await unlink(databasePath);
+  await unlink(boundaryPath);
   console.log(
     `Isolated backend conformance: ${executed.size}/${observed.total}; ${pending.length} operations pending.`,
   );
