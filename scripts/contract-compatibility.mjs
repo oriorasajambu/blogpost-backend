@@ -4,9 +4,10 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { relative, resolve } from 'node:path';
 import { parse } from 'yaml';
 import { installOasdiff } from './install-oasdiff.mjs';
+import { schemaPolicyChanges } from './contract-policy.mjs';
 
 function policyChanges(base, revision) {
-  const changes = [];
+  const changes = schemaPolicyChanges(base, revision);
   const flag = (id, path) =>
     changes.push({
       id,

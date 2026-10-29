@@ -8,6 +8,8 @@ import { envelope } from '../../src/platform/http/envelope.js';
 import { MetaController } from '../../src/modules/meta/meta.controller.js';
 import { readConfig } from '../../src/platform/config/config.js';
 import { developmentEnv } from '../helpers.js';
+import { createHash } from 'node:crypto';
+import type { BuildProvenance } from '../../src/platform/config/build-model.js';
 
 const contract = JSON.parse(readFileSync('contracts/openapi-v1.json', 'utf8'));
 const ajv = new Ajv2020({ strict: false, allErrors: true });
@@ -19,13 +21,35 @@ test('authored OpenAPI is a valid 3.1 document and remains explicitly unreleased
   assert.equal(contract['x-contract-status'], 'DRAFT');
 });
 test('actual meta DTO and conflict fixture satisfy authored schemas', () => {
+  // Pure DTO fixture; it must not depend on a source checkout's baked artifact.
+  const syntheticBuild: BuildProvenance = {
+    schemaVersion: 1,
+    application: 'backend',
+    kind: 'ARTIFACT',
+    environment: 'development',
+    sourceSha: 'a'.repeat(40),
+    sourceRef: 'refs/heads/chore/contract-fixture',
+    dirty: true,
+    applicationVersion: '0.0.0',
+    contractVersion: contract.info.version,
+    contractSha256: createHash('sha256')
+      .update(readFileSync('contracts/openapi-v1.json'))
+      .digest('hex'),
+    runtimeInputDigest: '1'.repeat(64),
+    sourceInputDigest: '2'.repeat(64),
+    inputManifestVersion: 1,
+    targetPlatform: 'linux/amd64',
+    configuration: null,
+  };
   for (const [name, data] of [
     [
       'MetaEnvelope',
       envelope(
         'a'.repeat(32),
         200,
-        new MetaController(readConfig(developmentEnv)).get(),
+        new MetaController(
+          readConfig(developmentEnv, 'api', syntheticBuild),
+        ).get(),
       ),
     ],
     [

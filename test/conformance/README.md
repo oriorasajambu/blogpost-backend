@@ -10,6 +10,7 @@ The mock suite applies this verifier to its observed application responses, incl
 npm run test:mock
 npm run test:integration
 npm run test:identity
+npm run contract:conformance:full -- --build --copy-reports
 ```
 
 `test:integration` also includes the existing real-PostgreSQL integration tests and needs the configured development database. To run only the read-only metadata conformance case, use `npx --no-install tsx --test test/integration/conformance.test.ts`.
@@ -29,7 +30,9 @@ Reports are ignored `.local/conformance/backend-{scope}.json` files containing t
 
 `backend-scenarios.ts` registers scenarios separately from immutable wire assets. `npm run test:identity` creates fresh internal-only PostgreSQL/Auth Emulator instances on tmpfs, gives each job a bounded tmpfs media directory, and observes all 52 application operations. Its report binds coverage to the current canonical hash/run and passes only after seven identity, foundation, administrative, editorial, public/taxonomy, media and maintenance suites. Cases include retries/lost responses, current authorization, immutable publication, archive and migration races, weighted English search, the exact 1,000-result window, public privacy, safe availability failures and taxonomy uniqueness/versions. Media checks use actual multipart requests, Sharp and filesystem objects; cover expiry, same-key concurrency, lease takeover, uncertain storage/SQL outcomes, permission/publication changes during I/O, quotas, corruption, and private/current-public binary access. Maintenance gets a clean schema on the same verified disposable database so projection-only descriptors from earlier SQL fixtures cannot be deleted as if they were storage objects. Its real filesystem/SQL checks cover retained revisions, partial cleanup/purge, permanent slugs, quota release after deletion, job/operation locks, grace periods, retention, orphan pagination and the operator entrypoint. No saved volumes or mock credentials are used. GCS request-precondition/inventory unit tests do not establish actual bucket IAM or cloud delivery; real Google/GCS staging remains required.
 
-Add further explicit resource fixtures as handlers are implemented. Protected or mutating operations cannot be enabled by merely sending the mock's example credentials or replaying arbitrary fixture writes against a remote database. A configured operation without an applicable real fixture adapter fails its scoped check. The authoring `x-runtime-implemented` annotation does not select execution or count as evidence.
+The full isolated entrypoint runs the actual registered fixtures and a dedicated HTTP boundary suite. `.local/conformance/backend-full.json` requires all 52 independently verified successes, metadata rejection on every operation, anonymous denial on every protected operation, replay/binary observations and critical error families. Every component must match the same invocation, disposable identity project and canonical contract checksum. Injected dependency errors are labeled separately; they establish HTTP handling rather than actual provider outage behavior. Missing or stale evidence fails the run. Reports contain operation/status/error tuples and counts, never request/response bodies, credentials or cookies.
+
+Protected or mutating operations cannot be enabled by merely sending the mock's example credentials or replaying arbitrary fixture writes against a remote database. A configured operation without an applicable real fixture adapter fails its scoped check. The authoring `x-runtime-implemented` annotation does not select execution or count as evidence.
 
 ## Semantic coverage and remaining work
 

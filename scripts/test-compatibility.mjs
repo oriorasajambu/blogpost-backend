@@ -98,6 +98,90 @@ const cases = [
       spec.paths['/v1/posts'].post.security = [];
     },
   },
+  {
+    name: 'changed-omitted-input-default',
+    compatible: false,
+    mutate(spec) {
+      spec.components.schemas.DraftContentInput.properties.coverDecorative.default = true;
+    },
+  },
+  {
+    name: 'removed-omitted-input-default',
+    compatible: false,
+    mutate(spec) {
+      delete spec.components.schemas.DraftContentInput.properties
+        .markdownContractVersion.default;
+    },
+  },
+  {
+    name: 'changed-utf8-input-bound',
+    compatible: false,
+    mutate(spec) {
+      spec.components.schemas.DraftContentInput.properties.markdown[
+        'x-maxUtf8Bytes'
+      ] = 65536;
+    },
+  },
+  {
+    name: 'removed-unicode-counting-semantics',
+    compatible: false,
+    mutate(spec) {
+      delete spec.components.schemas.DraftContentInput.properties.title[
+        'x-unicodeScalarText'
+      ];
+    },
+  },
+  {
+    name: 'changed-version-header-integer-bound',
+    compatible: false,
+    mutate(spec) {
+      spec.components.parameters.ExpectedVersion.schema['x-maximumInteger'] =
+        100;
+    },
+  },
+  {
+    name: 'optional-input-without-default',
+    compatible: false,
+    mutate(spec) {
+      spec.components.schemas.DraftContentInput.properties.futureInput = {
+        type: 'string',
+      };
+    },
+  },
+  {
+    name: 'optional-input-with-explicit-default',
+    compatible: true,
+    mutate(spec) {
+      spec.components.schemas.DraftContentInput.properties.futureInput = {
+        type: 'string',
+        default: '',
+      };
+    },
+  },
+  {
+    name: 'optional-query-without-default',
+    compatible: false,
+    mutate(spec) {
+      spec.paths['/v1/public/posts'].get.parameters.push({
+        name: 'future',
+        in: 'query',
+        required: false,
+        schema: { type: 'boolean' },
+      });
+    },
+  },
+  {
+    name: 'optional-query-with-explicit-default',
+    compatible: true,
+    mutate(spec) {
+      spec.paths['/v1/public/posts'].get.parameters.push({
+        name: 'future',
+        in: 'query',
+        required: false,
+        schema: { type: 'boolean', default: false },
+      });
+    },
+  },
 ];
 for (const fixture of cases) {
   const revision = structuredClone(base);

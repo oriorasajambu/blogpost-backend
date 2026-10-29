@@ -4,7 +4,7 @@
   "files": [
     {
       "path": "contracts/CHANGELOG.md",
-      "sha256": "ad5681557148aa604e554f2b38ee2c0cead6acc7f390435d29be43902a07e7c7"
+      "sha256": "4a4a71d3d65de6b544d65bbf71631073011fb791b3ffb4e75c3548134880c789"
     },
     {
       "path": "contracts/CONTRACT.md",
@@ -12,7 +12,7 @@
     },
     {
       "path": "contracts/README.md",
-      "sha256": "0a79a79f0b5c23a03f376eecf90951aabaddf987c27f0517e7f1b2bb6719d7ea"
+      "sha256": "c63bf7608b82d2307d54be8c8669a22bb122ed50bb015ed3eb5944d5010f55fb"
     },
     {
       "path": "contracts/compatibility-report.json",
