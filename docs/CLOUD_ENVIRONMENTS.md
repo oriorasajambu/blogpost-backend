@@ -34,7 +34,7 @@ Later on 28 October 2026, the owner separately authorized Staging provisioning, 
 | Artifact Registry   | `blogpost` Docker repository, Jakarta, immutable tags; `blogpost-build` writer only                                                                 |
 | Cloud SQL           | `blogpost-db`, PostgreSQL 17 Enterprise `db-f1-micro`, zonal, no authorized networks, 3 daily backups, no PITR                                      |
 | Secrets (version 2) | `blogpost-db-root-password`, `blogpost-db-app-password`, `blogpost-db-migrator-password`, `blogpost-cursor-signing-key`; version 1 of each disabled |
-| Cloud Build         | 2nd gen GitHub connection `blogpost-backend`; manual trigger `blogpost-backend-manual` on `rc` with `_APP_ENV=staging`                              |
+| Cloud Build         | 2nd gen GitHub connection `blogpost-backend`; manual triggers `blogpost-backend-manual` and `blogpost-web-manual` on `rc` with `_APP_ENV=staging`   |
 | Operations jobs     | `blogpost-migrate`, `blogpost-verify-db`; `blogpost-bootstrap-db` ran once and was deleted                                                          |
 | Identity Platform   | Enabled; Google provider only, email/password, anonymous and phone sign-in off                                                                      |
 
@@ -44,4 +44,15 @@ The first app, migrator and cursor secret versions were generated with a trailin
 ` and `
 ` and check the length before storing.
 
-The Staging database has been bootstrapped, migrated (five migrations) and verified. The `blogpost-api` service exists but is not yet serving; it is private until public access is explicitly approved. The first administrator is not yet bootstrapped and the planned origins remain unobserved.
+The Staging database has been bootstrapped, migrated (five migrations) and verified.
+
+As observed on 3 November 2026, `blogpost-api` is public and serves at its planned origin, and the first administrator membership exists. On that date the owner approved the first Staging web deployment. Resources added:
+
+| Resource          | Staging value                                                                                                         |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Secret            | `blogpost-web-csrf-secret` version 1 (64 hexadecimal characters); Secret Accessor only for `blogpost-web`             |
+| Cloud Build       | Repository `oriorasajambu-blogpost-web` on connection `blogpost-backend`; trigger `blogpost-web-manual`               |
+| Cloud Run         | `blogpost-web`, public, at the planned web origin; revision `blogpost-web-00003-25d` with web login enabled           |
+| Identity Platform | Web host added to authorized domains; web origin and `/__/auth/handler` redirect added to the Google web OAuth client |
+
+The web image digest, revisions, settings and verification are recorded in the web repository's [Staging deployment record](https://github.com/oriorasajambu/blogpost-web/blob/rc/docs/STAGING_DEPLOYMENT.md). A real Google sign-in reached the staff workspace as administrator. The API's `WEB_ORIGIN` already matched, so it was not changed. Both planned Staging origins are now observed serving endpoints. The first administrator is not yet bootstrapped and the planned origins remain unobserved.
