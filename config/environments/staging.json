@@ -3,7 +3,7 @@
   "environment": "staging",
   "projectId": "blogpost-staging",
   "apiOrigin": "https://blogpost-api-393487571647.asia-southeast2.run.app",
-  "webOrigin": "https://blogpost-web-393487571647.asia-southeast2.run.app",
+  "webOrigin": "https://goblog.cloud.run",
   "identity": {
     "audience": "blogpost-staging",
     "idTokenIssuer": "https://securetoken.google.com/blogpost-staging",

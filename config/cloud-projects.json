@@ -8,7 +8,7 @@
     "plannedServices": { "api": "blogpost-api", "web": "blogpost-web" },
     "plannedOrigins": {
       "api": "https://blogpost-api-393487571647.asia-southeast2.run.app",
-      "web": "https://blogpost-web-393487571647.asia-southeast2.run.app"
+      "web": "https://goblog.cloud.run"
     }
   },
   "production": {

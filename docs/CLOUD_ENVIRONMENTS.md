@@ -13,10 +13,10 @@ Use short planned service names `blogpost-api` and `blogpost-web` independently 
 
 | Environment | Planned API origin                                          | Planned web origin                                          |
 | ----------- | ----------------------------------------------------------- | ----------------------------------------------------------- |
-| Staging     | `https://blogpost-api-393487571647.asia-southeast2.run.app` | `https://blogpost-web-393487571647.asia-southeast2.run.app` |
+| Staging     | `https://blogpost-api-393487571647.asia-southeast2.run.app` | `https://goblog.cloud.run`                                  |
 | Production  | `https://blogpost-api-520873230275.asia-southeast2.run.app` | `https://blogpost-web-520873230275.asia-southeast2.run.app` |
 
-These origins are planned, not observed serving endpoints. Verify the actual service URLs/default-URL configuration after authorized provisioning and before claiming live environment pairing. Each DNS segment remains below the deterministic URL limit. Host-only cookies and distinct identity/provider projects continue to isolate environments.
+On 3 November 2026 the owner moved the Staging web origin to the Cloud Run custom URL `goblog.cloud.run`; the API image bakes this origin, so changing it requires a rebuilt Staging image. These origins are planned, not observed serving endpoints. Verify the actual service URLs/default-URL configuration after authorized provisioning and before claiming live environment pairing. Each DNS segment remains below the deterministic URL limit. Host-only cookies and distinct identity/provider projects continue to isolate environments.
 
 Before the actual profiles can be finalized, provision/verify the approved regional SQL, registry/private bucket, purpose-specific identities, numeric secret-version references, federation conditions, backups/budgets/alerts and retained-revision recovery state. Keep credentials out of this record. The actual runnable profiles are separate from this planning data and from the synthetic examples. Staging uses reviewed RC source; Production uses final main release artifacts and the documented first-service bootstrap sequence.
 
