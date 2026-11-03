@@ -208,12 +208,19 @@ export function recoveryChecks(environment, baseSha) {
     ],
     ['npm', ['run', 'test:recovery']],
     ['npm', ['run', 'build']],
-    ...[
-      [],
-      ['--prefix', 'docker/auth'],
-      ['--prefix', 'docker/operations'],
-      ['--prefix', 'tools/mock'],
-    ].map((prefix) => ['npm', ['audit', ...prefix, '--audit-level=moderate']]),
+    // Production dependencies stay at moderate. Dev-only tooling (the contract
+    // generator's @redocly/openapi-core pins minimatch 5.1.9) and the dev/CI-only
+    // Firebase emulator image (docker/auth) fail only on high+ until fixes for
+    // GHSA-g3hv-75wg-m249 (minimatch) and GHSA-3g3m-2fjr-6pw4 (glob) ship
+    // upstream; restore moderate then (added 2026-11-03).
+    ['npm', ['audit', '--omit=dev', '--audit-level=moderate']],
+    ['npm', ['audit', '--audit-level=high']],
+    ['npm', ['audit', '--prefix', 'docker/auth', '--audit-level=high']],
+    [
+      'npm',
+      ['audit', '--prefix', 'docker/operations', '--audit-level=moderate'],
+    ],
+    ['npm', ['audit', '--prefix', 'tools/mock', '--audit-level=moderate']],
   ];
 }
 // Cloud Build workers run Docker Engine 20.10, whose embedded BuildKit lacks
