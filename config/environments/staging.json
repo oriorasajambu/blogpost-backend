@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "environment": "staging",
   "projectId": "blogpost-staging",
-  "apiOrigin": "https://blogpost-api-393487571647.asia-southeast2.run.app",
+  "apiOrigin": "https://goblog-api-staging.cloud.run",
   "webOrigin": "https://goblog.cloud.run",
   "identity": {
     "audience": "blogpost-staging",

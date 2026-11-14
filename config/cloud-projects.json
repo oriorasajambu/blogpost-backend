@@ -7,7 +7,7 @@
     "projectNumber": "393487571647",
     "plannedServices": { "api": "blogpost-api", "web": "blogpost-web" },
     "plannedOrigins": {
-      "api": "https://blogpost-api-393487571647.asia-southeast2.run.app",
+      "api": "https://goblog-api-staging.cloud.run",
       "web": "https://goblog.cloud.run"
     }
   },
