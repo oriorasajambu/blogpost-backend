@@ -36,6 +36,7 @@ export class DatabaseService implements OnModuleDestroy {
         { version: number }[]
       >`SELECT version FROM blogpost."SchemaMeta" WHERE id = 1 AND to_regclass('blogpost."MediaUploadAttempt"') IS NOT NULL
         AND to_regclass('blogpost."MaintenanceCheckpoint"') IS NOT NULL
+        AND to_regclass('blogpost."EmailOutbox"') IS NOT NULL
         AND has_table_privilege(current_user, 'blogpost."MediaUploadAttempt"', 'SELECT')
         AND has_table_privilege(current_user, 'blogpost."MediaUploadAttempt"', 'INSERT')
         AND has_table_privilege(current_user, 'blogpost."MediaUploadAttempt"', 'UPDATE')

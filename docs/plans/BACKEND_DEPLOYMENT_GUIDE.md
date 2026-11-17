@@ -222,6 +222,8 @@ Create `blogpost-maintenance` as another private Cloud Run Job using the current
 
 Execute once manually and inspect its counts/result. Grant **Cloud Run Invoker** to `blogpost-scheduler` on this job only. Open job **Triggers → Add Scheduler Trigger**, name `blogpost-retention-daily`, choose a supported nearby Scheduler region, frequency `0 3 * * *`, timezone `Asia/Jakarta`, and select `blogpost-scheduler`. This schedules maintenance, not article publication. [Console job scheduling](https://docs.cloud.google.com/run/docs/execute/jobs-on-schedule).
 
+Invitation email is optional. To enable it, follow [Invitation email](../INVITATION_EMAIL.md#enabling-email-in-a-cloud-environment), which adds a second `blogpost-scheduler` trigger that retries queued email every 2 minutes.
+
 In SQL **Backups**, check the daily window/retention and create an on-demand backup labelled with this release. Confirm an actual successful daily backup after the next window. In **Monitoring**, create verified notification channels and alert policies for: sustained API 5xx/readiness failure, SQL connections near its actual limit, database disk above 70%/90%, failed backup/maintenance execution, and memory pressure. Use standard metrics and narrowly scoped log-based alerts; no article/request-body logging. [Standard backup management](https://docs.cloud.google.com/sql/docs/postgres/backup-recovery/manage-standard-backups).
 
 ### Restore drill before considering recovery ready

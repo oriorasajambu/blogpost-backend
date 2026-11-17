@@ -22,7 +22,25 @@ export interface CloudProfile {
     SQL_ROOT_PASSWORD: string;
     CURSOR_SIGNING_KEY: string;
   };
+  /** Optional: invitation email is enabled only when this whole block is present. */
+  email?: EmailProfile;
 }
+export interface EmailProfile {
+  from: string;
+  dispatchAudience: string;
+  dispatchInvoker: string;
+  secretVersions: { RESEND_API_KEY: string; EMAIL_PAYLOAD_KEY: string };
+}
+export type EmailSecretName = keyof EmailProfile['secretVersions'];
+export const EMAIL_SECRET_REFERENCE_NAMES: Readonly<
+  Record<EmailSecretName, string>
+> = Object.freeze({
+  RESEND_API_KEY: 'RESEND_SECRET_REF',
+  EMAIL_PAYLOAD_KEY: 'EMAIL_PAYLOAD_SECRET_REF',
+});
+/** Display name and address, e.g. `Blogpost <no-reply@example.com>`; header-safe. */
+export const EMAIL_FROM_PATTERN =
+  /^(?:[A-Za-z0-9][A-Za-z0-9 .'-]{0,62} <[a-z0-9._%+-]{1,64}@[a-z0-9-]+(?:\.[a-z0-9-]+)+>|[a-z0-9._%+-]{1,64}@[a-z0-9-]+(?:\.[a-z0-9-]+)+)$/;
 export interface BuildProvenance {
   schemaVersion: 1;
   application: 'backend';
@@ -113,6 +131,15 @@ export function cloudRuntimeBinding(
     secrets[name] = profile.secretVersions[name];
     literals[SECRET_REFERENCE_NAMES[name]] = profile.secretVersions[name];
   }
+  if (purpose === 'api' && profile.email) {
+    literals.EMAIL_FROM = profile.email.from;
+    literals.EMAIL_DISPATCH_AUDIENCE = profile.email.dispatchAudience;
+    literals.EMAIL_DISPATCH_INVOKER = profile.email.dispatchInvoker;
+    for (const [name, ref] of Object.entries(profile.email.secretVersions)) {
+      secrets[name] = ref;
+      literals[EMAIL_SECRET_REFERENCE_NAMES[name as EmailSecretName]] = ref;
+    }
+  }
   return {
     literals,
     secrets,
@@ -170,19 +197,69 @@ function origin(value: unknown): string {
     return invalid();
   return value;
 }
-export function normalizeCloudProfile(value: unknown): CloudProfile {
-  const p = shape(value, [
-    'schemaVersion',
-    'environment',
-    'projectId',
-    'apiOrigin',
-    'webOrigin',
-    'identity',
-    'sql',
-    'media',
-    'serviceAccounts',
+const PROFILE_KEYS = [
+  'schemaVersion',
+  'environment',
+  'projectId',
+  'apiOrigin',
+  'webOrigin',
+  'identity',
+  'sql',
+  'media',
+  'serviceAccounts',
+  'secretVersions',
+] as const;
+function secretRef(value: unknown, project: string): string {
+  const ref = text(
+    value,
+    /^projects\/[a-z0-9-]+\/secrets\/[A-Za-z0-9_-]{1,255}\/versions\/[1-9][0-9]{0,18}$/,
+  );
+  if (!ref.startsWith('projects/' + project + '/secrets/')) return invalid();
+  return ref;
+}
+function serviceAccount(value: unknown, project: string): string {
+  const parts = typeof value === 'string' ? value.split('@') : [];
+  text(parts[0], /^[a-z][a-z0-9-]{4,28}[a-z0-9]$/);
+  if (parts.length !== 2 || parts[1] !== project + '.iam.gserviceaccount.com')
+    return invalid();
+  return value as string;
+}
+function emailProfile(
+  value: unknown,
+  project: string,
+  accounts: Record<string, unknown>,
+  otherSecrets: readonly string[],
+): EmailProfile {
+  // All-or-nothing: a partial block must fail rather than half-enable email.
+  const e = shape(value, [
+    'from',
+    'dispatchAudience',
+    'dispatchInvoker',
     'secretVersions',
   ]);
+  const refs = shape(e.secretVersions, ['RESEND_API_KEY', 'EMAIL_PAYLOAD_KEY']);
+  const resend = secretRef(refs.RESEND_API_KEY, project);
+  const payload = secretRef(refs.EMAIL_PAYLOAD_KEY, project);
+  const ids = [resend, payload, ...otherSecrets].map(
+    (ref) => ref.split('/versions/')[0],
+  );
+  if (new Set(ids).size !== ids.length) return invalid();
+  const invoker = serviceAccount(e.dispatchInvoker, project);
+  // The scheduler identity must not be one of the runtime identities.
+  if (Object.values(accounts).includes(invoker)) return invalid();
+  return {
+    from: text(e.from, EMAIL_FROM_PATTERN),
+    dispatchAudience: origin(e.dispatchAudience),
+    dispatchInvoker: invoker,
+    secretVersions: { RESEND_API_KEY: resend, EMAIL_PAYLOAD_KEY: payload },
+  };
+}
+export function normalizeCloudProfile(value: unknown): CloudProfile {
+  const hasEmail =
+    !!value &&
+    typeof value === 'object' &&
+    Object.prototype.hasOwnProperty.call(value, 'email');
+  const p = shape(value, hasEmail ? [...PROFILE_KEYS, 'email'] : PROFILE_KEYS);
   if (
     p.schemaVersion !== 1 ||
     !['staging', 'production'].includes(String(p.environment))
@@ -265,6 +342,13 @@ export function normalizeCloudProfile(value: unknown): CloudProfile {
     serviceAccounts: accounts as unknown as CloudProfile['serviceAccounts'],
     secretVersions: refs as unknown as CloudProfile['secretVersions'],
   };
+  if (hasEmail)
+    profile.email = emailProfile(
+      p.email,
+      project,
+      accounts,
+      Object.values(refs) as string[],
+    );
   if (profile.apiOrigin === profile.webOrigin) return invalid();
   return JSON.parse(canonical(profile)) as CloudProfile;
 }

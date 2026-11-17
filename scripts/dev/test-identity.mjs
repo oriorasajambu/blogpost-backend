@@ -106,6 +106,11 @@ const appEnv = {
   SQL_DATABASE: 'blogpost',
   SQL_APP_PASSWORD: 'disposable-identity-app',
   CURSOR_SIGNING_KEY: '3'.repeat(64),
+  // Real outbox writes and sends through the local log driver; no email leaves the container.
+  EMAIL_DRIVER: 'log',
+  EMAIL_FROM: 'Blogpost <no-reply@example.test>',
+  EMAIL_PAYLOAD_KEY: '6'.repeat(64),
+  EMAIL_COOLDOWN_SECONDS: '0',
 };
 const envArgs = (env) =>
   Object.entries(env).flatMap(([key, value]) => ['--env', `${key}=${value}`]);

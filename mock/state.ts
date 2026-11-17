@@ -550,6 +550,13 @@ export class MockState {
       expiresAt: this.iso(7 * DAY),
       acceptedAt: null,
       revokedAt: null,
+      // The mock never sends email; it models a deployment without email configured.
+      delivery: {
+        status: 'NOT_REQUESTED',
+        attempts: 0,
+        lastAttemptAt: null,
+        sentAt: null,
+      },
     };
     const token = randomBytes(32).toString('base64url');
     this.invitationHashes.set(

@@ -370,7 +370,23 @@ test(
               7 * 86_400_000,
           ) < 1000,
         );
+        // The local log driver sends right after commit; the link is wiped from the outbox.
+        assert.equal(data.invitation.delivery.status, 'SENT');
+        assert.equal(data.invitation.delivery.attempts, 1);
+        const sent = await db.emailOutbox.findMany({
+          where: { invitationId: data.invitation.id },
+        });
+        assert.equal(sent.length, 1);
+        assert.equal(sent[0]!.status, 'SENT');
+        assert.equal(sent[0]!.toEmail, invited.email);
+        assert.equal(sent[0]!.payloadCiphertext, null);
         const replay = await issue(issuer, invited.email, 'EDITOR', key);
+        assert.equal(
+          await db.emailOutbox.count({
+            where: { invitationId: data.invitation.id },
+          }),
+          1,
+        );
         assert.equal(replay.body.data.inviteUrl, null);
         assert.equal(replay.body.data.linkAvailable, false);
         assert.equal(replay.body.meta.idempotency?.replayed, true);
@@ -476,6 +492,24 @@ test(
         assert.equal(replay.body.data.inviteUrl, null);
         assert.equal(replay.body.data.linkAvailable, false);
         assert.equal(replay.body.meta.idempotency?.replayed, true);
+        assert.equal(replaced.body.data.invitation.delivery.status, 'SENT');
+        assert.equal(
+          await db.emailOutbox.count({
+            where: { invitationId: replaced.body.data.invitation.id },
+          }),
+          1,
+        );
+        // A still-pending email is cancelled, and its sealed link wiped, when the invitation is revoked.
+        await db.emailOutbox.create({
+          data: {
+            invitationId: replaced.body.data.invitation.id,
+            kind: 'INVITATION',
+            toEmail: invited.email,
+            payloadCiphertext: new Uint8Array(64),
+            status: 'QUEUED',
+            nextAttemptAt: new Date(Date.now() + 3_600_000),
+          },
+        });
         const revoked = await change(
           issuer,
           replaced.body.data.invitation.id,
@@ -483,6 +517,15 @@ test(
           1,
         );
         assert.equal(revoked.body.data.status, 'REVOKED');
+        assert.equal(revoked.body.data.delivery.status, 'CANCELLED');
+        const cancelled = await db.emailOutbox.findMany({
+          where: {
+            invitationId: replaced.body.data.invitation.id,
+            status: 'CANCELLED',
+          },
+        });
+        assert.equal(cancelled.length, 1);
+        assert.equal(cancelled[0]!.payloadCiphertext, null);
         assert.equal(revoked.body.data.version, 2);
         assert.equal(
           (await accept(invited, newToken, randomUUID(), 410)).body.error.code,

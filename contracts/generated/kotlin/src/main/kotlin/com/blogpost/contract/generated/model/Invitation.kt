@@ -24,6 +24,7 @@
 package com.blogpost.contract.generated.model
 
 import com.blogpost.contract.generated.model.AuthorSummary
+import com.blogpost.contract.generated.model.InvitationDelivery
 import com.blogpost.contract.generated.model.InvitationStatus
 import com.blogpost.contract.generated.model.Role
 
@@ -42,6 +43,7 @@ import com.google.gson.annotations.SerializedName
  * @param expiresAt 
  * @param acceptedAt 
  * @param revokedAt 
+ * @param delivery 
  */
 
 
@@ -75,7 +77,10 @@ data class Invitation (
     val acceptedAt: kotlin.String?,
 
     @SerializedName("revokedAt")
-    val revokedAt: kotlin.String?
+    val revokedAt: kotlin.String?,
+
+    @SerializedName("delivery")
+    val delivery: InvitationDelivery
 
 ) {
 

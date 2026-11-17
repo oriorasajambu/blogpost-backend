@@ -69,6 +69,7 @@ assert.deepEqual(
     '202610260003_english_search',
     '202610260004_media_upload_leases',
     '202610270005_maintenance_tombstones',
+    '202611160006_email_outbox',
   ],
 );
 const tables = [...APP_TABLES]

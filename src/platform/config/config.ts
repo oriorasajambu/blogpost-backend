@@ -4,6 +4,7 @@ import {
   validateProvenance,
   cloudRuntimeBinding,
   requiredSecretNames,
+  EMAIL_FROM_PATTERN,
   type BuildProvenance,
   type RuntimePurpose,
 } from './build-model.js';
@@ -26,9 +27,85 @@ export interface AppConfig {
   };
   apiOrigin: string;
   webOrigin: string;
+  /** Null when invitation email is not configured; invitations then use the copy-link flow only. */
+  email: EmailConfig | null;
   configurationDigest: string;
   runtimeInputDigest: string;
   build: BuildProvenance;
+}
+
+export interface EmailConfig {
+  driver: 'resend' | 'log';
+  from: string;
+  /** 64 lowercase hex characters (32-byte AES-256 key). */
+  payloadKey: string;
+  resendApiKey: string | null;
+  /** OIDC audience and caller service account for the internal dispatch endpoint. */
+  dispatchAudience: string | null;
+  dispatchInvoker: string | null;
+  /** Minimum seconds between emails to one address; only development may lower it. */
+  cooldownSeconds: number;
+}
+const EMAIL_KEYS = [
+  'EMAIL_DRIVER',
+  'EMAIL_FROM',
+  'EMAIL_PAYLOAD_KEY',
+  'RESEND_API_KEY',
+  'EMAIL_DISPATCH_AUDIENCE',
+  'EMAIL_DISPATCH_INVOKER',
+  'EMAIL_COOLDOWN_SECONDS',
+] as const;
+function emailConfig(
+  env: NodeJS.ProcessEnv,
+  purpose: RuntimePurpose,
+  cloud: boolean,
+  enabledByProfile: boolean,
+): EmailConfig | null {
+  const present = EMAIL_KEYS.filter((key) => env[key]?.trim());
+  if (purpose !== 'api') return null;
+  if (cloud) {
+    if (!enabledByProfile) {
+      if (present.length)
+        throw new Error('Email configuration requires a profile email block');
+      return null;
+    }
+    if (env.EMAIL_DRIVER && env.EMAIL_DRIVER !== 'resend')
+      throw new Error('Cloud email must use the resend driver');
+  } else if (!present.length) return null;
+  const driver = (env.EMAIL_DRIVER ?? 'resend') as EmailConfig['driver'];
+  if (driver !== 'resend' && driver !== 'log')
+    throw new Error('Invalid EMAIL_DRIVER');
+  const from = required(env, 'EMAIL_FROM');
+  if (!EMAIL_FROM_PATTERN.test(from)) throw new Error('Invalid EMAIL_FROM');
+  const payloadKey = required(env, 'EMAIL_PAYLOAD_KEY');
+  if (payloadKey.length !== 64 || !/^[a-f0-9]{64}$/.test(payloadKey))
+    throw new Error('Invalid EMAIL_PAYLOAD_KEY');
+  const resendApiKey =
+    driver === 'resend' ? required(env, 'RESEND_API_KEY') : null;
+  if (resendApiKey !== null && !/^re_[A-Za-z0-9_]{8,200}$/.test(resendApiKey))
+    throw new Error('Invalid RESEND_API_KEY');
+  if (driver === 'log' && env.RESEND_API_KEY)
+    throw new Error('The log email driver must not receive RESEND_API_KEY');
+  const dispatchAudience = cloud
+    ? required(env, 'EMAIL_DISPATCH_AUDIENCE')
+    : (env.EMAIL_DISPATCH_AUDIENCE ?? null);
+  const dispatchInvoker = cloud
+    ? required(env, 'EMAIL_DISPATCH_INVOKER')
+    : (env.EMAIL_DISPATCH_INVOKER ?? null);
+  const cooldown = env.EMAIL_COOLDOWN_SECONDS ?? '60';
+  if (cloud && env.EMAIL_COOLDOWN_SECONDS)
+    throw new Error('Cloud email uses the fixed cooldown');
+  if (!/^(?:[0-9]|[1-5][0-9]|60)$/.test(cooldown))
+    throw new Error('Invalid EMAIL_COOLDOWN_SECONDS');
+  return {
+    driver,
+    from,
+    cooldownSeconds: Number(cooldown),
+    payloadKey,
+    resendApiKey,
+    dispatchAudience,
+    dispatchInvoker,
+  };
 }
 
 function required(env: NodeJS.ProcessEnv, key: string): string {
@@ -158,6 +235,7 @@ export function readConfig(
       throw new Error('Invalid identity emulator host');
     required(env, 'MEDIA_LOCAL_ROOT');
   }
+  const email = emailConfig(env, purpose, cloud, !!build.configuration?.email);
   const port = Number(env.PORT ?? '8080');
   if (!Number.isInteger(port) || port < 1 || port > 65535)
     throw new Error('Invalid PORT');
@@ -194,6 +272,7 @@ export function readConfig(
     },
     apiOrigin,
     webOrigin,
+    email,
     configurationDigest,
     runtimeInputDigest,
     build,

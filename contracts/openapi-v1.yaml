@@ -9049,6 +9049,11 @@ paths:
                         expiresAt: 2026-11-01T08:20:30.123Z
                         acceptedAt: null
                         revokedAt: null
+                        delivery:
+                          status: SENT
+                          attempts: 1
+                          lastAttemptAt: 2026-10-25T08:20:30.123Z
+                          sentAt: 2026-10-25T08:20:30.123Z
                     error: null
                     meta:
                       contractVersion: 1.0.0
@@ -9214,6 +9219,11 @@ paths:
                         expiresAt: 2026-11-01T08:20:30.123Z
                         acceptedAt: null
                         revokedAt: null
+                        delivery:
+                          status: SENT
+                          attempts: 1
+                          lastAttemptAt: 2026-10-25T08:20:30.123Z
+                          sentAt: 2026-10-25T08:20:30.123Z
                       inviteUrl: https://web.example.test/invitations/accept?token=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
                       linkAvailable: true
                     error: null
@@ -9247,6 +9257,11 @@ paths:
                         expiresAt: 2026-11-01T08:20:30.123Z
                         acceptedAt: null
                         revokedAt: null
+                        delivery:
+                          status: SENT
+                          attempts: 1
+                          lastAttemptAt: 2026-10-25T08:20:30.123Z
+                          sentAt: 2026-10-25T08:20:30.123Z
                       inviteUrl: null
                       linkAvailable: false
                     error: null
@@ -9376,6 +9391,11 @@ paths:
                       expiresAt: 2026-11-01T08:20:30.123Z
                       acceptedAt: null
                       revokedAt: null
+                      delivery:
+                        status: SENT
+                        attempts: 1
+                        lastAttemptAt: 2026-10-25T08:20:30.123Z
+                        sentAt: 2026-10-25T08:20:30.123Z
                     error: null
                     meta:
                       contractVersion: 1.0.0
@@ -9515,6 +9535,11 @@ paths:
                       expiresAt: 2026-11-01T08:20:30.123Z
                       acceptedAt: null
                       revokedAt: 2026-10-25T08:20:30.123Z
+                      delivery:
+                        status: SENT
+                        attempts: 1
+                        lastAttemptAt: 2026-10-25T08:20:30.123Z
+                        sentAt: 2026-10-25T08:20:30.123Z
                     error: null
                     meta:
                       contractVersion: 1.0.0
@@ -9545,6 +9570,11 @@ paths:
                       expiresAt: 2026-11-01T08:20:30.123Z
                       acceptedAt: null
                       revokedAt: 2026-10-25T08:20:30.123Z
+                      delivery:
+                        status: SENT
+                        attempts: 1
+                        lastAttemptAt: 2026-10-25T08:20:30.123Z
+                        sentAt: 2026-10-25T08:20:30.123Z
                     error: null
                     meta:
                       contractVersion: 1.0.0
@@ -9696,6 +9726,11 @@ paths:
                         expiresAt: 2026-11-01T08:20:30.123Z
                         acceptedAt: null
                         revokedAt: null
+                        delivery:
+                          status: SENT
+                          attempts: 1
+                          lastAttemptAt: 2026-10-25T08:20:30.123Z
+                          sentAt: 2026-10-25T08:20:30.123Z
                       inviteUrl: https://web.example.test/invitations/accept?token=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
                       linkAvailable: true
                     error: null
@@ -9729,6 +9764,11 @@ paths:
                         expiresAt: 2026-11-01T08:20:30.123Z
                         acceptedAt: null
                         revokedAt: null
+                        delivery:
+                          status: SENT
+                          attempts: 1
+                          lastAttemptAt: 2026-10-25T08:20:30.123Z
+                          sentAt: 2026-10-25T08:20:30.123Z
                       inviteUrl: null
                       linkAvailable: false
                     error: null
@@ -9991,6 +10031,14 @@ components:
         - ACCEPTED
         - REVOKED
         - EXPIRED
+    InvitationDeliveryStatus:
+      type: string
+      enum:
+        - NOT_REQUESTED
+        - QUEUED
+        - SENT
+        - FAILED
+        - CANCELLED
     AuthorSummary:
       type: object
       properties:
@@ -10631,6 +10679,8 @@ components:
           anyOf:
             - *a61
             - type: 'null'
+        delivery:
+          $ref: '#/components/schemas/InvitationDelivery'
       required:
         - id
         - email
@@ -10642,6 +10692,29 @@ components:
         - expiresAt
         - acceptedAt
         - revokedAt
+        - delivery
+    InvitationDelivery:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/InvitationDeliveryStatus'
+        attempts:
+          type: integer
+          minimum: 0
+          maximum: 6
+        lastAttemptAt:
+          anyOf:
+            - *a61
+            - type: 'null'
+        sentAt:
+          anyOf:
+            - *a61
+            - type: 'null'
+      required:
+        - status
+        - attempts
+        - lastAttemptAt
+        - sentAt
     InvitationIssueResult:
       type: object
       properties:

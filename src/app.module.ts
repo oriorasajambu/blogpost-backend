@@ -46,6 +46,17 @@ import {
   AdminInvitationsController,
   InvitationAcceptanceController,
 } from './modules/invitations/invitations.controller.js';
+import { EmailOutboxService } from './modules/email/email-outbox.service.js';
+import {
+  ConfiguredEmailGateway,
+  EMAIL_GATEWAY,
+} from './modules/email/email-gateway.js';
+import { EmailDispatchController } from './modules/email/email-dispatch.controller.js';
+import {
+  GoogleOidcVerifier,
+  OIDC_VERIFIER,
+  SchedulerGuard,
+} from './modules/email/scheduler-oidc.js';
 
 @Module({})
 export class AppModule {
@@ -66,6 +77,7 @@ export class AppModule {
         TaxonomyController,
         MediaController,
         PublicMediaController,
+        EmailDispatchController,
       ],
       providers: [
         DatabaseService,
@@ -94,6 +106,10 @@ export class AppModule {
         MediaService,
         StorageAdapter,
         { provide: MEDIA_STORAGE, useExisting: StorageAdapter },
+        { provide: EMAIL_GATEWAY, useClass: ConfiguredEmailGateway },
+        { provide: OIDC_VERIFIER, useClass: GoogleOidcVerifier },
+        EmailOutboxService,
+        SchedulerGuard,
       ],
     };
   }

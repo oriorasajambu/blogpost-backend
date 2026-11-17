@@ -13756,7 +13756,13 @@
                           "createdAt": "2026-10-25T08:20:30.123Z",
                           "expiresAt": "2026-11-01T08:20:30.123Z",
                           "acceptedAt": null,
-                          "revokedAt": null
+                          "revokedAt": null,
+                          "delivery": {
+                            "status": "SENT",
+                            "attempts": 1,
+                            "lastAttemptAt": "2026-10-25T08:20:30.123Z",
+                            "sentAt": "2026-10-25T08:20:30.123Z"
+                          }
                         }
                       ],
                       "error": null,
@@ -13997,7 +14003,13 @@
                           "createdAt": "2026-10-25T08:20:30.123Z",
                           "expiresAt": "2026-11-01T08:20:30.123Z",
                           "acceptedAt": null,
-                          "revokedAt": null
+                          "revokedAt": null,
+                          "delivery": {
+                            "status": "SENT",
+                            "attempts": 1,
+                            "lastAttemptAt": "2026-10-25T08:20:30.123Z",
+                            "sentAt": "2026-10-25T08:20:30.123Z"
+                          }
                         },
                         "inviteUrl": "https://web.example.test/invitations/accept?token=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
                         "linkAvailable": true
@@ -14038,7 +14050,13 @@
                           "createdAt": "2026-10-25T08:20:30.123Z",
                           "expiresAt": "2026-11-01T08:20:30.123Z",
                           "acceptedAt": null,
-                          "revokedAt": null
+                          "revokedAt": null,
+                          "delivery": {
+                            "status": "SENT",
+                            "attempts": 1,
+                            "lastAttemptAt": "2026-10-25T08:20:30.123Z",
+                            "sentAt": "2026-10-25T08:20:30.123Z"
+                          }
                         },
                         "inviteUrl": null,
                         "linkAvailable": false
@@ -14232,7 +14250,13 @@
                         "createdAt": "2026-10-25T08:20:30.123Z",
                         "expiresAt": "2026-11-01T08:20:30.123Z",
                         "acceptedAt": null,
-                        "revokedAt": null
+                        "revokedAt": null,
+                        "delivery": {
+                          "status": "SENT",
+                          "attempts": 1,
+                          "lastAttemptAt": "2026-10-25T08:20:30.123Z",
+                          "sentAt": "2026-10-25T08:20:30.123Z"
+                        }
                       },
                       "error": null,
                       "meta": {
@@ -14444,7 +14468,13 @@
                         "createdAt": "2026-10-25T08:20:30.123Z",
                         "expiresAt": "2026-11-01T08:20:30.123Z",
                         "acceptedAt": null,
-                        "revokedAt": "2026-10-25T08:20:30.123Z"
+                        "revokedAt": "2026-10-25T08:20:30.123Z",
+                        "delivery": {
+                          "status": "SENT",
+                          "attempts": 1,
+                          "lastAttemptAt": "2026-10-25T08:20:30.123Z",
+                          "sentAt": "2026-10-25T08:20:30.123Z"
+                        }
                       },
                       "error": null,
                       "meta": {
@@ -14481,7 +14511,13 @@
                         "createdAt": "2026-10-25T08:20:30.123Z",
                         "expiresAt": "2026-11-01T08:20:30.123Z",
                         "acceptedAt": null,
-                        "revokedAt": "2026-10-25T08:20:30.123Z"
+                        "revokedAt": "2026-10-25T08:20:30.123Z",
+                        "delivery": {
+                          "status": "SENT",
+                          "attempts": 1,
+                          "lastAttemptAt": "2026-10-25T08:20:30.123Z",
+                          "sentAt": "2026-10-25T08:20:30.123Z"
+                        }
                       },
                       "error": null,
                       "meta": {
@@ -14710,7 +14746,13 @@
                           "createdAt": "2026-10-25T08:20:30.123Z",
                           "expiresAt": "2026-11-01T08:20:30.123Z",
                           "acceptedAt": null,
-                          "revokedAt": null
+                          "revokedAt": null,
+                          "delivery": {
+                            "status": "SENT",
+                            "attempts": 1,
+                            "lastAttemptAt": "2026-10-25T08:20:30.123Z",
+                            "sentAt": "2026-10-25T08:20:30.123Z"
+                          }
                         },
                         "inviteUrl": "https://web.example.test/invitations/accept?token=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
                         "linkAvailable": true
@@ -14751,7 +14793,13 @@
                           "createdAt": "2026-10-25T08:20:30.123Z",
                           "expiresAt": "2026-11-01T08:20:30.123Z",
                           "acceptedAt": null,
-                          "revokedAt": null
+                          "revokedAt": null,
+                          "delivery": {
+                            "status": "SENT",
+                            "attempts": 1,
+                            "lastAttemptAt": "2026-10-25T08:20:30.123Z",
+                            "sentAt": "2026-10-25T08:20:30.123Z"
+                          }
                         },
                         "inviteUrl": null,
                         "linkAvailable": false
@@ -15118,6 +15166,10 @@
       "InvitationStatus": {
         "type": "string",
         "enum": ["PENDING", "ACCEPTED", "REVOKED", "EXPIRED"]
+      },
+      "InvitationDeliveryStatus": {
+        "type": "string",
+        "enum": ["NOT_REQUESTED", "QUEUED", "SENT", "FAILED", "CANCELLED"]
       },
       "AuthorSummary": {
         "type": "object",
@@ -16493,6 +16545,9 @@
                 "type": "null"
               }
             ]
+          },
+          "delivery": {
+            "$ref": "#/components/schemas/InvitationDelivery"
           }
         },
         "required": [
@@ -16505,8 +16560,47 @@
           "createdAt",
           "expiresAt",
           "acceptedAt",
-          "revokedAt"
+          "revokedAt",
+          "delivery"
         ]
+      },
+      "InvitationDelivery": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/InvitationDeliveryStatus"
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 6
+          },
+          "lastAttemptAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sentAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["status", "attempts", "lastAttemptAt", "sentAt"]
       },
       "InvitationIssueResult": {
         "type": "object",

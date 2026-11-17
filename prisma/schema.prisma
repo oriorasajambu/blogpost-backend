@@ -73,10 +73,32 @@ model Invitation {
   createdAt   DateTime @default(now()) @db.Timestamptz(3)
   issuer Member @relation("InvitationIssuer", fields: [issuerId], references: [id], onDelete: Restrict)
   acceptedBy Member? @relation("InvitationAcceptor", fields: [acceptedById], references: [id], onDelete: Restrict)
+  emails EmailOutbox[]
   @@index([email, expiresAt])
   @@index([issuerId])
   @@index([acceptedById])
   @@index([expiresAt])
+}
+
+model EmailOutbox {
+  id String @id @default(uuid()) @db.Uuid
+  invitationId String @db.Uuid
+  kind String @db.VarChar(20)
+  toEmail String @db.VarChar(320)
+  payloadCiphertext Bytes?
+  payloadKeyVersion Int @default(1) @db.SmallInt
+  status String @default("QUEUED") @db.VarChar(10)
+  attempts Int @default(0) @db.SmallInt
+  nextAttemptAt DateTime @db.Timestamptz(3)
+  lockedUntil DateTime? @db.Timestamptz(3)
+  lastAttemptAt DateTime? @db.Timestamptz(3)
+  providerMessageId String? @db.VarChar(100)
+  lastErrorCode String? @db.VarChar(80)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  sentAt DateTime? @db.Timestamptz(3)
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  @@index([invitationId])
+  @@index([toEmail, createdAt])
 }
 
 model Post {
