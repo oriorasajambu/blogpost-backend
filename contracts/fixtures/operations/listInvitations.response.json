@@ -22,7 +22,13 @@
       "createdAt": "2026-10-25T08:20:30.123Z",
       "expiresAt": "2026-11-01T08:20:30.123Z",
       "acceptedAt": null,
-      "revokedAt": null
+      "revokedAt": null,
+      "delivery": {
+        "status": "SENT",
+        "attempts": 1,
+        "lastAttemptAt": "2026-10-25T08:20:30.123Z",
+        "sentAt": "2026-10-25T08:20:30.123Z"
+      }
     }
   ],
   "error": null,

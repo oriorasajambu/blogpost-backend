@@ -53,7 +53,10 @@ export function validateApplicationHeaders(
 ): void {
   if (
     request.method === 'OPTIONS' ||
-    ['/health/live', '/health/ready'].includes(request.path)
+    ['/health/live', '/health/ready'].includes(request.path) ||
+    // Cloud Scheduler sends no client metadata; SchedulerGuard verifies its OIDC token instead.
+    (request.method === 'POST' &&
+      request.path === '/internal/email-outbox/dispatch')
   )
     return next();
   try {

@@ -14,6 +14,17 @@
       },
       {
         "collation": "pg_catalog.default",
+        "default_expression": "'QUEUED'::character varying",
+        "generated": "",
+        "identity": "",
+        "name": "status",
+        "position": 7,
+        "relation": "EmailOutbox",
+        "required": true,
+        "type": "character varying(10)"
+      },
+      {
+        "collation": "pg_catalog.default",
         "default_expression": null,
         "generated": "",
         "identity": "",
@@ -204,6 +215,28 @@
         "default_expression": null,
         "generated": "",
         "identity": "",
+        "name": "kind",
+        "position": 3,
+        "relation": "EmailOutbox",
+        "required": true,
+        "type": "character varying(20)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "lastErrorCode",
+        "position": 13,
+        "relation": "EmailOutbox",
+        "required": false,
+        "type": "character varying(80)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
         "name": "logs",
         "position": 5,
         "relation": "_prisma_migrations",
@@ -314,6 +347,17 @@
         "default_expression": null,
         "generated": "",
         "identity": "",
+        "name": "providerMessageId",
+        "position": 12,
+        "relation": "EmailOutbox",
+        "required": false,
+        "type": "character varying(100)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
         "name": "requestHash",
         "position": 6,
         "relation": "IdempotencyRecord",
@@ -396,6 +440,17 @@
         "relation": "Revision",
         "required": true,
         "type": "text"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "toEmail",
+        "position": 4,
+        "relation": "EmailOutbox",
+        "required": true,
+        "type": "character varying(320)"
       },
       {
         "collation": "pg_catalog.default",
@@ -490,6 +545,17 @@
         "default_expression": "0",
         "generated": "",
         "identity": "",
+        "name": "attempts",
+        "position": 8,
+        "relation": "EmailOutbox",
+        "required": true,
+        "type": "smallint"
+      },
+      {
+        "collation": null,
+        "default_expression": "0",
+        "generated": "",
+        "identity": "",
         "name": "byteSize",
         "position": 6,
         "relation": "MediaAsset",
@@ -528,6 +594,17 @@
         "relation": "Revision",
         "required": true,
         "type": "integer"
+      },
+      {
+        "collation": null,
+        "default_expression": "1",
+        "generated": "",
+        "identity": "",
+        "name": "payloadKeyVersion",
+        "position": 6,
+        "relation": "EmailOutbox",
+        "required": true,
+        "type": "smallint"
       },
       {
         "collation": null,
@@ -614,6 +691,17 @@
         "name": "createdAt",
         "position": 12,
         "relation": "MediaAsset",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": "CURRENT_TIMESTAMP",
+        "generated": "",
+        "identity": "",
+        "name": "createdAt",
+        "position": 14,
+        "relation": "EmailOutbox",
         "required": true,
         "type": "timestamp(3) with time zone"
       },
@@ -1086,6 +1174,17 @@
         "identity": "",
         "name": "id",
         "position": 1,
+        "relation": "EmailOutbox",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "id",
+        "position": 1,
         "relation": "IdempotencyRecord",
         "required": true,
         "type": "uuid"
@@ -1194,6 +1293,17 @@
         "default_expression": null,
         "generated": "",
         "identity": "",
+        "name": "invitationId",
+        "position": 2,
+        "relation": "EmailOutbox",
+        "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
         "name": "issuerId",
         "position": 5,
         "relation": "Invitation",
@@ -1210,6 +1320,17 @@
         "relation": "IdempotencyRecord",
         "required": true,
         "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "lastAttemptAt",
+        "position": 11,
+        "relation": "EmailOutbox",
+        "required": false,
+        "type": "timestamp(3) with time zone"
       },
       {
         "collation": null,
@@ -1260,6 +1381,17 @@
         "default_expression": null,
         "generated": "",
         "identity": "",
+        "name": "lockedUntil",
+        "position": 10,
+        "relation": "EmailOutbox",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
         "name": "mediaId",
         "position": 2,
         "relation": "MediaUploadAttempt",
@@ -1293,6 +1425,17 @@
         "default_expression": null,
         "generated": "",
         "identity": "",
+        "name": "nextAttemptAt",
+        "position": 9,
+        "relation": "EmailOutbox",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
         "name": "number",
         "position": 3,
         "relation": "Revision",
@@ -1309,6 +1452,17 @@
         "relation": "MediaAsset",
         "required": false,
         "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "payloadCiphertext",
+        "position": 5,
+        "relation": "EmailOutbox",
+        "required": false,
+        "type": "bytea"
       },
       {
         "collation": null,
@@ -1535,6 +1689,17 @@
         "default_expression": null,
         "generated": "",
         "identity": "",
+        "name": "sentAt",
+        "position": 15,
+        "relation": "EmailOutbox",
+        "required": false,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
         "name": "statusCode",
         "position": 8,
         "relation": "IdempotencyRecord",
@@ -1742,6 +1907,24 @@
       {
         "deferrable": false,
         "deferred": false,
+        "definition": "CHECK ((status::text = 'SENT'::text) = (\"sentAt\" IS NOT NULL))",
+        "kind": "c",
+        "name": "email_outbox_sent",
+        "relation": "EmailOutbox",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK ((status::text = ANY (ARRAY['QUEUED'::character varying, 'SENDING'::character varying]::text[])) = (\"payloadCiphertext\" IS NOT NULL) AND (\"payloadCiphertext\" IS NULL OR octet_length(\"payloadCiphertext\") >= 29 AND octet_length(\"payloadCiphertext\") <= 8192))",
+        "kind": "c",
+        "name": "email_outbox_payload",
+        "relation": "EmailOutbox",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
         "definition": "CHECK (NOT (\"acceptedAt\" IS NOT NULL AND \"revokedAt\" IS NOT NULL))",
         "kind": "c",
         "name": "invitation_terminal_state",
@@ -1787,6 +1970,15 @@
       {
         "deferrable": false,
         "deferred": false,
+        "definition": "CHECK (\"payloadKeyVersion\" > 0)",
+        "kind": "c",
+        "name": "email_outbox_key_version",
+        "relation": "EmailOutbox",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
         "definition": "CHECK (\"position\" >= 0 AND \"position\" <= 4)",
         "kind": "c",
         "name": "revision_tag_position",
@@ -1809,6 +2001,15 @@
         "kind": "c",
         "name": "idempotency_hash",
         "relation": "IdempotencyRecord",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (\"toEmail\"::text = lower(\"toEmail\"::text) AND POSITION(('@'::text) IN (\"toEmail\")) > 1)",
+        "kind": "c",
+        "name": "email_outbox_email",
+        "relation": "EmailOutbox",
         "validated": true
       },
       {
@@ -1845,6 +2046,15 @@
         "kind": "c",
         "name": "post_review",
         "relation": "Post",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (attempts >= 0 AND attempts <= 6)",
+        "kind": "c",
+        "name": "email_outbox_attempts",
+        "relation": "EmailOutbox",
         "validated": true
       },
       {
@@ -1913,6 +2123,15 @@
       {
         "deferrable": false,
         "deferred": false,
+        "definition": "CHECK (kind::text = 'INVITATION'::text)",
+        "kind": "c",
+        "name": "email_outbox_kind",
+        "relation": "EmailOutbox",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
         "definition": "CHECK (number > 0 AND char_length(title) <= 160 AND char_length(summary) <= 320 AND octet_length(markdown) <= 131072 AND \"markdownContractVersion\" = 1 AND (\"coverAltText\" IS NULL OR char_length(\"coverAltText\") <= 300))",
         "kind": "c",
         "name": "revision_bounds",
@@ -1962,6 +2181,24 @@
         "kind": "c",
         "name": "media_ready",
         "relation": "MediaAsset",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (status::text = 'SENDING'::text OR \"lockedUntil\" IS NULL)",
+        "kind": "c",
+        "name": "email_outbox_lock",
+        "relation": "EmailOutbox",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (status::text = ANY (ARRAY['QUEUED'::character varying, 'SENDING'::character varying, 'SENT'::character varying, 'FAILED'::character varying, 'CANCELLED'::character varying]::text[]))",
+        "kind": "c",
+        "name": "email_outbox_status",
+        "relation": "EmailOutbox",
         "validated": true
       },
       {
@@ -2070,6 +2307,15 @@
         "kind": "f",
         "name": "Revision_creditedAuthorId_fkey",
         "relation": "Revision",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"invitationId\") REFERENCES blogpost.\"Invitation\"(id) ON UPDATE CASCADE ON DELETE CASCADE",
+        "kind": "f",
+        "name": "EmailOutbox_invitationId_fkey",
+        "relation": "EmailOutbox",
         "validated": true
       },
       {
@@ -2320,6 +2566,15 @@
         "deferred": false,
         "definition": "PRIMARY KEY (id)",
         "kind": "p",
+        "name": "EmailOutbox_pkey",
+        "relation": "EmailOutbox",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "PRIMARY KEY (id)",
+        "kind": "p",
         "name": "IdempotencyRecord_pkey",
         "relation": "IdempotencyRecord",
         "validated": true
@@ -2496,6 +2751,36 @@
         "primary": false,
         "ready": true,
         "relation": "AuditEvent",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"EmailOutbox_due_idx\" ON blogpost.\"EmailOutbox\" USING btree (\"nextAttemptAt\") WHERE ((status)::text = ANY ((ARRAY['QUEUED'::character varying, 'SENDING'::character varying])::text[]))",
+        "live": true,
+        "name": "EmailOutbox_due_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "EmailOutbox",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"EmailOutbox_invitationId_idx\" ON blogpost.\"EmailOutbox\" USING btree (\"invitationId\")",
+        "live": true,
+        "name": "EmailOutbox_invitationId_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "EmailOutbox",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"EmailOutbox_toEmail_createdAt_idx\" ON blogpost.\"EmailOutbox\" USING btree (\"toEmail\", \"createdAt\")",
+        "live": true,
+        "name": "EmailOutbox_toEmail_createdAt_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "EmailOutbox",
         "unique": false,
         "valid": true
       },
@@ -2796,6 +3081,16 @@
         "primary": false,
         "ready": true,
         "relation": "Category",
+        "unique": true,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"EmailOutbox_pkey\" ON blogpost.\"EmailOutbox\" USING btree (id)",
+        "live": true,
+        "name": "EmailOutbox_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "EmailOutbox",
         "unique": true,
         "valid": true
       },
@@ -3156,6 +3451,16 @@
       {
         "force_row_security": false,
         "kind": "r",
+        "name": "EmailOutbox",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
         "name": "IdempotencyRecord",
         "options": [],
         "owner": "blogpost_migrator",
@@ -3373,6 +3678,16 @@
         "enabled": "O",
         "function": "pg_catalog.RI_FKey_cascade_del",
         "internal": true,
+        "name": "EmailOutbox_invitationId_fkey:RI_FKey_cascade_del:9",
+        "relation": "Invitation"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_del",
+        "internal": true,
         "name": "MediaAsset_postId_fkey:RI_FKey_cascade_del:9",
         "relation": "Post"
       },
@@ -3455,6 +3770,16 @@
         "internal": true,
         "name": "AuditEvent_actorId_fkey:RI_FKey_cascade_upd:17",
         "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "EmailOutbox_invitationId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Invitation"
       },
       {
         "deferrable": false,
@@ -3675,6 +4000,16 @@
         "internal": true,
         "name": "AuditEvent_actorId_fkey:RI_FKey_check_ins:5",
         "relation": "AuditEvent"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "EmailOutbox_invitationId_fkey:RI_FKey_check_ins:5",
+        "relation": "EmailOutbox"
       },
       {
         "deferrable": false,
@@ -3965,6 +4300,16 @@
         "internal": true,
         "name": "AuditEvent_actorId_fkey:RI_FKey_check_upd:17",
         "relation": "AuditEvent"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "EmailOutbox_invitationId_fkey:RI_FKey_check_upd:17",
+        "relation": "EmailOutbox"
       },
       {
         "deferrable": false,
@@ -4591,6 +4936,15 @@
         "default_expression": null,
         "kind": "c",
         "labels": "{}",
+        "name": "EmailOutbox",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
         "name": "IdempotencyRecord",
         "owner": "blogpost_migrator",
         "required": false
@@ -4777,9 +5131,9 @@
       }
     ]
   },
-  "migrationDigest": "7c90cb3d3b05c26e6d7acf03dda94cf3ac6b24c6ee20f1a55508ea08df98c1e8",
-  "permissionDigest": "6848e1f4d00f6bf94a173a5f99f9abd40d5255c18067bc627160444576a8b8cd",
+  "migrationDigest": "f4d7c1282ba822fc1407e25b8835ddde08b3cfb62402b0b167b7fd3b1175a3a0",
+  "permissionDigest": "678f5f6c1e95bc48c9eca67ca21db97393090ef2a59cf691787a66baa9f41cd7",
   "postgresMajor": 17,
-  "schemaDigest": "f7c08d12cd9ffd1ad500e6b65ab0384becabed69caf76a6f673378d8e4731d54",
+  "schemaDigest": "183898e00899d8b5a0b95f42173743f50aa6c97d0e75bbf31f7edd2e633b8283",
   "schemaVersion": 1
 }

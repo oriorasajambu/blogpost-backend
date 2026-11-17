@@ -9,4 +9,6 @@
 - Added the complete stateful mock, defensive compiling Kotlin consumer, isolated full conformance evidence, legacy save/retry semantics and stricter default/text/counting compatibility rules.
 - Added reproducible versioned handoff archives with source/toolchain inputs, per-file SHA-256 manifests and archive checksums. Extracted-package validation is separate from an approved release.
 
+- Added `Invitation.delivery` (`InvitationDelivery`): invitation email status (`NOT_REQUESTED`, `QUEUED`, `SENT`, `FAILED`, `CANCELLED`), attempt count and timestamps. Email is optional per deployment; without it every invitation reports `NOT_REQUESTED` and the copy-link flow is unchanged.
+
 This remains draft authoring history. Owner review, explicit immutable publication and actual provider/client application-release gates remain open. No previously published contract exists for a historical baseline comparison.

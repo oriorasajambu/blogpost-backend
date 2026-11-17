@@ -147,3 +147,19 @@ test('unsupported methods return Allow and unknown query properties are rejected
   assert.equal(query.body.error.fieldErrors[0].code, 'UNKNOWN_FIELD');
   assert.equal(JSON.stringify(query.body).includes('hidden'), false);
 });
+test('scheduler dispatch skips client metadata but stays hidden without a valid OIDC caller', async () => {
+  // Cloud Scheduler sends no app metadata: the route must reach SchedulerGuard (404), not 400.
+  for (const authorization of [undefined, 'Bearer a.b.c']) {
+    const call = request(app.getHttpServer()).post(
+      '/internal/email-outbox/dispatch',
+    );
+    if (authorization) call.set('Authorization', authorization);
+    const result = await call.expect(404);
+    assert.equal(result.body.error.code, 'RESOURCE_NOT_FOUND');
+  }
+  // Only that exact POST is exempt.
+  const other = await request(app.getHttpServer())
+    .get('/internal/email-outbox/dispatch')
+    .expect(400);
+  assert.equal(other.body.error.code, 'INVALID_CLIENT_METADATA');
+});

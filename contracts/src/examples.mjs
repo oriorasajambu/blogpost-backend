@@ -198,6 +198,7 @@ export const invitation = {
   expiresAt: '2026-11-01T08:20:30.123Z',
   acceptedAt: null,
   revokedAt: null,
+  delivery: { status: 'SENT', attempts: 1, lastAttemptAt: at, sentAt: at },
 };
 export const invitationToken = 'A'.repeat(43);
 export const meta = {

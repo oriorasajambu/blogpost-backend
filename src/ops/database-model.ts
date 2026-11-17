@@ -6,6 +6,7 @@ export const SCHEMA_LOCK = 78201907;
 export const APP_TABLES = [
   'AuditEvent',
   'Category',
+  'EmailOutbox',
   'IdempotencyRecord',
   'Invitation',
   'MaintenanceCheckpoint',

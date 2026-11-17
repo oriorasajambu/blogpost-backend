@@ -146,6 +146,13 @@ export const schemas = {
   ),
   VariantName: enumeration('w480', 'w960', 'w1600'),
   InvitationStatus: enumeration('PENDING', 'ACCEPTED', 'REVOKED', 'EXPIRED'),
+  InvitationDeliveryStatus: enumeration(
+    'NOT_REQUESTED',
+    'QUEUED',
+    'SENT',
+    'FAILED',
+    'CANCELLED',
+  ),
   AuthorSummary: object(publicAuthorFields),
   PublicAuthor: object({ ...publicAuthorFields, bio: text(500) }),
   Taxon: object(taxonFields),
@@ -258,6 +265,13 @@ export const schemas = {
     expiresAt: dateTime,
     acceptedAt: nullable(dateTime),
     revokedAt: nullable(dateTime),
+    delivery: ref('InvitationDelivery'),
+  }),
+  InvitationDelivery: object({
+    status: ref('InvitationDeliveryStatus'),
+    attempts: integer(0, 6),
+    lastAttemptAt: nullable(dateTime),
+    sentAt: nullable(dateTime),
   }),
   InvitationIssueResult: object({
     invitation: ref('Invitation'),

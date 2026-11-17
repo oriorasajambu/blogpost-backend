@@ -22,6 +22,10 @@
       "type": "string",
       "enum": ["PENDING", "ACCEPTED", "REVOKED", "EXPIRED"]
     },
+    "InvitationDeliveryStatus": {
+      "type": "string",
+      "enum": ["NOT_REQUESTED", "QUEUED", "SENT", "FAILED", "CANCELLED"]
+    },
     "AuthorSummary": {
       "type": "object",
       "properties": {
@@ -974,7 +978,8 @@
             },
             { "type": "null" }
           ]
-        }
+        },
+        "delivery": { "$ref": "#/components/schemas/InvitationDelivery" }
       },
       "required": [
         "id",
@@ -986,8 +991,37 @@
         "createdAt",
         "expiresAt",
         "acceptedAt",
-        "revokedAt"
+        "revokedAt",
+        "delivery"
       ]
+    },
+    "InvitationDelivery": {
+      "type": "object",
+      "properties": {
+        "status": { "$ref": "#/components/schemas/InvitationDeliveryStatus" },
+        "attempts": { "type": "integer", "minimum": 0, "maximum": 6 },
+        "lastAttemptAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "sentAt": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+            },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": ["status", "attempts", "lastAttemptAt", "sentAt"]
     },
     "InvitationIssueResult": {
       "type": "object",

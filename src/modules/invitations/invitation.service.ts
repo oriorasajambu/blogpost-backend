@@ -17,6 +17,14 @@ import {
   type Transaction,
 } from '../members/members.repository.js';
 import { toMe, type Me, type MemberRole } from '../members/member.js';
+import type { MemberRow } from '../members/member.js';
+import {
+  EmailOutboxService,
+  deliveryDto,
+  latestEmail,
+  type Delivery,
+} from '../email/email-outbox.service.js';
+import type { OperationResult } from '../../platform/database/operation.js';
 import type { VerifiedIdentity } from '../identity/identity.js';
 import { normalizeIdentityEmail } from '../identity/identity.service.js';
 import {
@@ -61,6 +69,7 @@ export function invitationToken(value: unknown): string {
 }
 const selection = {
   issuer: { select: { id: true, handle: true, displayName: true } },
+  emails: latestEmail,
 } as const;
 type InvitationRow = Prisma.InvitationGetPayload<{ include: typeof selection }>;
 export function invitationDto(row: InvitationRow, now: Date) {
@@ -81,8 +90,20 @@ export function invitationDto(row: InvitationRow, now: Date) {
     expiresAt: row.expiresAt.toISOString(),
     acceptedAt: row.acceptedAt?.toISOString() ?? null,
     revokedAt: row.revokedAt?.toISOString() ?? null,
+    delivery: deliveryDto(row.emails[0]),
   };
 }
+const QUEUED: Delivery = {
+  status: 'QUEUED',
+  attempts: 0,
+  lastAttemptAt: null,
+  sentAt: null,
+};
+type IssueResult = {
+  invitation: ReturnType<typeof invitationDto>;
+  inviteUrl: string | null;
+  linkAvailable: boolean;
+};
 function used(row: InvitationRow, now: Date): void {
   const code = row.acceptedAt
     ? 'INVITATION_USED'
@@ -106,7 +127,39 @@ export class InvitationService {
     @Inject(MembersRepository) private readonly members: MembersRepository,
     @Inject(CursorService) private readonly cursors: CursorService,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
+    @Inject(EmailOutboxService) private readonly emails: EmailOutboxService,
   ) {}
+  /**
+   * Sends a just-queued email after the write (and its admin lock) has committed, then reports
+   * the current delivery state. A replay never ran the work, so it has no outbox id and sends nothing.
+   */
+  private async afterIssue<
+    T extends IssueResult | ReturnType<typeof invitationDto>,
+  >(
+    result: OperationResult<T>,
+    outboxId: string | null,
+    traceId: string,
+  ): Promise<OperationResult<T>> {
+    if (!('invitation' in result.data)) return result;
+    if (outboxId) await this.emails.sendNow(outboxId, traceId);
+    const data = result.data as IssueResult;
+    // Report current delivery, so a replayed response matches the original once sent.
+    const latest = await this.members.database.prisma.emailOutbox.findFirst({
+      where: { invitationId: data.invitation.id },
+      orderBy: latestEmail.orderBy,
+      select: latestEmail.select,
+    });
+    return {
+      ...result,
+      data: {
+        ...data,
+        invitation: {
+          ...data.invitation,
+          delivery: deliveryDto(latest ?? undefined),
+        },
+      } as T,
+    };
+  }
   list(identity: VerifiedIdentity, query: CursorQuery) {
     return this.operations.read(identity, async (tx, _actor, now) => {
       const status = query.filters.status;
@@ -166,10 +219,10 @@ export class InvitationService {
   }
   private async issue(
     tx: Transaction,
-    actorId: string,
+    actor: MemberRow,
     input: InvitationInput,
     now: Date,
-  ) {
+  ): Promise<IssueResult & { outboxId: string | null }> {
     if (
       await tx.member.findFirst({
         where: { email: { equals: input.email, mode: 'insensitive' } },
@@ -200,28 +253,43 @@ export class InvitationService {
         email: input.email,
         role: input.role,
         tokenHash: createHash('sha256').update(token).digest('hex'),
-        issuerId: actorId,
+        issuerId: actor.id,
         createdAt: now,
         expiresAt: new Date(now.getTime() + 7 * 86_400_000),
       },
       include: selection,
     });
+    const inviteUrl = `${this.config.webOrigin}/invitations/accept?token=${token}`;
+    const outboxId = await this.emails.enqueue(
+      tx,
+      row.id,
+      input.email,
+      {
+        inviteUrl,
+        role: input.role,
+        inviterName: actor.displayName,
+        inviterEmail: actor.email,
+        expiresAt: row.expiresAt.toISOString(),
+      },
+      now,
+    );
     const invitation = invitationDto(row, now);
+    if (outboxId) invitation.delivery = QUEUED;
     return {
       invitation,
-      inviteUrl:
-        `${this.config.webOrigin}/invitations/accept?token=${token}` as
-          string | null,
+      inviteUrl: inviteUrl as string | null,
       linkAvailable: true,
+      outboxId,
     };
   }
-  create(
+  async create(
     identity: VerifiedIdentity,
     input: InvitationInput,
     key: string,
     traceId: string,
   ) {
-    return this.operations.write(
+    let outboxId: string | null = null;
+    const result = await this.operations.write<IssueResult>(
       identity,
       {
         method: 'POST',
@@ -231,7 +299,13 @@ export class InvitationService {
         identityLimit: true,
       },
       async (tx, actor, now) => {
-        const data = await this.issue(tx, actor.id, input, now);
+        const { outboxId: queued, ...data } = await this.issue(
+          tx,
+          actor,
+          input,
+          now,
+        );
+        outboxId = queued;
         await tx.auditEvent.create({
           data: {
             actorId: actor.id,
@@ -251,8 +325,9 @@ export class InvitationService {
         };
       },
     );
+    return this.afterIssue(result, outboxId, traceId);
   }
-  change(
+  async change(
     identity: VerifiedIdentity,
     id: string,
     action: 'revoke' | 'reissue',
@@ -260,9 +335,9 @@ export class InvitationService {
     key: string,
     traceId: string,
   ) {
-    return this.operations.write<
-      | ReturnType<typeof invitationDto>
-      | Awaited<ReturnType<InvitationService['issue']>>
+    let outboxId: string | null = null;
+    const result = await this.operations.write<
+      ReturnType<typeof invitationDto> | IssueResult
     >(
       identity,
       {
@@ -284,6 +359,7 @@ export class InvitationService {
             'Invitation used',
             'Use the member controls.',
           );
+        await this.emails.cancelFor(tx, id);
         if (action === 'reissue') {
           await tx.invitation.update({
             where: { id },
@@ -292,12 +368,13 @@ export class InvitationService {
               version: nextVersion(row.version),
             },
           });
-          const data = await this.issue(
+          const { outboxId: queued, ...data } = await this.issue(
             tx,
-            actor.id,
+            actor,
             { email: row.email, role: row.role },
             now,
           );
+          outboxId = queued;
           await tx.auditEvent.create({
             data: {
               actorId: actor.id,
@@ -341,6 +418,7 @@ export class InvitationService {
         };
       },
     );
+    return this.afterIssue(result, outboxId, traceId);
   }
   async accept(
     identity: VerifiedIdentity,
@@ -423,6 +501,7 @@ export class InvitationService {
             },
           });
           await consumeRate(tx, member.id, 'IDENTITY', now);
+          await this.emails.cancelFor(tx, row.id);
           await tx.invitation.update({
             where: { id: row.id },
             data: {

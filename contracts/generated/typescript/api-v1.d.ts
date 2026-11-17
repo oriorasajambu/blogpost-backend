@@ -1358,6 +1358,7 @@ export interface components {
       readonly acceptedAt: string | null;
       /** Format: date-time */
       readonly createdAt: string;
+      readonly delivery: components['schemas']['InvitationDelivery'];
       /** Format: email */
       readonly email: string;
       /** Format: date-time */
@@ -1370,6 +1371,15 @@ export interface components {
       readonly status: components['schemas']['InvitationStatus'];
       readonly version: number;
     };
+    readonly InvitationDelivery: {
+      readonly attempts: number;
+      readonly lastAttemptAt: string | null;
+      readonly sentAt: string | null;
+      readonly status: components['schemas']['InvitationDeliveryStatus'];
+    };
+    /** @enum {string} */
+    readonly InvitationDeliveryStatus:
+      'NOT_REQUESTED' | 'QUEUED' | 'SENT' | 'FAILED' | 'CANCELLED';
     readonly InvitationIssueResult: {
       readonly invitation: components['schemas']['Invitation'];
       readonly inviteUrl: string | null;
