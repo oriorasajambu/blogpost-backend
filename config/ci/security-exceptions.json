@@ -9,6 +9,12 @@
     },
     {
       "rule": "generic-api-key",
+      "literal": "52639b514e50613fb44a9474ee617d0fa45d46a243780baf275bf73adfafc1c6",
+      "reason": "Public SHA-256 of the authored OpenAPI document after Invitation.delivery, recorded by consumer generation; not an API key.",
+      "expires": "2027-01-25"
+    },
+    {
+      "rule": "generic-api-key",
       "literal": "83c9a1ca-6d20-48c5-8476-bb6a60677377",
       "reason": "Public UUIDv4 idempotency example in the authored contract and synthetic consumers; it grants no authentication.",
       "expires": "2027-01-25"
