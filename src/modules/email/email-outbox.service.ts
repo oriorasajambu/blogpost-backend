@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { Prisma } from '../../generated/prisma/client.js';
 import { APP_CONFIG, type AppConfig } from '../../platform/config/config.js';
@@ -78,7 +78,6 @@ export interface DispatchSummary {
 
 @Injectable()
 export class EmailOutboxService {
-  private readonly logger = new Logger('EmailOutbox');
   private readonly key: Buffer | null;
   /** One email per recipient per minute by default, including resends. */
   private readonly cooldownMs: number;
@@ -158,8 +157,14 @@ export class EmailOutboxService {
     try {
       await this.run(outboxId, 1, traceId, SEND_TIMEOUT_MS.request);
     } catch (error) {
-      this.logger.warn(
-        `Immediate email attempt deferred to the sweep: ${(error as Error).name}`,
+      // No addresses, links or messages: only the error class, for operators.
+      process.stdout.write(
+        `${JSON.stringify({
+          severity: 'WARNING',
+          event: 'invitation_email_deferred',
+          traceId,
+          error: (error as Error).name,
+        })}\n`,
       );
     }
   }
@@ -207,24 +212,27 @@ export class EmailOutboxService {
         traceId,
       );
     }
-    const claimed = await prisma.$queryRaw<ClaimedRow[]>`
-      WITH due AS (
-        SELECT id FROM blogpost."EmailOutbox"
-        WHERE ((status = 'QUEUED' AND "nextAttemptAt" <= clock_timestamp())
-            OR (status = 'SENDING' AND "lockedUntil" < clock_timestamp()))
-          AND attempts < ${MAX_ATTEMPTS} ${filter}
-        ORDER BY "nextAttemptAt", id
-        LIMIT ${limit}
-        FOR UPDATE SKIP LOCKED
-      )
-      UPDATE blogpost."EmailOutbox" AS o
-      SET status = 'SENDING', attempts = o.attempts + 1,
-        "lockedUntil" = clock_timestamp() + ${LOCK_INTERVAL},
-        "lastAttemptAt" = clock_timestamp()
-      FROM due WHERE o.id = due.id
-      RETURNING o.id, o."invitationId", o."toEmail", o."payloadCiphertext", o.attempts`;
-    summary.claimed = claimed.length;
-    for (const row of claimed) {
+    // Claim one row right before delivering it, so each lease covers a single send (bounded by
+    // the provider timeout) rather than a whole batch processed in sequence.
+    for (let index = 0; index < limit; index++) {
+      const [row] = await prisma.$queryRaw<ClaimedRow[]>`
+        WITH due AS (
+          SELECT id FROM blogpost."EmailOutbox"
+          WHERE ((status = 'QUEUED' AND "nextAttemptAt" <= clock_timestamp())
+              OR (status = 'SENDING' AND "lockedUntil" < clock_timestamp()))
+            AND attempts < ${MAX_ATTEMPTS} ${filter}
+          ORDER BY "nextAttemptAt", id
+          LIMIT 1
+          FOR UPDATE SKIP LOCKED
+        )
+        UPDATE blogpost."EmailOutbox" AS o
+        SET status = 'SENDING', attempts = o.attempts + 1,
+          "lockedUntil" = clock_timestamp() + ${LOCK_INTERVAL},
+          "lastAttemptAt" = clock_timestamp()
+        FROM due WHERE o.id = due.id
+        RETURNING o.id, o."invitationId", o."toEmail", o."payloadCiphertext", o.attempts`;
+      if (!row) break;
+      summary.claimed++;
       const outcome = await this.deliver(row, traceId, timeoutMs);
       summary[outcome]++;
     }
@@ -246,7 +254,7 @@ export class EmailOutboxService {
       invitation.revokedAt ||
       invitation.expiresAt <= new Date()
     ) {
-      await this.finish(row.id, {
+      await this.finish(row, {
         status: 'CANCELLED',
         lastErrorCode: 'INVITATION_UNAVAILABLE',
       });
@@ -270,7 +278,7 @@ export class EmailOutboxService {
       timeoutMs,
     );
     if (result.ok) {
-      await this.finish(row.id, {
+      await this.finish(row, {
         status: 'SENT',
         sentAt: new Date(),
         providerMessageId: result.providerMessageId.slice(0, 100),
@@ -281,7 +289,8 @@ export class EmailOutboxService {
     const delay = result.retryable ? nextAttemptDelay(row.attempts) : null;
     if (delay === null) return this.fail(row, result.code, traceId);
     await prisma.emailOutbox.updateMany({
-      where: { id: row.id, status: 'SENDING' },
+      // Fenced to this attempt: a newer claim of the same row owns its outcome.
+      where: { id: row.id, status: 'SENDING', attempts: row.attempts },
       data: {
         status: 'QUEUED',
         lockedUntil: null,
@@ -296,7 +305,7 @@ export class EmailOutboxService {
     code: string,
     traceId: string,
   ): Promise<'failed'> {
-    const changed = await this.finish(row.id, {
+    const changed = await this.finish(row, {
       status: 'FAILED',
       lastErrorCode: code.slice(0, 80),
     });
@@ -310,9 +319,12 @@ export class EmailOutboxService {
       );
     return 'failed';
   }
-  /** Moves an in-flight row to a final state; a concurrent cancellation wins. */
+  /**
+   * Moves this attempt's in-flight row to a final state. A concurrent cancellation, or a newer
+   * claim after this attempt's lease expired (a higher attempt count), wins.
+   */
   private async finish(
-    id: string,
+    row: ClaimedRow,
     data: {
       status: (typeof FINAL)[number];
       sentAt?: Date;
@@ -321,7 +333,7 @@ export class EmailOutboxService {
     },
   ): Promise<boolean> {
     const result = await this.database.prisma.emailOutbox.updateMany({
-      where: { id, status: 'SENDING' },
+      where: { id: row.id, status: 'SENDING', attempts: row.attempts },
       data: { ...data, payloadCiphertext: null, lockedUntil: null },
     });
     return result.count === 1;

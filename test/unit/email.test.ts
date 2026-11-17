@@ -341,3 +341,39 @@ test('enqueue seals the link, and a second email to the same address within the 
     }),
   );
 });
+
+test('the development log driver writes the email to stdout even with Nest logging disabled', async () => {
+  const { ConfiguredEmailGateway } =
+    await import('../../src/modules/email/email-gateway.js');
+  const config = readConfig({
+    ...developmentEnv,
+    EMAIL_DRIVER: 'log',
+    EMAIL_FROM: 'Blogpost <no-reply@example.com>',
+    EMAIL_PAYLOAD_KEY: '7'.repeat(64),
+  });
+  const written: string[] = [];
+  const original = process.stdout.write.bind(process.stdout);
+  process.stdout.write = ((chunk: string) => {
+    written.push(String(chunk));
+    return true;
+  }) as typeof process.stdout.write;
+  let result;
+  try {
+    result = await new ConfiguredEmailGateway(config).send(
+      {
+        ...renderInvitationEmail(payload, 'new@example.com'),
+        to: 'new@example.com',
+        replyTo: null,
+        idempotencyKey: '11111111-1111-4111-8111-111111111111',
+      },
+      1000,
+    );
+  } finally {
+    process.stdout.write = original;
+  }
+  assert.equal(result.ok, true);
+  const event = JSON.parse(written.join('').trim());
+  assert.equal(event.event, 'development_invitation_email');
+  assert.equal(event.to, 'new@example.com');
+  assert.ok(event.text.includes(payload.inviteUrl));
+});

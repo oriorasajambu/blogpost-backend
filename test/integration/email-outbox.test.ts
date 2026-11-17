@@ -216,3 +216,32 @@ test('revoked invitations are cancelled and abandoned final attempts fail', asyn
     1,
   );
 });
+
+test('an attempt whose lease was taken over cannot overwrite the newer attempt', async () => {
+  let outbox!: EmailOutboxService;
+  let id = '';
+  // While this attempt is sending, its lease "expires" and a newer claim bumps the attempt count.
+  const gateway = new ScriptedGateway(() => ({
+    ok: true,
+    providerMessageId: 'late',
+  }));
+  const original = gateway.send.bind(gateway);
+  gateway.send = async (email) => {
+    await prisma.emailOutbox.update({
+      where: { id },
+      data: {
+        attempts: { increment: 1 },
+        lockedUntil: new Date(Date.now() + 60_000),
+      },
+    });
+    return original(email);
+  };
+  outbox = service(gateway);
+  id = await queue(outbox, await invitation());
+  await outbox.sendNow(id, 'c'.repeat(32));
+  const row = await prisma.emailOutbox.findUniqueOrThrow({ where: { id } });
+  assert.equal(row.status, 'SENDING');
+  assert.equal(row.attempts, 2);
+  assert.ok(row.payloadCiphertext);
+  assert.equal(row.providerMessageId, null);
+});

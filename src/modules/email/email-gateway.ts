@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { APP_CONFIG, type AppConfig } from '../../platform/config/config.js';
 import type { RenderedEmail } from './invitation-email.js';
 
@@ -29,16 +29,22 @@ export function classifyStatus(status: number): SendResult {
 
 @Injectable()
 export class ConfiguredEmailGateway implements EmailGateway {
-  private readonly logger = new Logger('EmailGateway');
   constructor(@Inject(APP_CONFIG) private readonly config: AppConfig) {}
   async send(email: OutgoingEmail, timeoutMs: number): Promise<SendResult> {
     const settings = this.config.email;
     if (!settings)
       return { ok: false, retryable: false, code: 'EMAIL_DISABLED' };
     if (settings.driver === 'log') {
-      // Development only (config rejects it in the cloud): the email, link included, goes to the local log.
-      this.logger.log(
-        `Invitation email to ${email.to}\nSubject: ${email.subject}\n\n${email.text}`,
+      // Development only (config rejects it in the cloud): the email, link included, goes to
+      // stdout. Nest's logger is disabled in createApp, so write to the stream directly.
+      process.stdout.write(
+        `${JSON.stringify({
+          severity: 'INFO',
+          event: 'development_invitation_email',
+          to: email.to,
+          subject: email.subject,
+          text: email.text,
+        })}\n`,
       );
       return { ok: true, providerMessageId: `log-${email.idempotencyKey}` };
     }
