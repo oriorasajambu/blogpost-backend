@@ -82,7 +82,8 @@ function emailConfig(
     throw new Error('Invalid EMAIL_PAYLOAD_KEY');
   const resendApiKey =
     driver === 'resend' ? required(env, 'RESEND_API_KEY') : null;
-  if (resendApiKey !== null && !/^re_[A-Za-z0-9_]{8,200}$/.test(resendApiKey))
+  // Resend keys start with re_; beyond that, only require a bounded single printable token.
+  if (resendApiKey !== null && !/^re_[!-~]{8,256}$/.test(resendApiKey))
     throw new Error('Invalid RESEND_API_KEY');
   if (driver === 'log' && env.RESEND_API_KEY)
     throw new Error('The log email driver must not receive RESEND_API_KEY');

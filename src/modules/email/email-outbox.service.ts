@@ -265,7 +265,7 @@ export class EmailOutboxService {
         ...renderInvitationEmail(payload, row.toEmail),
         to: row.toEmail,
         replyTo: payload.inviterEmail || null,
-        idempotencyKey: `invitation-email/${row.id}`,
+        idempotencyKey: row.id,
       },
       timeoutMs,
     );

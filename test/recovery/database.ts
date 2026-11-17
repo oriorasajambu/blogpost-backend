@@ -72,8 +72,9 @@ assert.deepEqual(
     '202611160006_email_outbox',
   ],
 );
+// MaintenanceCheckpoint is job state; EmailOutbox arrives with the rehearsed (newest) migration.
 const tables = [...APP_TABLES]
-  .filter((name) => name !== 'MaintenanceCheckpoint')
+  .filter((name) => !['MaintenanceCheckpoint', 'EmailOutbox'].includes(name))
   .sort();
 const ids = {
   post: '30000000-0000-4000-8000-000000000001',
@@ -435,7 +436,7 @@ try {
       'prisma/migrations/migration_lock.toml',
       prefix + '/migration_lock.toml',
     );
-    for (const item of manifest.slice(0, 4)) {
+    for (const item of manifest.slice(0, -1)) {
       await mkdir(prefix + '/' + item.id);
       await copyFile(
         'prisma/migrations/' + item.id + '/migration.sql',
@@ -444,7 +445,7 @@ try {
     }
     assert.deepEqual(
       await migrationManifest(pathToFileURL(prefix + '/')),
-      manifest.slice(0, 4),
+      manifest.slice(0, -1),
     );
     await writeFile(
       path + '/prefix.config.ts',
@@ -631,8 +632,8 @@ try {
             runId,
             artifact: readProvenance(),
             predecessor: {
-              migrationIds: manifest.slice(0, 4).map((item) => item.id),
-              migrationDigest: digest(manifest.slice(0, 4)),
+              migrationIds: manifest.slice(0, -1).map((item) => item.id),
+              migrationDigest: digest(manifest.slice(0, -1)),
               dataDigest: state.before.dataDigest,
               counts: state.before.counts,
               columns: state.before.columns,

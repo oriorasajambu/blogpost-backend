@@ -9,7 +9,7 @@ Staff invitations can be emailed through [Resend](https://resend.com/docs/api-re
 - Cloud Scheduler calls `POST /internal/email-outbox/dispatch` every 2 minutes. It retries due rows with backoff of 1 minute, 5 minutes, 15 minutes, 1 hour and 6 hours, for at most 6 attempts in total. Rows are claimed with `FOR UPDATE SKIP LOCKED`, so the request-time attempt and the sweep never send the same row twice.
   - A 429, a 5xx or a network error is retried.
   - Any other provider response is final.
-  - Each send carries an `Idempotency-Key` derived from the row ID.
+  - Each send carries the row ID as its `Idempotency-Key`.
 - When a row reaches a final state (sent, failed or cancelled), its ciphertext is wiped. Reissue, revoke and acceptance cancel pending rows. Rows are deleted with their invitation when the daily maintenance job removes expired invitations.
 - A final failure writes `INVITATION_EMAIL_FAILED` to the staff audit log. The entry holds the error code and attempt count, never the link, and its actor is the issuing administrator.
 - One email per recipient per 60 seconds. A faster create or reissue for the same address returns `429 RATE_LIMITED` with `Retry-After`.
@@ -45,7 +45,7 @@ Staff invitations can be emailed through [Resend](https://resend.com/docs/api-re
    - Auth header: OIDC token, service account from step 3, audience equal to `dispatchAudience`.
    - The endpoint answers `404` to anything except a valid Google-signed token for that audience and account.
 7. **Smoke test:**
-   1. Invite an address you control and receive the email.
+   1. Invite an address you control. The receipt must say **Emailed to …** (the first send succeeded and Resend returned a message ID), and the email must arrive.
    2. Check that the link is not rewritten, and accept it.
    3. Resend the invitation and confirm the old link returns `410`.
 

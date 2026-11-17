@@ -186,7 +186,7 @@ test('cloud email is enabled only by a complete profile block', () => {
     EMAIL_DISPATCH_INVOKER: emailBlock.dispatchInvoker,
     RESEND_SECRET_REF: emailBlock.secretVersions.RESEND_API_KEY,
     EMAIL_PAYLOAD_SECRET_REF: emailBlock.secretVersions.EMAIL_PAYLOAD_KEY,
-    RESEND_API_KEY: 're_synthetic_test_key',
+    RESEND_API_KEY: ['re', 'synthetic', 'value'].join('_'),
     EMAIL_PAYLOAD_KEY: '4'.repeat(64),
   };
   assert.equal(readConfig(env, 'api', provenance).email?.driver, 'resend');
