@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "exceptions": [
+    {
+      "prefix": "docker/auth",
+      "advisory": "GHSA-fc5q-39xc-vjpf",
+      "package": "picomatch",
+      "reason": "ReDoS in picomatch <=4.0.7 with no patched release; reached only through firebase-tools in the dev/CI-only Auth emulator image, which never ships or handles untrusted globs.",
+      "expires": "2027-01-18"
+    }
+  ]
+}
