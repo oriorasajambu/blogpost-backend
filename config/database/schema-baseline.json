@@ -1993,7 +1993,7 @@
       {
         "deferrable": false,
         "deferred": false,
-        "definition": "CHECK ((status::text = ANY (ARRAY['QUEUED'::character varying, 'SENDING'::character varying]::text[])) = (\"payloadCiphertext\" IS NOT NULL) AND (\"payloadCiphertext\" IS NULL OR octet_length(\"payloadCiphertext\") >= 29 AND octet_length(\"payloadCiphertext\") <= 8192))",
+        "definition": "CHECK ((status::text = ANY (ARRAY['QUEUED'::text, 'SENDING'::text])) = (\"payloadCiphertext\" IS NOT NULL) AND (\"payloadCiphertext\" IS NULL OR octet_length(\"payloadCiphertext\") >= 29 AND octet_length(\"payloadCiphertext\") <= 8192))",
         "kind": "c",
         "name": "email_outbox_payload",
         "relation": "EmailOutbox",
@@ -2236,7 +2236,7 @@
       {
         "deferrable": false,
         "deferred": false,
-        "definition": "CHECK (kind::text = ANY (ARRAY['INVITATION'::character varying, 'VERIFY_EMAIL'::character varying, 'PASSWORD_RESET'::character varying, 'PASSWORD_SET'::character varying, 'PASSWORD_CHANGED_NOTICE'::character varying, 'EMAIL_CHANGE_VERIFY'::character varying, 'EMAIL_CHANGE_NOTICE'::character varying, 'ACCOUNT_EXISTS_NOTICE'::character varying]::text[]))",
+        "definition": "CHECK (kind::text = ANY (ARRAY['INVITATION'::text, 'VERIFY_EMAIL'::text, 'PASSWORD_RESET'::text, 'PASSWORD_SET'::text, 'PASSWORD_CHANGED_NOTICE'::text, 'EMAIL_CHANGE_VERIFY'::text, 'EMAIL_CHANGE_NOTICE'::text, 'ACCOUNT_EXISTS_NOTICE'::text]))",
         "kind": "c",
         "name": "email_outbox_kind",
         "relation": "EmailOutbox",
@@ -2308,7 +2308,7 @@
       {
         "deferrable": false,
         "deferred": false,
-        "definition": "CHECK (status::text = ANY (ARRAY['QUEUED'::character varying, 'SENDING'::character varying, 'SENT'::character varying, 'FAILED'::character varying, 'CANCELLED'::character varying]::text[]))",
+        "definition": "CHECK (status::text = ANY (ARRAY['QUEUED'::text, 'SENDING'::text, 'SENT'::text, 'FAILED'::text, 'CANCELLED'::text]))",
         "kind": "c",
         "name": "email_outbox_status",
         "relation": "EmailOutbox",
@@ -2908,7 +2908,7 @@
         "valid": true
       },
       {
-        "definition": "CREATE INDEX \"EmailOutbox_due_idx\" ON blogpost.\"EmailOutbox\" USING btree (\"nextAttemptAt\") WHERE ((status)::text = ANY ((ARRAY['QUEUED'::character varying, 'SENDING'::character varying])::text[]))",
+        "definition": "CREATE INDEX \"EmailOutbox_due_idx\" ON blogpost.\"EmailOutbox\" USING btree (\"nextAttemptAt\") WHERE ((status)::text = ANY (ARRAY['QUEUED'::text, 'SENDING'::text]))",
         "live": true,
         "name": "EmailOutbox_due_idx",
         "primary": false,
@@ -5392,9 +5392,9 @@
       }
     ]
   },
-  "migrationDigest": "454b0515974b57c36105984446992f9fa928d150c84b9c680bd8ac8630d5d608",
+  "migrationDigest": "67ff26aa0a4e5028cf885bcea8ff964a1b6e9cde43b6eb3586df19dfe70cf5f0",
   "permissionDigest": "26553da87c7db877746b44fb3de3f1b0cb4e37d62cd6e4f3a147d6fe5fb137fb",
   "postgresMajor": 17,
-  "schemaDigest": "f8134c741dcfd85455c26640fa8c42bad5c8d999e3e995b226a1116647c05a25",
+  "schemaDigest": "3cc13eda41c7c41690c6cac9ee18ac28d641ce6b5e60331900bbed70e88fc974",
   "schemaVersion": 1
 }

@@ -35,9 +35,23 @@ ALTER TABLE "EmailOutbox" ALTER COLUMN kind TYPE varchar(30);
 ALTER TABLE "EmailOutbox" ADD CONSTRAINT "EmailOutbox_memberId_fkey" FOREIGN KEY ("memberId")
   REFERENCES "Member" (id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "EmailOutbox" DROP CONSTRAINT email_outbox_kind;
-ALTER TABLE "EmailOutbox" ADD CONSTRAINT email_outbox_kind CHECK (kind IN (
-  'INVITATION', 'VERIFY_EMAIL', 'PASSWORD_RESET', 'PASSWORD_SET', 'PASSWORD_CHANGED_NOTICE',
-  'EMAIL_CHANGE_VERIFY', 'EMAIL_CHANGE_NOTICE', 'ACCOUNT_EXISTS_NOTICE'));
+-- The CHECKs and the partial index below list varchar values. Stated with text literals they deparse
+-- identically after a dump and restore (an IN list over a varchar column does not), so a restored
+-- database still matches the verified schema baseline. The earlier outbox objects are re-stated here.
+ALTER TABLE "EmailOutbox" ADD CONSTRAINT email_outbox_kind CHECK (kind::text = ANY (ARRAY[
+  'INVITATION'::text, 'VERIFY_EMAIL'::text, 'PASSWORD_RESET'::text, 'PASSWORD_SET'::text,
+  'PASSWORD_CHANGED_NOTICE'::text, 'EMAIL_CHANGE_VERIFY'::text, 'EMAIL_CHANGE_NOTICE'::text,
+  'ACCOUNT_EXISTS_NOTICE'::text]));
+ALTER TABLE "EmailOutbox" DROP CONSTRAINT email_outbox_status, DROP CONSTRAINT email_outbox_payload;
+ALTER TABLE "EmailOutbox"
+  ADD CONSTRAINT email_outbox_status CHECK (status::text = ANY (ARRAY[
+    'QUEUED'::text, 'SENDING'::text, 'SENT'::text, 'FAILED'::text, 'CANCELLED'::text])),
+  ADD CONSTRAINT email_outbox_payload CHECK (
+    (status::text = ANY (ARRAY['QUEUED'::text, 'SENDING'::text])) = ("payloadCiphertext" IS NOT NULL)
+    AND ("payloadCiphertext" IS NULL OR octet_length("payloadCiphertext") BETWEEN 29 AND 8192));
+DROP INDEX "EmailOutbox_due_idx";
+CREATE INDEX "EmailOutbox_due_idx" ON "EmailOutbox" ("nextAttemptAt")
+  WHERE status::text = ANY (ARRAY['QUEUED'::text, 'SENDING'::text]);
 ALTER TABLE "EmailOutbox" ADD CONSTRAINT email_outbox_owner CHECK (
   (kind = 'INVITATION' AND "invitationId" IS NOT NULL AND "memberId" IS NULL)
   OR (kind <> 'INVITATION' AND "invitationId" IS NULL AND "memberId" IS NOT NULL));
