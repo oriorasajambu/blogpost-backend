@@ -9,7 +9,6 @@ import com.blogpost.contract.generated.model.InvitationStatus
 import com.blogpost.contract.generated.model.ListAuditEventsEnvelope
 import com.blogpost.contract.generated.model.ListInvitationsEnvelope
 import com.blogpost.contract.generated.model.ListMembersEnvelope
-import com.blogpost.contract.generated.model.MemberStatus
 import com.blogpost.contract.generated.model.ReassignAuthorInput
 import com.blogpost.contract.generated.model.ReassignPostAuthorEnvelope
 import com.blogpost.contract.generated.model.ReissueInvitationEnvelope
@@ -108,6 +107,22 @@ interface AdminApi {
 ): Response<WirePayload<ListInvitationsEnvelope>>
 
 
+    /** Supported values for memberStatus. Unknown values are never selected for a write. */
+    enum class MemberStatusListMembers(val value: kotlin.String) {
+
+        @SerializedName(value = "ALL") ALL("ALL"),
+
+        @SerializedName(value = "PENDING") PENDING("PENDING"),
+
+        @SerializedName(value = "ACTIVE") ACTIVE("ACTIVE"),
+
+        @SerializedName(value = "DISABLED") DISABLED("DISABLED"),
+
+        @SerializedName(value = "unknown_default_open_api") UNKNOWN_DEFAULT_OPEN_API("unknown_default_open_api");
+
+        override fun toString(): String = value.toString()
+    }
+
     /** GET v1/admin/members; decode through the validated wire boundary. */
     @WireOperation("listMembers")
 
@@ -122,7 +137,7 @@ interface AdminApi {
 , @Query("pageSize") pageSize: kotlin.Int? = 20
 , @Query("role") role: Role? = null
 , @Query("active") active: kotlin.Boolean? = null
-, @Query("memberStatus") memberStatus: MemberStatus? = null
+, @Query("memberStatus") memberStatus: MemberStatusListMembers? = MemberStatusListMembers.ALL
 ): Response<WirePayload<ListMembersEnvelope>>
 
 

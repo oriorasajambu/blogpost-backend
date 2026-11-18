@@ -9001,7 +9001,13 @@ paths:
           in: query
           required: false
           schema:
-            $ref: '#/components/schemas/MemberStatus'
+            type: string
+            enum:
+              - ALL
+              - PENDING
+              - ACTIVE
+              - DISABLED
+            default: ALL
       security:
         - IdentityPlatformToken: []
         - WebSession: []

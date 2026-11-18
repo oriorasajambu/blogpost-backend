@@ -48,7 +48,7 @@ export class AdminMembersService {
       const rows = await tx.member.findMany({
         where: {
           ...filters,
-          ...(memberStatus
+          ...(memberStatus && memberStatus !== 'ALL'
             ? { status: memberStatus as MemberStatusValue }
             : {}),
           ...afterCursor(point),

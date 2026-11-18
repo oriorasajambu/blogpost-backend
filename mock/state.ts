@@ -1048,7 +1048,9 @@ export class MockState {
           (member) =>
             (!query.role || member.role === query.role) &&
             (query.active === undefined || member.active === query.active) &&
-            (!query.memberStatus || member.status === query.memberStatus),
+            (!query.memberStatus ||
+              query.memberStatus === 'ALL' ||
+              member.status === query.memberStatus),
         ),
         query,
         id,

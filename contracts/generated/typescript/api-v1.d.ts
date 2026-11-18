@@ -3341,7 +3341,7 @@ export interface operations {
       readonly query?: {
         readonly active?: boolean;
         readonly cursor?: string;
-        readonly memberStatus?: components['schemas']['MemberStatus'];
+        readonly memberStatus?: 'ALL' | 'PENDING' | 'ACTIVE' | 'DISABLED';
         readonly pageSize?: number;
         readonly role?: components['schemas']['Role'];
       };

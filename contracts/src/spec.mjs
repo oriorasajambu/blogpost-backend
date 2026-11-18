@@ -158,7 +158,10 @@ export function operationParameters(operation) {
     result.push(
       query('role', ref('Role')),
       query('active', bool),
-      query('memberStatus', ref('MemberStatus')),
+      query('memberStatus', {
+        ...enumeration('ALL', 'PENDING', 'ACTIVE', 'DISABLED'),
+        default: 'ALL',
+      }),
     );
   if (operation.invitations)
     result.push(query('status', ref('InvitationStatus')));

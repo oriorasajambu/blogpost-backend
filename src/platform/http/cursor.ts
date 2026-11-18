@@ -45,7 +45,7 @@ export interface CursorPagination {
 const choices = {
   role: ['AUTHOR', 'EDITOR', 'ADMIN'],
   status: ['PENDING', 'ACCEPTED', 'REVOKED', 'EXPIRED'],
-  memberStatus: ['PENDING', 'ACTIVE', 'DISABLED'],
+  memberStatus: ['ALL', 'PENDING', 'ACTIVE', 'DISABLED'],
   scope: ['OWN', 'ALL'],
   publicationState: ['NEVER_PUBLISHED', 'PUBLISHED', 'WITHDRAWN'],
   workflowState: ['DRAFT', 'IN_REVIEW', 'CHANGES_REQUESTED', 'CLEAN'],
