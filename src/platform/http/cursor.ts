@@ -89,7 +89,9 @@ export function cursorQuery(
         )
       )
         return invalidInput('/' + key, 'query');
-      filters[key] = value;
+      // ALL is the declared default: it is the same request as omitting the filter, so it must
+      // bind to the same cursor.
+      if (key !== 'memberStatus' || value !== 'ALL') filters[key] = value;
     } else if (key === 'subjectId')
       filters[key] = uuidInput(value, key, 'query');
     else {

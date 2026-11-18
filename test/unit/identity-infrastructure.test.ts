@@ -62,6 +62,25 @@ test('cursor pagination binds user/route/normalized filters and survives separat
     other.decode('uid-a', '/v1/admin/members', same, now + 1),
     rows[19],
   );
+  // memberStatus=ALL is the default, so it binds to the same cursor as omitting the filter.
+  const explicit = cursorQuery(
+    queryRequest(
+      '/v1/admin/members?role=EDITOR&active=false&memberStatus=ALL&cursor=' +
+        page.pagination.nextCursor,
+    ),
+    ['role', 'active', 'memberStatus'],
+  );
+  assert.deepEqual(explicit.filters, same.filters);
+  assert.deepEqual(
+    other.decode('uid-a', '/v1/admin/members', explicit, now + 1),
+    rows[19],
+  );
+  assert.equal(
+    cursorQuery(queryRequest('/v1/admin/members?memberStatus=PENDING'), [
+      'memberStatus',
+    ]).filters.memberStatus,
+    'PENDING',
+  );
   assert.throws(
     () => other.decode('uid-b', '/v1/admin/members', same, now + 1),
     errorCode('INVALID_CURSOR'),
