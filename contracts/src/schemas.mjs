@@ -443,6 +443,41 @@ export const schemas = {
     },
     ['email', 'password'],
   ),
+  ForgotPasswordInput: input(
+    {
+      email: { ...text(320, 3), format: 'email' },
+      captchaToken: text(2048, 1),
+    },
+    ['email'],
+  ),
+  ResetPasswordInput: input({
+    code: {
+      ...text(512, 16),
+      pattern: '^[A-Za-z0-9_-]{16,512}$',
+      description: 'One-time code from the reset email link.',
+    },
+    password: {
+      ...text(128, 12),
+      description:
+        'At least 12 and at most 128 characters; checked against known breaches.',
+    },
+  }),
+  ChangePasswordInput: input({
+    idToken: {
+      ...text(65536, 1),
+      description:
+        'Fresh identity token from entering the current password; proves recent authentication.',
+    },
+    newPassword: text(128, 12),
+  }),
+  RequestEmailChangeInput: input({
+    idToken: {
+      ...text(65536, 1),
+      description:
+        'Fresh identity token from entering the current password; proves recent authentication.',
+    },
+    newEmail: { ...text(320, 3), format: 'email' },
+  }),
   ResendVerificationInput: input(
     {
       email: { ...text(320, 3), format: 'email' },

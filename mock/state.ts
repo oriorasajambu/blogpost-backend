@@ -694,6 +694,29 @@ export class MockState {
         fail(422, 'CAPTCHA_FAILED');
       return { data: { status: 'ACCEPTED' } };
     }
+    if (id === 'forgotPassword') {
+      if (actorId !== undefined) fail(400, 'AMBIGUOUS_CREDENTIALS');
+      if (body.captchaToken === 'mock-captcha-fail')
+        fail(422, 'CAPTCHA_FAILED');
+      return { data: { status: 'ACCEPTED' } };
+    }
+    if (id === 'resetPassword') {
+      if (actorId !== undefined) fail(400, 'AMBIGUOUS_CREDENTIALS');
+      // The real API rejects expired, used and unknown codes the same way.
+      if ((body.code as string).startsWith('mock-expired-'))
+        fail(422, 'VALIDATION_FAILED');
+      return { data: { status: 'ACCEPTED' } };
+    }
+    if (id === 'changePassword' || id === 'requestEmailChange') {
+      if (!(body.idToken as string).startsWith('mock-'))
+        fail(401, 'INVALID_CREDENTIAL');
+      if ((body.idToken as string).startsWith('mock-stale-'))
+        fail(401, 'AUTHENTICATION_EXPIRED');
+      if (this.identify(body.idToken as string) !== actor!.id)
+        fail(403, 'INSUFFICIENT_PERMISSION');
+      this.throttle(actor!.id, id);
+      return { data: { status: 'ACCEPTED' } };
+    }
     if (id === 'getMe') return { data: this.me(actor!) };
     if (id === 'updateMe') {
       const displayName =

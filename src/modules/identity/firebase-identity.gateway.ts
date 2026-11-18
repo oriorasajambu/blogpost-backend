@@ -231,6 +231,61 @@ export class FirebaseIdentityGateway
       return code;
     });
   }
+  async resetPassword(code: string, password: string): Promise<string> {
+    const key = this.config.identityWebApiKey;
+    let base: string;
+    try {
+      this.client(); // enforces the emulator/project rules before any request
+      if (!key) throw dependency();
+      base = this.config.identityEmulatorHost
+        ? `http://${this.config.identityEmulatorHost}/identitytoolkit.googleapis.com`
+        : 'https://identitytoolkit.googleapis.com';
+    } catch (error) {
+      throw failure(error);
+    }
+    let response: Response;
+    try {
+      response = await fetch(
+        `${base}/v1/accounts:resetPassword?key=${encodeURIComponent(key)}`,
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ oobCode: code, newPassword: password }),
+          signal: AbortSignal.timeout(8000),
+        },
+      );
+    } catch {
+      throw dependency();
+    }
+    const body = (await response.json().catch(() => ({}))) as {
+      email?: unknown;
+      error?: { message?: unknown };
+    };
+    if (!response.ok) {
+      const message = String(body.error?.message ?? '');
+      const field = /^(INVALID|EXPIRED)_OOB_CODE/.test(message)
+        ? '/code'
+        : message.startsWith('WEAK_PASSWORD')
+          ? '/password'
+          : null;
+      if (field)
+        throw new ApiError(
+          422,
+          'VALIDATION_FAILED',
+          'Invalid input',
+          'Correct the indicated field.',
+          [{ location: 'body', field, code: 'INVALID_VALUE', params: {} }],
+        );
+      throw dependency();
+    }
+    if (typeof body.email !== 'string') throw dependency();
+    return body.email.trim().toLowerCase();
+  }
+  setPassword(uid: string, password: string): Promise<void> {
+    return this.execute(async (auth) => {
+      await auth.updateUser(uid, { password });
+    });
+  }
   deleteUser(uid: string): Promise<void> {
     return this.execute((auth) => auth.deleteUser(uid));
   }

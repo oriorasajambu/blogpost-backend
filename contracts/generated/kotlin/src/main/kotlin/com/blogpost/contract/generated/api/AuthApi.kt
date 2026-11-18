@@ -2,10 +2,14 @@ package com.blogpost.contract.generated.api
 
 import com.blogpost.contract.generated.model.CreateWebSessionEnvelope
 import com.blogpost.contract.generated.model.ErrorEnvelope
+import com.blogpost.contract.generated.model.ForgotPasswordEnvelope
+import com.blogpost.contract.generated.model.ForgotPasswordInput
 import com.blogpost.contract.generated.model.RegisterAccountEnvelope
 import com.blogpost.contract.generated.model.RegisterAccountInput
 import com.blogpost.contract.generated.model.ResendVerificationEmailEnvelope
 import com.blogpost.contract.generated.model.ResendVerificationInput
+import com.blogpost.contract.generated.model.ResetPasswordEnvelope
+import com.blogpost.contract.generated.model.ResetPasswordInput
 import com.blogpost.contract.generated.model.WebSessionInput
 import com.google.gson.annotations.SerializedName
 import com.blogpost.contract.wire.WireOperation
@@ -34,6 +38,20 @@ interface AuthApi {
 ): Response<WirePayload<CreateWebSessionEnvelope>>
 
 
+    /** POST v1/auth/forgot-password; decode through the validated wire boundary. */
+    @WireOperation("forgotPassword")
+
+    @POST("v1/auth/forgot-password")
+    suspend fun forgotPassword(@Header("X-Device-ID") xDeviceID: kotlin.String
+, @Header("X-Device-OS") xDeviceOS: kotlin.String
+, @Header("X-Device-Version") xDeviceVersion: kotlin.String
+, @Header("X-App-Version") xAppVersion: kotlin.String
+, @Header("X-App-Language") xAppLanguage: kotlin.String
+, @Body forgotPasswordInput: WireRequest<ForgotPasswordInput>
+, @Header("traceparent") traceparent: kotlin.String? = null
+): Response<WirePayload<ForgotPasswordEnvelope>>
+
+
     /** POST v1/auth/register; decode through the validated wire boundary. */
     @WireOperation("registerAccount")
 
@@ -60,5 +78,19 @@ interface AuthApi {
 , @Body resendVerificationInput: WireRequest<ResendVerificationInput>
 , @Header("traceparent") traceparent: kotlin.String? = null
 ): Response<WirePayload<ResendVerificationEmailEnvelope>>
+
+
+    /** POST v1/auth/reset-password; decode through the validated wire boundary. */
+    @WireOperation("resetPassword")
+
+    @POST("v1/auth/reset-password")
+    suspend fun resetPassword(@Header("X-Device-ID") xDeviceID: kotlin.String
+, @Header("X-Device-OS") xDeviceOS: kotlin.String
+, @Header("X-Device-Version") xDeviceVersion: kotlin.String
+, @Header("X-App-Version") xAppVersion: kotlin.String
+, @Header("X-App-Language") xAppLanguage: kotlin.String
+, @Body resetPasswordInput: WireRequest<ResetPasswordInput>
+, @Header("traceparent") traceparent: kotlin.String? = null
+): Response<WirePayload<ResetPasswordEnvelope>>
 
 }

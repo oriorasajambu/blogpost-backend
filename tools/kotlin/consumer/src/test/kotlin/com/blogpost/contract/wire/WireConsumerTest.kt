@@ -114,7 +114,7 @@ class WireConsumerTest {
             assertTrue("$id unexpectedly required fallback", success.safety.editingAllowed)
             count++
         }
-        assertEquals(52, count)
+        assertEquals(56, count)
     }
 
     @Test fun cursorAndPagePaginationRetainTheirDistinctGeneratedTypes() = runBlocking {
@@ -141,7 +141,7 @@ class WireConsumerTest {
                 ids += method.getAnnotation(WireOperation::class.java).id
             }
         }
-        assertEquals(54, ids.size)
+        assertEquals(58, ids.size)
         assertEquals(rules.keySet(), ids.toSet())
     }
 

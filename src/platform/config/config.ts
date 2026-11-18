@@ -31,6 +31,8 @@ export interface AppConfig {
   email: EmailConfig | null;
   /** Turnstile secret for public registration; null skips the check (development only). */
   captchaSecret: string | null;
+  /** Public web API key; lets the API complete a password reset against Identity Platform. */
+  identityWebApiKey: string | null;
   configurationDigest: string;
   runtimeInputDigest: string;
   build: BuildProvenance;
@@ -250,6 +252,14 @@ export function readConfig(
       : null;
   if (captchaSecret !== null && !/^[!-~]{8,256}$/.test(captchaSecret))
     throw new Error('Invalid TURNSTILE_SECRET_KEY');
+  if (cloud && env.IDENTITY_WEB_API_KEY)
+    throw new Error('The web API key requires a profile reference');
+  const identityWebApiKey =
+    !cloud && purpose === 'api'
+      ? env.IDENTITY_WEB_API_KEY?.trim() || null
+      : null;
+  if (identityWebApiKey !== null && !/^[!-~]{1,256}$/.test(identityWebApiKey))
+    throw new Error('Invalid IDENTITY_WEB_API_KEY');
   const port = Number(env.PORT ?? '8080');
   if (!Number.isInteger(port) || port < 1 || port > 65535)
     throw new Error('Invalid PORT');
@@ -288,6 +298,7 @@ export function readConfig(
     webOrigin,
     email,
     captchaSecret,
+    identityWebApiKey,
     configurationDigest,
     runtimeInputDigest,
     build,

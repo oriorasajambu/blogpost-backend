@@ -47,17 +47,17 @@ const validateSchema = (schema: Record<string, unknown>, value: unknown) => {
   assert.equal(validate(value), true, JSON.stringify(validate.errors));
 };
 
-test('all 54 planned application operation IDs have authored method/path entries', () => {
+test('all 58 planned application operation IDs have authored method/path entries', () => {
   const expected = [
     ...wirePlan.matchAll(
       /^\|\s+`((?:GET|POST|PUT|PATCH|DELETE) \/v1\/[^`]+)`[^\n]*\|\s+`([A-Za-z][A-Za-z0-9]+)`\s+\|$/gm,
     ),
   ].map((match) => ({ route: match[1]!, id: match[2]! }));
-  assert.equal(expected.length, 54);
+  assert.equal(expected.length, 58);
   assert.equal(inventory.length, expected.length);
   assert.equal(
     new Set(inventory.map((operation) => operation.operationId)).size,
-    54,
+    58,
   );
   for (const operation of expected) {
     const planned = inventory.find(

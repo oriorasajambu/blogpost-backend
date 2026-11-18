@@ -60,7 +60,8 @@ export type AnonymousAction =
   | 'RESEND_ALL'
   | 'RESEND_EMAIL'
   | 'FORGOT_ALL'
-  | 'FORGOT_EMAIL';
+  | 'FORGOT_EMAIL'
+  | 'RESET_ALL';
 /** Hash of an address or network address, so no raw value is stored in the rate-limit table. */
 export function subjectHash(action: AnonymousAction, value: string): string {
   return createHash('sha256')

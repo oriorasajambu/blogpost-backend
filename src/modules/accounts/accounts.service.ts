@@ -35,6 +35,9 @@ const ACCEPTED: Accepted = { status: 'ACCEPTED' };
 /** Per address and across the whole service, per hour. */
 const REGISTER_LIMITS = { perAddress: 5, overall: 300 } as const;
 const RESEND_LIMITS = { perAddress: 3, overall: 300 } as const;
+const FORGOT_LIMITS = { perAddress: 3, overall: 300 } as const;
+const RESET_OVERALL_PER_HOUR = 600;
+const CODE = /^[A-Za-z0-9_-]{16,512}$/;
 
 /**
  * Public account flows. Every outcome that depends on whether an address is already registered
@@ -62,6 +65,10 @@ export class AccountsService {
         this.config.captchaSecret !== null)
     );
   }
+  /** Completing a reset needs the API key as well as email delivery for the notice. */
+  get resetEnabled(): boolean {
+    return this.outbox.enabled && this.config.identityWebApiKey !== null;
+  }
   private assertEnabled(): void {
     if (!this.enabled)
       throw new ApiError(
@@ -79,7 +86,7 @@ export class AccountsService {
     }
   }
   private async allowed(
-    prefix: 'REGISTER' | 'RESEND',
+    prefix: 'REGISTER' | 'RESEND' | 'FORGOT',
     email: string,
     limits: { perAddress: number; overall: number },
   ): Promise<boolean> {
@@ -176,6 +183,104 @@ export class AccountsService {
     if (!(await this.allowed('RESEND', email, RESEND_LIMITS))) return ACCEPTED;
     const user = await this.gateway.findByEmail(email);
     if (user && !user.emailVerified) await this.existing(email, traceId);
+    return ACCEPTED;
+  }
+  /** Sends a reset link when the address has an enabled account; the answer never says whether it did. */
+  async forgotPassword(value: unknown, traceId: string): Promise<Accepted> {
+    this.assertEnabled();
+    const body = objectInput(value, ['email', 'captchaToken'], ['email']);
+    const email = this.email(body.email);
+    await this.captcha.assert(body.captchaToken, null);
+    if (!(await this.allowed('FORGOT', email, FORGOT_LIMITS))) return ACCEPTED;
+    const user = await this.gateway.findByEmail(email);
+    if (!user) return ACCEPTED;
+    const member = await this.database.prisma.member.findUnique({
+      where: { identityUid: user.uid },
+      select: { id: true, status: true },
+    });
+    if (!member || member.status === 'DISABLED') return ACCEPTED;
+    const code = await this.gateway.actionCode('PASSWORD_RESET', email);
+    const outboxId = await this.database.prisma.$transaction(
+      async (tx) => this.queue(tx, member.id, 'PASSWORD_RESET', email, code),
+      { maxWait: 3000, timeout: 5000 },
+    );
+    if (outboxId) await this.outbox.sendNow(outboxId, traceId);
+    return ACCEPTED;
+  }
+  /**
+   * Completes a reset. The new password is checked against known breaches here, which is why the
+   * browser never calls the provider's reset endpoint itself. Every session is revoked afterwards.
+   */
+  async resetPassword(value: unknown, traceId: string): Promise<Accepted> {
+    if (!this.resetEnabled)
+      throw new ApiError(
+        503,
+        'DEPENDENCY_UNAVAILABLE',
+        'Password reset unavailable',
+        'Password reset is not available yet.',
+      );
+    const body = objectInput(value, ['code', 'password'], ['code', 'password']);
+    if (typeof body.code !== 'string' || !CODE.test(body.code))
+      return invalidInput('/code');
+    const password = checkedPassword(body.password);
+    await this.breach.assertNotBreached(password);
+    try {
+      const allowed = await this.database.prisma.$transaction(
+        async (tx) =>
+          consumeAnonymousRate(
+            tx,
+            'RESET_ALL',
+            'all',
+            await transactionTime(tx),
+            RESET_OVERALL_PER_HOUR,
+          ),
+        { maxWait: 3000, timeout: 5000 },
+      );
+      if (!allowed)
+        throw new ApiError(
+          429,
+          'RATE_LIMITED',
+          'Too many operations',
+          'Wait before starting another operation.',
+          [],
+          null,
+          60,
+        );
+    } catch (error) {
+      return databaseFailure(error);
+    }
+    const email = await this.gateway.resetPassword(body.code, password);
+    const user = await this.gateway.findByEmail(email);
+    if (!user) return ACCEPTED;
+    await this.gateway.revokeSessions(user.uid);
+    const member = await this.database.prisma.member.findUnique({
+      where: { identityUid: user.uid },
+      select: { id: true },
+    });
+    if (!member) return ACCEPTED;
+    const outboxId = await this.database.prisma.$transaction(
+      async (tx) => {
+        await tx.auditEvent.create({
+          data: {
+            actorId: member.id,
+            action: 'PASSWORD_RESET',
+            subjectType: 'MEMBER',
+            subjectId: member.id,
+            changes: {},
+            traceId,
+          },
+        });
+        return this.queue(
+          tx,
+          member.id,
+          'PASSWORD_CHANGED_NOTICE',
+          email,
+          null,
+        );
+      },
+      { maxWait: 3000, timeout: 5000 },
+    );
+    if (outboxId) await this.outbox.sendNow(outboxId, traceId);
     return ACCEPTED;
   }
   /**

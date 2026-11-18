@@ -12,6 +12,8 @@ export function identityThrottle(clock: () => number = Date.now) {
         '/v1/invitations/accept',
         '/v1/auth/register',
         '/v1/auth/verify-email/resend',
+        '/v1/auth/forgot-password',
+        '/v1/auth/reset-password',
       ].includes(route)
     )
       return next();

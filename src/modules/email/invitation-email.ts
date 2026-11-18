@@ -85,7 +85,7 @@ export function renderInvitationEmail(
     'Accept the invitation:',
     payload.inviteUrl,
     '',
-    `Sign in with the Google account for ${recipient}. Other accounts cannot use this invitation.`,
+    `Sign in with the verified account for ${recipient}. Other accounts cannot use this invitation.`,
     `The link works once and expires on ${expires} (Asia/Jakarta).`,
     '',
     "If you weren't expecting this invitation, you can ignore this email.",
@@ -102,7 +102,7 @@ export function renderInvitationEmail(
 <p style="margin:0 0 16px;font-size:15px;line-height:1.5">${escapeHtml(inviter)} invited you to join the Blogpost Studio as ${role}.</p>
 <p style="margin:0 0 24px"><a href="${url}" style="display:inline-block;padding:12px 20px;border-radius:8px;background:#5b4bdb;color:#ffffff;text-decoration:none;font-weight:bold">Accept invitation</a></p>
 <p style="${muted}">Or open this link:<br><a href="${url}" style="color:#5b4bdb;word-break:break-all">${url}</a></p>
-<p style="${muted}">Sign in with the Google account for <strong>${escapeHtml(recipient)}</strong>. Other accounts cannot use this invitation.</p>
+<p style="${muted}">Sign in with the verified account for <strong>${escapeHtml(recipient)}</strong>. Other accounts cannot use this invitation.</p>
 <p style="${muted}">The link works once and expires on ${escapeHtml(expires)} (Asia/Jakarta).</p>
 <p style="margin:16px 0 0;font-size:13px;line-height:1.5;color:#777">If you weren't expecting this invitation, you can ignore this email.</p>
 </td></tr></table>

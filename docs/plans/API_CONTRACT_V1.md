@@ -458,8 +458,12 @@ Public taxonomy includes active entries plus archived entries still referenced b
 | `POST /v1/auth/web-session`         | Recent token in body; no K                                   | `WebSession`             | `createWebSession`        |
 | `POST /v1/auth/register`            | Anonymous, server proxy only; email, password, captcha; no K | `AccountRequestAccepted` | `registerAccount`         |
 | `POST /v1/auth/verify-email/resend` | Anonymous, server proxy only; email, captcha; no K           | `AccountRequestAccepted` | `resendVerificationEmail` |
+| `POST /v1/auth/forgot-password`     | Anonymous, server proxy only; email, captcha; no K           | `AccountRequestAccepted` | `forgotPassword`          |
+| `POST /v1/auth/reset-password`      | Anonymous, server proxy only; code, password; no K           | `AccountRequestAccepted` | `resetPassword`           |
 | `GET /v1/me`                        | Active member                                                | `Me`                     | `getMe`                   |
 | `PATCH /v1/me`                      | Active member; V,K; displayName/bio                          | `Me`                     | `updateMe`                |
+| `POST /v1/me/password`              | Active member; fresh token, new password; no K               | `AccountRequestAccepted` | `changePassword`          |
+| `POST /v1/me/email-change`          | Active member; fresh token, new email; no K                  | `AccountRequestAccepted` | `requestEmailChange`      |
 | `POST /v1/invitations/accept`       | Verified identity; K; `{token}`                              | `Me`                     | `acceptInvitation`        |
 
 Session exchange input is `{idToken}` and checks recent authentication within five minutes. `WebSession` is server-proxy-only and contains `sessionCookie`, `expiresAt`, and `member`. Never expose it to browser JSON/storage. The session lasts five days.

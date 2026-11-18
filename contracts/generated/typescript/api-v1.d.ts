@@ -159,6 +159,22 @@ export interface paths {
     readonly patch: operations['reassignPostAuthor'];
     readonly trace?: never;
   };
+  readonly '/v1/auth/forgot-password': {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    readonly post: operations['forgotPassword'];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
   readonly '/v1/auth/register': {
     readonly parameters: {
       readonly query?: never;
@@ -169,6 +185,22 @@ export interface paths {
     readonly get?: never;
     readonly put?: never;
     readonly post: operations['registerAccount'];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly '/v1/auth/reset-password': {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    readonly post: operations['resetPassword'];
     readonly delete?: never;
     readonly options?: never;
     readonly head?: never;
@@ -269,6 +301,38 @@ export interface paths {
     readonly options?: never;
     readonly head?: never;
     readonly patch: operations['updateMe'];
+    readonly trace?: never;
+  };
+  readonly '/v1/me/email-change': {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    readonly post: operations['requestEmailChange'];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly '/v1/me/password': {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    readonly post: operations['changePassword'];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
     readonly trace?: never;
   };
   readonly '/v1/meta': {
@@ -902,6 +966,32 @@ export interface components {
       readonly postId: string;
       readonly publishedRevisionId: string | null;
     } & unknown;
+    readonly ChangePasswordEnvelope: {
+      readonly data: components['schemas']['AccountRequestAccepted'];
+      readonly error: null;
+      readonly message: {
+        readonly descriptions: string;
+        readonly title: string;
+      };
+      readonly meta: {
+        /** @constant */
+        readonly contractVersion: '1.0.0';
+        readonly idempotency: null;
+        readonly pagination: null;
+      };
+      /** @constant */
+      readonly responseKey: 'SUCCESS';
+      /** @constant */
+      readonly statusCode: 202;
+      /** Format: date-time */
+      readonly timestamp: string;
+      readonly traceId: string;
+    };
+    readonly ChangePasswordInput: {
+      /** @description Fresh identity token from entering the current password; proves recent authentication. */
+      readonly idToken: string;
+      readonly newPassword: string;
+    };
     readonly ChangePostSlugEnvelope: {
       readonly data: components['schemas']['WorkspacePost'];
       readonly error: null;
@@ -1138,6 +1228,32 @@ export interface components {
       /** @enum {string} */
       readonly location: 'header' | 'path' | 'query' | 'body';
       readonly params: Record<string, never>;
+    };
+    readonly ForgotPasswordEnvelope: {
+      readonly data: components['schemas']['AccountRequestAccepted'];
+      readonly error: null;
+      readonly message: {
+        readonly descriptions: string;
+        readonly title: string;
+      };
+      readonly meta: {
+        /** @constant */
+        readonly contractVersion: '1.0.0';
+        readonly idempotency: null;
+        readonly pagination: null;
+      };
+      /** @constant */
+      readonly responseKey: 'SUCCESS';
+      /** @constant */
+      readonly statusCode: 202;
+      /** Format: date-time */
+      readonly timestamp: string;
+      readonly traceId: string;
+    };
+    readonly ForgotPasswordInput: {
+      readonly captchaToken?: string;
+      /** Format: email */
+      readonly email: string;
     };
     readonly GetInvitationEnvelope: {
       readonly data: components['schemas']['Invitation'];
@@ -1921,6 +2037,33 @@ export interface components {
       /** Format: uuid */
       readonly revisionId: string;
     };
+    readonly RequestEmailChangeEnvelope: {
+      readonly data: components['schemas']['AccountRequestAccepted'];
+      readonly error: null;
+      readonly message: {
+        readonly descriptions: string;
+        readonly title: string;
+      };
+      readonly meta: {
+        /** @constant */
+        readonly contractVersion: '1.0.0';
+        readonly idempotency: null;
+        readonly pagination: null;
+      };
+      /** @constant */
+      readonly responseKey: 'SUCCESS';
+      /** @constant */
+      readonly statusCode: 202;
+      /** Format: date-time */
+      readonly timestamp: string;
+      readonly traceId: string;
+    };
+    readonly RequestEmailChangeInput: {
+      /** @description Fresh identity token from entering the current password; proves recent authentication. */
+      readonly idToken: string;
+      /** Format: email */
+      readonly newEmail: string;
+    };
     readonly ResendVerificationEmailEnvelope: {
       readonly data: components['schemas']['AccountRequestAccepted'];
       readonly error: null;
@@ -1946,6 +2089,33 @@ export interface components {
       readonly captchaToken?: string;
       /** Format: email */
       readonly email: string;
+    };
+    readonly ResetPasswordEnvelope: {
+      readonly data: components['schemas']['AccountRequestAccepted'];
+      readonly error: null;
+      readonly message: {
+        readonly descriptions: string;
+        readonly title: string;
+      };
+      readonly meta: {
+        /** @constant */
+        readonly contractVersion: '1.0.0';
+        readonly idempotency: null;
+        readonly pagination: null;
+      };
+      /** @constant */
+      readonly responseKey: 'SUCCESS';
+      /** @constant */
+      readonly statusCode: 202;
+      /** Format: date-time */
+      readonly timestamp: string;
+      readonly traceId: string;
+    };
+    readonly ResetPasswordInput: {
+      /** @description One-time code from the reset email link. */
+      readonly code: string;
+      /** @description At least 12 and at most 128 characters; checked against known breaches. */
+      readonly password: string;
     };
     readonly ResolvePublicPostSlugEnvelope: {
       readonly data: components['schemas']['SlugResolution'];
@@ -3371,6 +3541,60 @@ export interface operations {
       readonly 504: components['responses']['Error504'];
     };
   };
+  readonly forgotPassword: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header: {
+        /** @description W3C trace context. Invalid/all-zero context is replaced, never used for authorization. */
+        readonly traceparent?: components['parameters']['Traceparent'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. One well-formed BCP 47 language tag, including valid unsupported languages. */
+        readonly 'X-App-Language': components['parameters']['X-App-Language'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. Strict SemVer with optional build metadata. */
+        readonly 'X-App-Version': components['parameters']['X-App-Version'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-ID': components['parameters']['X-Device-ID'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-OS': components['parameters']['X-Device-OS'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-Version': components['parameters']['X-Device-Version'];
+      };
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['ForgotPasswordInput'];
+      };
+    };
+    readonly responses: {
+      /** @description AccountRequestAccepted */
+      readonly 202: {
+        headers: {
+          readonly 'Cache-Control'?: 'no-store';
+          readonly 'X-API-Contract-Version'?: '1.0.0';
+          readonly 'X-Content-Type-Options'?: 'nosniff';
+          /** @description Matches the envelope traceId. */
+          readonly 'X-Trace-ID'?: string;
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly 'application/json': components['schemas']['ForgotPasswordEnvelope'];
+        };
+      };
+      readonly 400: components['responses']['Error400'];
+      readonly 401: components['responses']['Error401'];
+      readonly 404: components['responses']['Error404'];
+      readonly 405: components['responses']['Error405'];
+      readonly 410: components['responses']['Error410'];
+      readonly 413: components['responses']['Error413'];
+      readonly 415: components['responses']['Error415'];
+      readonly 422: components['responses']['Error422'];
+      readonly 429: components['responses']['Error429'];
+      readonly 500: components['responses']['Error500'];
+      readonly 503: components['responses']['Error503'];
+      readonly 504: components['responses']['Error504'];
+    };
+  };
   readonly registerAccount: {
     readonly parameters: {
       readonly query?: never;
@@ -3409,6 +3633,60 @@ export interface operations {
         };
         content: {
           readonly 'application/json': components['schemas']['RegisterAccountEnvelope'];
+        };
+      };
+      readonly 400: components['responses']['Error400'];
+      readonly 401: components['responses']['Error401'];
+      readonly 404: components['responses']['Error404'];
+      readonly 405: components['responses']['Error405'];
+      readonly 410: components['responses']['Error410'];
+      readonly 413: components['responses']['Error413'];
+      readonly 415: components['responses']['Error415'];
+      readonly 422: components['responses']['Error422'];
+      readonly 429: components['responses']['Error429'];
+      readonly 500: components['responses']['Error500'];
+      readonly 503: components['responses']['Error503'];
+      readonly 504: components['responses']['Error504'];
+    };
+  };
+  readonly resetPassword: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header: {
+        /** @description W3C trace context. Invalid/all-zero context is replaced, never used for authorization. */
+        readonly traceparent?: components['parameters']['Traceparent'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. One well-formed BCP 47 language tag, including valid unsupported languages. */
+        readonly 'X-App-Language': components['parameters']['X-App-Language'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. Strict SemVer with optional build metadata. */
+        readonly 'X-App-Version': components['parameters']['X-App-Version'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-ID': components['parameters']['X-Device-ID'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-OS': components['parameters']['X-Device-OS'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-Version': components['parameters']['X-Device-Version'];
+      };
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['ResetPasswordInput'];
+      };
+    };
+    readonly responses: {
+      /** @description AccountRequestAccepted */
+      readonly 202: {
+        headers: {
+          readonly 'Cache-Control'?: 'no-store';
+          readonly 'X-API-Contract-Version'?: '1.0.0';
+          readonly 'X-Content-Type-Options'?: 'nosniff';
+          /** @description Matches the envelope traceId. */
+          readonly 'X-Trace-ID'?: string;
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly 'application/json': components['schemas']['ResetPasswordEnvelope'];
         };
       };
       readonly 400: components['responses']['Error400'];
@@ -3947,6 +4225,118 @@ export interface operations {
       readonly 415: components['responses']['Error415'];
       readonly 422: components['responses']['Error422'];
       readonly 428: components['responses']['Error428'];
+      readonly 429: components['responses']['Error429'];
+      readonly 500: components['responses']['Error500'];
+      readonly 503: components['responses']['Error503'];
+      readonly 504: components['responses']['Error504'];
+    };
+  };
+  readonly requestEmailChange: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header: {
+        /** @description W3C trace context. Invalid/all-zero context is replaced, never used for authorization. */
+        readonly traceparent?: components['parameters']['Traceparent'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. One well-formed BCP 47 language tag, including valid unsupported languages. */
+        readonly 'X-App-Language': components['parameters']['X-App-Language'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. Strict SemVer with optional build metadata. */
+        readonly 'X-App-Version': components['parameters']['X-App-Version'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-ID': components['parameters']['X-Device-ID'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-OS': components['parameters']['X-Device-OS'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-Version': components['parameters']['X-Device-Version'];
+      };
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['RequestEmailChangeInput'];
+      };
+    };
+    readonly responses: {
+      /** @description AccountRequestAccepted */
+      readonly 202: {
+        headers: {
+          readonly 'Cache-Control'?: 'no-store';
+          readonly 'X-API-Contract-Version'?: '1.0.0';
+          readonly 'X-Content-Type-Options'?: 'nosniff';
+          /** @description Matches the envelope traceId. */
+          readonly 'X-Trace-ID'?: string;
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly 'application/json': components['schemas']['RequestEmailChangeEnvelope'];
+        };
+      };
+      readonly 400: components['responses']['Error400'];
+      readonly 401: components['responses']['Error401'];
+      readonly 403: components['responses']['Error403'];
+      readonly 404: components['responses']['Error404'];
+      readonly 405: components['responses']['Error405'];
+      readonly 409: components['responses']['Error409'];
+      readonly 410: components['responses']['Error410'];
+      readonly 413: components['responses']['Error413'];
+      readonly 415: components['responses']['Error415'];
+      readonly 422: components['responses']['Error422'];
+      readonly 429: components['responses']['Error429'];
+      readonly 500: components['responses']['Error500'];
+      readonly 503: components['responses']['Error503'];
+      readonly 504: components['responses']['Error504'];
+    };
+  };
+  readonly changePassword: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header: {
+        /** @description W3C trace context. Invalid/all-zero context is replaced, never used for authorization. */
+        readonly traceparent?: components['parameters']['Traceparent'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. One well-formed BCP 47 language tag, including valid unsupported languages. */
+        readonly 'X-App-Language': components['parameters']['X-App-Language'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. Strict SemVer with optional build metadata. */
+        readonly 'X-App-Version': components['parameters']['X-App-Version'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-ID': components['parameters']['X-Device-ID'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-OS': components['parameters']['X-Device-OS'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-Version': components['parameters']['X-Device-Version'];
+      };
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['ChangePasswordInput'];
+      };
+    };
+    readonly responses: {
+      /** @description AccountRequestAccepted */
+      readonly 202: {
+        headers: {
+          readonly 'Cache-Control'?: 'no-store';
+          readonly 'X-API-Contract-Version'?: '1.0.0';
+          readonly 'X-Content-Type-Options'?: 'nosniff';
+          /** @description Matches the envelope traceId. */
+          readonly 'X-Trace-ID'?: string;
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly 'application/json': components['schemas']['ChangePasswordEnvelope'];
+        };
+      };
+      readonly 400: components['responses']['Error400'];
+      readonly 401: components['responses']['Error401'];
+      readonly 403: components['responses']['Error403'];
+      readonly 404: components['responses']['Error404'];
+      readonly 405: components['responses']['Error405'];
+      readonly 409: components['responses']['Error409'];
+      readonly 410: components['responses']['Error410'];
+      readonly 413: components['responses']['Error413'];
+      readonly 415: components['responses']['Error415'];
+      readonly 422: components['responses']['Error422'];
       readonly 429: components['responses']['Error429'];
       readonly 500: components['responses']['Error500'];
       readonly 503: components['responses']['Error503'];

@@ -1784,7 +1784,67 @@ test('registration answers identically for any address and rejects a failed capt
   );
 });
 
-test('every one of the 54 authored application operations has executed a schema-valid success', () => {
+test('password recovery and credential changes validate proof and never reveal accounts', async (t) => {
+  const { call } = setup(t);
+  const anonymous = (path: string, body: object, status = 202) =>
+    call('POST', path, body, undefined, undefined, null).then((response) =>
+      parse<DTO<'AccountRequestAccepted'>>(response, status),
+    );
+  assert.equal(
+    (
+      await anonymous('/v1/auth/forgot-password', {
+        email: 'anyone@example.test',
+      })
+    ).data.status,
+    'ACCEPTED',
+  );
+  await anonymous(
+    '/v1/auth/forgot-password',
+    { email: 'x@example.test', captchaToken: 'mock-captcha-fail' },
+    422,
+  );
+  const code = 'mock-valid-code-0123456789';
+  await anonymous('/v1/auth/reset-password', {
+    code,
+    password: 'a long enough passphrase',
+  });
+  await anonymous(
+    '/v1/auth/reset-password',
+    { code: 'mock-expired-0123456789', password: 'a long enough passphrase' },
+    422,
+  );
+  await anonymous('/v1/auth/reset-password', { code, password: 'short' }, 422);
+  const member = (path: string, body: object, status = 202, user = 'author') =>
+    call('POST', path, body, undefined, undefined, user).then((response) =>
+      parse<DTO<'AccountRequestAccepted'>>(response, status),
+    );
+  await member('/v1/me/password', {
+    idToken: 'mock-author',
+    newPassword: 'a long enough passphrase',
+  });
+  await member('/v1/me/email-change', {
+    idToken: 'mock-author',
+    newEmail: 'changed@example.test',
+  });
+  // Proof must be a fresh token for the signed-in account.
+  await member(
+    '/v1/me/password',
+    { idToken: 'mock-editor', newPassword: 'a long enough passphrase' },
+    403,
+  );
+  await member(
+    '/v1/me/email-change',
+    { idToken: 'mock-stale-author', newEmail: 'changed@example.test' },
+    401,
+  );
+  await member(
+    '/v1/me/email-change',
+    { idToken: 'mock-author', newEmail: 'not-an-email' },
+    422,
+  );
+});
+
+test('every one of the 58 authored application operations has executed a schema-valid success', () => {
   assert.equal(coverage('mock', exercisedOperations).complete, true);
   assert.deepEqual(
     operations

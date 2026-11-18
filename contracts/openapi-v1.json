@@ -2821,6 +2821,342 @@
         }
       }
     },
+    "/v1/auth/forgot-password": {
+      "post": {
+        "operationId": "forgotPassword",
+        "tags": ["auth"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/X-Device-ID"
+          },
+          {
+            "$ref": "#/components/parameters/X-Device-OS"
+          },
+          {
+            "$ref": "#/components/parameters/X-Device-Version"
+          },
+          {
+            "$ref": "#/components/parameters/X-App-Version"
+          },
+          {
+            "$ref": "#/components/parameters/X-App-Language"
+          },
+          {
+            "$ref": "#/components/parameters/Traceparent"
+          }
+        ],
+        "security": [],
+        "x-access": "ANONYMOUS",
+        "x-runtime-implemented": true,
+        "x-idempotency-required": false,
+        "x-expected-version-required": false,
+        "x-success-schema": "ForgotPasswordEnvelope",
+        "x-request-example": {
+          "method": "POST",
+          "path": "/v1/auth/forgot-password",
+          "headers": {
+            "X-Device-ID": "8d5ca46a-7f59-4f64-9d91-fedc41b59e7a",
+            "X-Device-OS": "ANDROID",
+            "X-Device-Version": "unknown",
+            "X-App-Version": "0.0.0+fixture.1",
+            "X-App-Language": "en"
+          },
+          "query": {},
+          "body": {
+            "email": "new.member@example.test",
+            "captchaToken": "SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL"
+          }
+        },
+        "x-server-proxy-only": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordInput"
+              },
+              "examples": {
+                "valid": {
+                  "value": {
+                    "email": "new.member@example.test",
+                    "captchaToken": "SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "AccountRequestAccepted",
+            "headers": {
+              "X-Trace-ID": {
+                "schema": {
+                  "type": "string",
+                  "x-unicodeScalarText": true,
+                  "maxLength": 32,
+                  "minLength": 32,
+                  "pattern": "^[a-f0-9]{32}$"
+                },
+                "description": "Matches the envelope traceId."
+              },
+              "X-API-Contract-Version": {
+                "schema": {
+                  "type": "string",
+                  "const": "1.0.0"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string",
+                  "const": "nosniff"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForgotPasswordEnvelope"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "timestamp": "2026-10-25T08:20:30.123Z",
+                      "responseKey": "SUCCESS",
+                      "statusCode": 202,
+                      "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+                      "message": {
+                        "title": "Request completed",
+                        "descriptions": "The request completed successfully."
+                      },
+                      "data": {
+                        "status": "ACCEPTED"
+                      },
+                      "error": null,
+                      "meta": {
+                        "contractVersion": "1.0.0",
+                        "pagination": null,
+                        "idempotency": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "405": {
+            "$ref": "#/components/responses/Error405"
+          },
+          "410": {
+            "$ref": "#/components/responses/Error410"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "504": {
+            "$ref": "#/components/responses/Error504"
+          }
+        }
+      }
+    },
+    "/v1/auth/reset-password": {
+      "post": {
+        "operationId": "resetPassword",
+        "tags": ["auth"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/X-Device-ID"
+          },
+          {
+            "$ref": "#/components/parameters/X-Device-OS"
+          },
+          {
+            "$ref": "#/components/parameters/X-Device-Version"
+          },
+          {
+            "$ref": "#/components/parameters/X-App-Version"
+          },
+          {
+            "$ref": "#/components/parameters/X-App-Language"
+          },
+          {
+            "$ref": "#/components/parameters/Traceparent"
+          }
+        ],
+        "security": [],
+        "x-access": "ANONYMOUS",
+        "x-runtime-implemented": true,
+        "x-idempotency-required": false,
+        "x-expected-version-required": false,
+        "x-success-schema": "ResetPasswordEnvelope",
+        "x-request-example": {
+          "method": "POST",
+          "path": "/v1/auth/reset-password",
+          "headers": {
+            "X-Device-ID": "8d5ca46a-7f59-4f64-9d91-fedc41b59e7a",
+            "X-Device-OS": "ANDROID",
+            "X-Device-Version": "unknown",
+            "X-App-Version": "0.0.0+fixture.1",
+            "X-App-Language": "en"
+          },
+          "query": {},
+          "body": {
+            "code": "SYNTHETIC_FIXTURE_CODE_0123456789",
+            "password": "SYNTHETIC-FIXTURE-PASSWORD"
+          }
+        },
+        "x-server-proxy-only": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordInput"
+              },
+              "examples": {
+                "valid": {
+                  "value": {
+                    "code": "SYNTHETIC_FIXTURE_CODE_0123456789",
+                    "password": "SYNTHETIC-FIXTURE-PASSWORD"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "AccountRequestAccepted",
+            "headers": {
+              "X-Trace-ID": {
+                "schema": {
+                  "type": "string",
+                  "x-unicodeScalarText": true,
+                  "maxLength": 32,
+                  "minLength": 32,
+                  "pattern": "^[a-f0-9]{32}$"
+                },
+                "description": "Matches the envelope traceId."
+              },
+              "X-API-Contract-Version": {
+                "schema": {
+                  "type": "string",
+                  "const": "1.0.0"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string",
+                  "const": "nosniff"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResetPasswordEnvelope"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "timestamp": "2026-10-25T08:20:30.123Z",
+                      "responseKey": "SUCCESS",
+                      "statusCode": 202,
+                      "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+                      "message": {
+                        "title": "Request completed",
+                        "descriptions": "The request completed successfully."
+                      },
+                      "data": {
+                        "status": "ACCEPTED"
+                      },
+                      "error": null,
+                      "meta": {
+                        "contractVersion": "1.0.0",
+                        "pagination": null,
+                        "idempotency": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "405": {
+            "$ref": "#/components/responses/Error405"
+          },
+          "410": {
+            "$ref": "#/components/responses/Error410"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "504": {
+            "$ref": "#/components/responses/Error504"
+          }
+        }
+      }
+    },
     "/v1/me": {
       "get": {
         "operationId": "getMe",
@@ -3217,6 +3553,368 @@
           },
           "428": {
             "$ref": "#/components/responses/Error428"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "504": {
+            "$ref": "#/components/responses/Error504"
+          }
+        }
+      }
+    },
+    "/v1/me/password": {
+      "post": {
+        "operationId": "changePassword",
+        "tags": ["me"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/X-Device-ID"
+          },
+          {
+            "$ref": "#/components/parameters/X-Device-OS"
+          },
+          {
+            "$ref": "#/components/parameters/X-Device-Version"
+          },
+          {
+            "$ref": "#/components/parameters/X-App-Version"
+          },
+          {
+            "$ref": "#/components/parameters/X-App-Language"
+          },
+          {
+            "$ref": "#/components/parameters/Traceparent"
+          }
+        ],
+        "security": [
+          {
+            "IdentityPlatformToken": []
+          },
+          {
+            "WebSession": []
+          }
+        ],
+        "x-access": "MEMBER",
+        "x-runtime-implemented": true,
+        "x-idempotency-required": false,
+        "x-expected-version-required": false,
+        "x-success-schema": "ChangePasswordEnvelope",
+        "x-request-example": {
+          "method": "POST",
+          "path": "/v1/me/password",
+          "headers": {
+            "X-Device-ID": "8d5ca46a-7f59-4f64-9d91-fedc41b59e7a",
+            "X-Device-OS": "ANDROID",
+            "X-Device-Version": "unknown",
+            "X-App-Version": "0.0.0+fixture.1",
+            "X-App-Language": "en",
+            "Authorization": "Bearer SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL"
+          },
+          "query": {},
+          "body": {
+            "idToken": "SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL",
+            "newPassword": "SYNTHETIC-FIXTURE-PASSWORD"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordInput"
+              },
+              "examples": {
+                "valid": {
+                  "value": {
+                    "idToken": "SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL",
+                    "newPassword": "SYNTHETIC-FIXTURE-PASSWORD"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "AccountRequestAccepted",
+            "headers": {
+              "X-Trace-ID": {
+                "schema": {
+                  "type": "string",
+                  "x-unicodeScalarText": true,
+                  "maxLength": 32,
+                  "minLength": 32,
+                  "pattern": "^[a-f0-9]{32}$"
+                },
+                "description": "Matches the envelope traceId."
+              },
+              "X-API-Contract-Version": {
+                "schema": {
+                  "type": "string",
+                  "const": "1.0.0"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string",
+                  "const": "nosniff"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangePasswordEnvelope"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "timestamp": "2026-10-25T08:20:30.123Z",
+                      "responseKey": "SUCCESS",
+                      "statusCode": 202,
+                      "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+                      "message": {
+                        "title": "Request completed",
+                        "descriptions": "The request completed successfully."
+                      },
+                      "data": {
+                        "status": "ACCEPTED"
+                      },
+                      "error": null,
+                      "meta": {
+                        "contractVersion": "1.0.0",
+                        "pagination": null,
+                        "idempotency": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "405": {
+            "$ref": "#/components/responses/Error405"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "410": {
+            "$ref": "#/components/responses/Error410"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "504": {
+            "$ref": "#/components/responses/Error504"
+          }
+        }
+      }
+    },
+    "/v1/me/email-change": {
+      "post": {
+        "operationId": "requestEmailChange",
+        "tags": ["me"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/X-Device-ID"
+          },
+          {
+            "$ref": "#/components/parameters/X-Device-OS"
+          },
+          {
+            "$ref": "#/components/parameters/X-Device-Version"
+          },
+          {
+            "$ref": "#/components/parameters/X-App-Version"
+          },
+          {
+            "$ref": "#/components/parameters/X-App-Language"
+          },
+          {
+            "$ref": "#/components/parameters/Traceparent"
+          }
+        ],
+        "security": [
+          {
+            "IdentityPlatformToken": []
+          },
+          {
+            "WebSession": []
+          }
+        ],
+        "x-access": "MEMBER",
+        "x-runtime-implemented": true,
+        "x-idempotency-required": false,
+        "x-expected-version-required": false,
+        "x-success-schema": "RequestEmailChangeEnvelope",
+        "x-request-example": {
+          "method": "POST",
+          "path": "/v1/me/email-change",
+          "headers": {
+            "X-Device-ID": "8d5ca46a-7f59-4f64-9d91-fedc41b59e7a",
+            "X-Device-OS": "ANDROID",
+            "X-Device-Version": "unknown",
+            "X-App-Version": "0.0.0+fixture.1",
+            "X-App-Language": "en",
+            "Authorization": "Bearer SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL"
+          },
+          "query": {},
+          "body": {
+            "idToken": "SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL",
+            "newEmail": "changed.member@example.test"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestEmailChangeInput"
+              },
+              "examples": {
+                "valid": {
+                  "value": {
+                    "idToken": "SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL",
+                    "newEmail": "changed.member@example.test"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "AccountRequestAccepted",
+            "headers": {
+              "X-Trace-ID": {
+                "schema": {
+                  "type": "string",
+                  "x-unicodeScalarText": true,
+                  "maxLength": 32,
+                  "minLength": 32,
+                  "pattern": "^[a-f0-9]{32}$"
+                },
+                "description": "Matches the envelope traceId."
+              },
+              "X-API-Contract-Version": {
+                "schema": {
+                  "type": "string",
+                  "const": "1.0.0"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string",
+                  "const": "nosniff"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestEmailChangeEnvelope"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "timestamp": "2026-10-25T08:20:30.123Z",
+                      "responseKey": "SUCCESS",
+                      "statusCode": 202,
+                      "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+                      "message": {
+                        "title": "Request completed",
+                        "descriptions": "The request completed successfully."
+                      },
+                      "data": {
+                        "status": "ACCEPTED"
+                      },
+                      "error": null,
+                      "meta": {
+                        "contractVersion": "1.0.0",
+                        "pagination": null,
+                        "idempotency": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "405": {
+            "$ref": "#/components/responses/Error405"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "410": {
+            "$ref": "#/components/responses/Error410"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
           },
           "429": {
             "$ref": "#/components/responses/Error429"
@@ -17811,6 +18509,89 @@
         "required": ["email", "password"],
         "additionalProperties": false
       },
+      "ForgotPasswordInput": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 320,
+            "minLength": 3,
+            "format": "email"
+          },
+          "captchaToken": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 2048,
+            "minLength": 1
+          }
+        },
+        "required": ["email"],
+        "additionalProperties": false
+      },
+      "ResetPasswordInput": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 512,
+            "minLength": 16,
+            "pattern": "^[A-Za-z0-9_-]{16,512}$",
+            "description": "One-time code from the reset email link."
+          },
+          "password": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 128,
+            "minLength": 12,
+            "description": "At least 12 and at most 128 characters; checked against known breaches."
+          }
+        },
+        "required": ["code", "password"],
+        "additionalProperties": false
+      },
+      "ChangePasswordInput": {
+        "type": "object",
+        "properties": {
+          "idToken": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 65536,
+            "minLength": 1,
+            "description": "Fresh identity token from entering the current password; proves recent authentication."
+          },
+          "newPassword": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 128,
+            "minLength": 12
+          }
+        },
+        "required": ["idToken", "newPassword"],
+        "additionalProperties": false
+      },
+      "RequestEmailChangeInput": {
+        "type": "object",
+        "properties": {
+          "idToken": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 65536,
+            "minLength": 1,
+            "description": "Fresh identity token from entering the current password; proves recent authentication."
+          },
+          "newEmail": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 320,
+            "minLength": 3,
+            "format": "email"
+          }
+        },
+        "required": ["idToken", "newEmail"],
+        "additionalProperties": false
+      },
       "ResendVerificationInput": {
         "type": "object",
         "properties": {
@@ -18991,6 +19772,148 @@
           "meta"
         ]
       },
+      "ForgotPasswordEnvelope": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+          },
+          "responseKey": {
+            "type": "string",
+            "const": "SUCCESS"
+          },
+          "statusCode": {
+            "type": "integer",
+            "const": 202
+          },
+          "traceId": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 32,
+            "minLength": 32,
+            "pattern": "^[a-f0-9]{32}$"
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "x-unicodeScalarText": true
+              },
+              "descriptions": {
+                "type": "string",
+                "x-unicodeScalarText": true
+              }
+            },
+            "required": ["title", "descriptions"]
+          },
+          "data": {
+            "$ref": "#/components/schemas/AccountRequestAccepted"
+          },
+          "error": {
+            "type": "null"
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "contractVersion": {
+                "type": "string",
+                "const": "1.0.0"
+              },
+              "pagination": {
+                "type": "null"
+              },
+              "idempotency": {
+                "type": "null"
+              }
+            },
+            "required": ["contractVersion", "pagination", "idempotency"]
+          }
+        },
+        "required": [
+          "timestamp",
+          "responseKey",
+          "statusCode",
+          "traceId",
+          "message",
+          "data",
+          "error",
+          "meta"
+        ]
+      },
+      "ResetPasswordEnvelope": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+          },
+          "responseKey": {
+            "type": "string",
+            "const": "SUCCESS"
+          },
+          "statusCode": {
+            "type": "integer",
+            "const": 202
+          },
+          "traceId": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 32,
+            "minLength": 32,
+            "pattern": "^[a-f0-9]{32}$"
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "x-unicodeScalarText": true
+              },
+              "descriptions": {
+                "type": "string",
+                "x-unicodeScalarText": true
+              }
+            },
+            "required": ["title", "descriptions"]
+          },
+          "data": {
+            "$ref": "#/components/schemas/AccountRequestAccepted"
+          },
+          "error": {
+            "type": "null"
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "contractVersion": {
+                "type": "string",
+                "const": "1.0.0"
+              },
+              "pagination": {
+                "type": "null"
+              },
+              "idempotency": {
+                "type": "null"
+              }
+            },
+            "required": ["contractVersion", "pagination", "idempotency"]
+          }
+        },
+        "required": [
+          "timestamp",
+          "responseKey",
+          "statusCode",
+          "traceId",
+          "message",
+          "data",
+          "error",
+          "meta"
+        ]
+      },
       "GetMeEnvelope": {
         "type": "object",
         "properties": {
@@ -19117,6 +20040,148 @@
               },
               "idempotency": {
                 "$ref": "#/components/schemas/IdempotencyMeta"
+              }
+            },
+            "required": ["contractVersion", "pagination", "idempotency"]
+          }
+        },
+        "required": [
+          "timestamp",
+          "responseKey",
+          "statusCode",
+          "traceId",
+          "message",
+          "data",
+          "error",
+          "meta"
+        ]
+      },
+      "ChangePasswordEnvelope": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+          },
+          "responseKey": {
+            "type": "string",
+            "const": "SUCCESS"
+          },
+          "statusCode": {
+            "type": "integer",
+            "const": 202
+          },
+          "traceId": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 32,
+            "minLength": 32,
+            "pattern": "^[a-f0-9]{32}$"
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "x-unicodeScalarText": true
+              },
+              "descriptions": {
+                "type": "string",
+                "x-unicodeScalarText": true
+              }
+            },
+            "required": ["title", "descriptions"]
+          },
+          "data": {
+            "$ref": "#/components/schemas/AccountRequestAccepted"
+          },
+          "error": {
+            "type": "null"
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "contractVersion": {
+                "type": "string",
+                "const": "1.0.0"
+              },
+              "pagination": {
+                "type": "null"
+              },
+              "idempotency": {
+                "type": "null"
+              }
+            },
+            "required": ["contractVersion", "pagination", "idempotency"]
+          }
+        },
+        "required": [
+          "timestamp",
+          "responseKey",
+          "statusCode",
+          "traceId",
+          "message",
+          "data",
+          "error",
+          "meta"
+        ]
+      },
+      "RequestEmailChangeEnvelope": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+          },
+          "responseKey": {
+            "type": "string",
+            "const": "SUCCESS"
+          },
+          "statusCode": {
+            "type": "integer",
+            "const": 202
+          },
+          "traceId": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 32,
+            "minLength": 32,
+            "pattern": "^[a-f0-9]{32}$"
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "x-unicodeScalarText": true
+              },
+              "descriptions": {
+                "type": "string",
+                "x-unicodeScalarText": true
+              }
+            },
+            "required": ["title", "descriptions"]
+          },
+          "data": {
+            "$ref": "#/components/schemas/AccountRequestAccepted"
+          },
+          "error": {
+            "type": "null"
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "contractVersion": {
+                "type": "string",
+                "const": "1.0.0"
+              },
+              "pagination": {
+                "type": "null"
+              },
+              "idempotency": {
+                "type": "null"
               }
             },
             "required": ["contractVersion", "pagination", "idempotency"]

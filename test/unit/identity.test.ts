@@ -58,6 +58,8 @@ function service(value: IdentityEvidence) {
     actionCode: async () => 'A'.repeat(40),
     revokeSessions: async () => undefined,
     deleteUser: async () => undefined,
+    resetPassword: async () => 'author@example.test',
+    setPassword: async () => undefined,
   };
   return new IdentityService(gateway, readConfig(developmentEnv));
 }

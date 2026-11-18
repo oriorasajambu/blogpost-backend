@@ -1,6 +1,6 @@
 # Stateful contract mock
 
-This separate development server implements the authored 54-operation catalog with in-memory state. JSON requests/responses are checked against the same OpenAPI document used by the contract tests. It does not establish SQL transaction correctness, real identity verification, Cloud Storage behavior or production readiness.
+This separate development server implements the authored 58-operation catalog with in-memory state. JSON requests/responses are checked against the same OpenAPI document used by the contract tests. It does not establish SQL transaction correctness, real identity verification, Cloud Storage behavior or production readiness.
 
 With Node 24.22.1 and the root dependencies installed:
 

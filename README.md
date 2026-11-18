@@ -4,7 +4,7 @@ First development milestone for the approved 25 October 2026 backend plan. The s
 
 License status: **UNLICENSED**. The owner has not selected an open-source license.
 
-Implemented: NestJS transport, Prisma/PostgreSQL constraints and jobs, SDK identities/sessions, SQL membership/invitations/administration, immutable editorial workflows, public articles/feed/redirects/profiles, availability checks, English ranked search, taxonomy administration, staged media with private delivery and bounded retention/cleanup jobs. Local Auth Emulator/PostgreSQL checks cover all 54 application operations, actual filesystem storage and maintenance semantics. GCS has request-precondition/inventory tests; actual cloud storage/provider checks, daily scheduling/IAM/alerts, clients and release gates remain open.
+Implemented: NestJS transport, Prisma/PostgreSQL constraints and jobs, SDK identities/sessions, SQL membership/invitations/administration, immutable editorial workflows, public articles/feed/redirects/profiles, availability checks, English ranked search, taxonomy administration, staged media with private delivery and bounded retention/cleanup jobs. Local Auth Emulator/PostgreSQL checks cover all 58 application operations, actual filesystem storage and maintenance semantics. GCS has request-precondition/inventory tests; actual cloud storage/provider checks, daily scheduling/IAM/alerts, clients and release gates remain open.
 
 ## Run locally
 
@@ -32,7 +32,7 @@ X-App-Version: 0.0.0+local.1
 X-App-Language: en
 ```
 
-`GET /v1/meta` conservatively advertises an empty feature list while client and release gates remain open. The intended contract version is `1.0.0`; the [authored OpenAPI](contracts/openapi-v1.json) covers the full 54-operation catalog but remains an unreleased draft. See [contracts/README.md](contracts/README.md) for tooling, implementation coverage and outstanding release gates.
+`GET /v1/meta` conservatively advertises an empty feature list while client and release gates remain open. The intended contract version is `1.0.0`; the [authored OpenAPI](contracts/openapi-v1.json) covers the full 58-operation catalog but remains an unreleased draft. See [contracts/README.md](contracts/README.md) for tooling, implementation coverage and outstanding release gates.
 
 ## Checks
 
@@ -58,7 +58,7 @@ node scripts/dev/stack.mjs test foundation
 
 The standalone [Kotlin contract consumer](contracts/consumers/kotlin/README.md) requires JDK 17 and verifies the approved Retrofit/Gson baseline with Gradle 9.6.1 and Java 11 bytecode. Its tools, caches and outputs stay in ignored `.local/`; it adds no Docker image. The consumer is not yet integrated into the Android application.
 
-The independent [conformance harness](test/conformance/README.md) verifies mock and real HTTP responses. `npm run contract:conformance -- --base-url YOUR_API_ORIGIN --scope implemented` checks the registered current-backend scenarios; full scope remains incomplete until all 54 operations have real success evidence and scenario adapters. Reports distinguish the scoped result from overall operation coverage.
+The independent [conformance harness](test/conformance/README.md) verifies mock and real HTTP responses. `npm run contract:conformance -- --base-url YOUR_API_ORIGIN --scope implemented` checks the registered current-backend scenarios; full scope remains incomplete until all 58 operations have real success evidence and scenario adapters. Reports distinguish the scoped result from overall operation coverage.
 
 The foundation integration tests use real PostgreSQL and the runtime SQL role. They cover SQL constraints, cross-post references, concurrent offline-draft identity, public transport, CORS, body limits and safe errors. The separate isolated suites below verify publication, search, media processing/delivery and SDK authentication against the local emulator. Real Google authentication and cloud storage still require staging evidence.
 
@@ -75,7 +75,7 @@ npm run test:identity
 npm run test:identity -- --build
 ```
 
-Use `--build` on a clean checkout or after dependency/schema changes. The runner executes seven suites: identity, administration/invitations, editorial, public/taxonomy, media, maintenance and foundation. Its ignored `.local/conformance/backend-identity.json` receipt passes only after all seven succeed and report all 54 application operations at the current contract hash. Maintenance receives a fresh schema on that invocation's verified tmpfs database, so earlier projection-only synthetic storage descriptors cannot be mistaken for real deletion fixtures. Actual GCS/provider staging, scheduled job operations, client journeys and release readiness remain unfinished.
+Use `--build` on a clean checkout or after dependency/schema changes. The runner executes seven suites: identity, administration/invitations, editorial, public/taxonomy, media, maintenance and foundation. Its ignored `.local/conformance/backend-identity.json` receipt passes only after all seven succeed and report all 58 application operations at the current contract hash. Maintenance receives a fresh schema on that invocation's verified tmpfs database, so earlier projection-only synthetic storage descriptors cannot be mistaken for real deletion fixtures. Actual GCS/provider staging, scheduled job operations, client journeys and release readiness remain unfinished.
 
 Editorial writes lock current membership/post state and atomically commit revisions, versions, audit and original replay results. No-op saves retain their version; retries and creator recovery recheck current access. Restoration never republishes; attribution transfer requires an administrator. Public readers select only the published snapshot and credited author. Private edits preserve public content, timestamps and search. Media streams recheck current staff access or current publication membership and return private no-store bytes.
 

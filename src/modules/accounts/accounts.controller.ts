@@ -41,6 +41,34 @@ export class AccountsController {
     proxyOnly(request);
     return this.accounts.register(value, response.locals.traceId as string);
   }
+  @Post('forgot-password')
+  @HttpCode(202)
+  @ApiOperation({ operationId: 'forgotPassword' })
+  forgot(
+    @Req() request: Request,
+    @Body() value: unknown,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    proxyOnly(request);
+    return this.accounts.forgotPassword(
+      value,
+      response.locals.traceId as string,
+    );
+  }
+  @Post('reset-password')
+  @HttpCode(202)
+  @ApiOperation({ operationId: 'resetPassword' })
+  reset(
+    @Req() request: Request,
+    @Body() value: unknown,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    proxyOnly(request);
+    return this.accounts.resetPassword(
+      value,
+      response.locals.traceId as string,
+    );
+  }
   @Post('verify-email/resend')
   @HttpCode(202)
   @ApiOperation({ operationId: 'resendVerificationEmail' })

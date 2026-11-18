@@ -6,6 +6,8 @@ import { APP_CONFIG, MetaController } from './modules/meta/meta.controller.js';
 import { IdentityController } from './modules/identity/identity.controller.js';
 import { AccountsController } from './modules/accounts/accounts.controller.js';
 import { AccountsService } from './modules/accounts/accounts.service.js';
+import { AccountSecurityController } from './modules/accounts/account-security.controller.js';
+import { AccountSecurityService } from './modules/accounts/account-security.service.js';
 import { IDENTITY_GATEWAY } from './modules/identity/identity.js';
 import { FirebaseIdentityGateway } from './modules/identity/firebase-identity.gateway.js';
 import { IdentityService } from './modules/identity/identity.service.js';
@@ -70,6 +72,7 @@ export class AppModule {
         MetaController,
         IdentityController,
         AccountsController,
+        AccountSecurityController,
         MembersController,
         AdminController,
         AdminInvitationsController,
@@ -98,6 +101,7 @@ export class AppModule {
         AdminOperations,
         AdminMembersService,
         AccountsService,
+        AccountSecurityService,
         AuditService,
         InvitationService,
         PostsRepository,

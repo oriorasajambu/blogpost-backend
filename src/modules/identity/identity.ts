@@ -47,6 +47,10 @@ export interface IdentityGateway {
     email: string,
     newEmail?: string,
   ): Promise<string>;
+  /** Completes a reset with its one-time code and returns the account's email address. */
+  resetPassword(code: string, password: string): Promise<string>;
+  /** Sets a password directly; callers must have proven recent possession of the old one. */
+  setPassword(uid: string, password: string): Promise<void>;
   /** Removes an account; used only to undo a registration that could not be completed. */
   deleteUser(uid: string): Promise<void>;
   /** Invalidates every refresh token and session cookie issued before now. */

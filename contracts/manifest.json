@@ -4,15 +4,15 @@
   "files": [
     {
       "path": "contracts/CHANGELOG.md",
-      "sha256": "5fa260630a760ada6022d5bc2c7ffbea466c5d7666f6b3398b88cc9ec3cb87ca"
+      "sha256": "3ae66c975b9814ee76de76c5d64ad88fadf490195b9d387295ff44922d4bd93d"
     },
     {
       "path": "contracts/CONTRACT.md",
-      "sha256": "b9d5171e304eabe97fa3858873bbe1cc60b63d3f23d59703128e7f9520439e9c"
+      "sha256": "3d9d4820fa3e8a3f4cfcb04911c5983942ca0a916205a7ff39cc176192ee3612"
     },
     {
       "path": "contracts/README.md",
-      "sha256": "cb4cb06b2e2a03560204e9d2d0046d89497e3a7d59c5294e6f34cfd62d07da64"
+      "sha256": "d52dae5f7de3ce09685ce5d23987d5ad3b396f95fa68046bdf6fbb5b8565389d"
     },
     {
       "path": "contracts/compatibility-report.json",
@@ -20,7 +20,7 @@
     },
     {
       "path": "contracts/consumers/kotlin/README.md",
-      "sha256": "df4d6fabd03c8c5ea784437a45f17afd70b02d5ea137f50636ea6758c1eb4b31"
+      "sha256": "db226e6a28c3a85492289b36de60ae4e3c40a510518cbb43917ed23ea4b9d5d1"
     },
     {
       "path": "contracts/consumers/kotlin/consumer-rules.pro",
@@ -239,6 +239,14 @@
       "sha256": "06a4a7ec7d15c51509cf9b55d67fd21d7a5e9c2f57febe3df3f7b16941514483"
     },
     {
+      "path": "contracts/fixtures/operations/changePassword.request.json",
+      "sha256": "cfc3269558bdb5557e70bbca31c4dc5cc9aba70b976cf94faeb9c620ac8fdcfb"
+    },
+    {
+      "path": "contracts/fixtures/operations/changePassword.response.json",
+      "sha256": "80d805295e6f8f71d705df070c2be6f88f55851491842e4b15a3167a18948797"
+    },
+    {
       "path": "contracts/fixtures/operations/changePostSlug.request.json",
       "sha256": "824c87b96b7ed475a8571b3f7eb50a552985ebf16611b471cc75278bc1b9fb69"
     },
@@ -293,6 +301,14 @@
     {
       "path": "contracts/fixtures/operations/createWebSession.response.json",
       "sha256": "a4dcd9486e1ed02c3ae3b1abb41f32b5f0c61c6331cc5df283c780fcb0ed6748"
+    },
+    {
+      "path": "contracts/fixtures/operations/forgotPassword.request.json",
+      "sha256": "5c7105a8d00406c99a68c0dfe55e6891523b961f1d9f6da87a9e5faaea2248a1"
+    },
+    {
+      "path": "contracts/fixtures/operations/forgotPassword.response.json",
+      "sha256": "80d805295e6f8f71d705df070c2be6f88f55851491842e4b15a3167a18948797"
     },
     {
       "path": "contracts/fixtures/operations/getApiMeta.request.json",
@@ -527,11 +543,27 @@
       "sha256": "707ac929b84df2d133a232442f9fcb84ae80301dd48d21ae5829a8aaac43f216"
     },
     {
+      "path": "contracts/fixtures/operations/requestEmailChange.request.json",
+      "sha256": "a282aee377e6142134d02d5c8b12b0fba01e3d36cc28096fa00d70993b631e79"
+    },
+    {
+      "path": "contracts/fixtures/operations/requestEmailChange.response.json",
+      "sha256": "80d805295e6f8f71d705df070c2be6f88f55851491842e4b15a3167a18948797"
+    },
+    {
       "path": "contracts/fixtures/operations/resendVerificationEmail.request.json",
       "sha256": "90271074c9b84490517c5a9861f6a987f08452c79920be7a2478dddbd9faf75b"
     },
     {
       "path": "contracts/fixtures/operations/resendVerificationEmail.response.json",
+      "sha256": "80d805295e6f8f71d705df070c2be6f88f55851491842e4b15a3167a18948797"
+    },
+    {
+      "path": "contracts/fixtures/operations/resetPassword.request.json",
+      "sha256": "33a52c11639c9268dd0c4d423ac0933f8cf0cfcb947387fdb12ca8225ff283bb"
+    },
+    {
+      "path": "contracts/fixtures/operations/resetPassword.response.json",
       "sha256": "80d805295e6f8f71d705df070c2be6f88f55851491842e4b15a3167a18948797"
     },
     {
@@ -656,7 +688,7 @@
     },
     {
       "path": "contracts/generated/kotlin/generation.json",
-      "sha256": "4da3ef17f41f083dc9990556b765771aa522597cad74c06895813de778153b95"
+      "sha256": "98eb26bef31d0c2670a72237baf6377bb9f0cd006ee95dca382f2a412cc57c78"
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/AdminApi.kt",
@@ -664,7 +696,7 @@
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/AuthApi.kt",
-      "sha256": "7ab8d39aa602fcb55590d17eacf9cffa6fbc1c1a8e6006ba78fe4815b3e73884"
+      "sha256": "3809458f8716a84955254fa4971d345f188748181df064bd7711a82ab48269b3"
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/CategoriesApi.kt",
@@ -676,7 +708,7 @@
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/MeApi.kt",
-      "sha256": "5c9df190e717e8d303358b4d0641af476aee0d70d024b71081371312f90f4c8d"
+      "sha256": "3f69a923332c88c838691744f49e5e10c825857f46d1f2d574ed3822a37a1628"
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/MetaApi.kt",
@@ -759,6 +791,14 @@
       "sha256": "095ad886e924cc78e127af6cd6a2c1186eaf078c6e0d382d1cb56fd4044d744d"
     },
     {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ChangePasswordEnvelope.kt",
+      "sha256": "40e2be6758ff8fa828830a1a76d02eb78e1d8d13cd4e0ca3286059f1dcd0ba50"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ChangePasswordInput.kt",
+      "sha256": "bea7df2fac80d10e168fd8b72766a3841e6386c40e57a1b088967214e2bc52d1"
+    },
+    {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ChangePostSlugEnvelope.kt",
       "sha256": "a045d839579318b39369dc4c711b9080b1362bfb37e91274b2b6bece65a20878"
     },
@@ -825,6 +865,14 @@
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/FieldIssue.kt",
       "sha256": "d881fde4d0e104175e279d98ea4afdc85b7857c176aa208191cc28b79d88dc65"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ForgotPasswordEnvelope.kt",
+      "sha256": "604aa1e2b190f980ed22337cdc407ac900a458ae4cf534f16fbc1b5b66863fce"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ForgotPasswordInput.kt",
+      "sha256": "da48b749579622935a996a3b325d1bc61f9b7ecb3c14f1a5ecceb32fdc0cfd2a"
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/GetInvitationEnvelope.kt",
@@ -1043,12 +1091,28 @@
       "sha256": "26a1df698f4fcd1dd95e8c76aec174a21783e548629b0b937f6d3c0e3e568bdb"
     },
     {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/RequestEmailChangeEnvelope.kt",
+      "sha256": "bc6a4c0b64b4f3da24dc925c5d8ec2a3ffcada21549e40d0798143d8fb6fe9f0"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/RequestEmailChangeInput.kt",
+      "sha256": "f0c4ff8daaa3844efd244d8c1f24c2c1d96ee1383d8ab29f2e4b7ce201d7f5c5"
+    },
+    {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ResendVerificationEmailEnvelope.kt",
       "sha256": "2e5e825f18452b5e288688eb3608ee1f650a02faf178770908623c08b9ff8f84"
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ResendVerificationInput.kt",
       "sha256": "eeb5615d461f40d5fd6c6490c7aff58fe869d5ff37925f05ad74574a96d94840"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ResetPasswordEnvelope.kt",
+      "sha256": "c4aba897f44093085a60659d2cd19795d264bdd90e826c37d048a8afc7c140d2"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ResetPasswordInput.kt",
+      "sha256": "0873e3b13af719462edfb666e1ad4ec9bb5ef69c098cae6776a2d0bf713f73a6"
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ResolvePublicPostSlugEnvelope.kt",
@@ -1200,35 +1264,35 @@
     },
     {
       "path": "contracts/generated/kotlin/src/main/resources/blogpost-wire-v1.json",
-      "sha256": "677acb1ef40000027374d694d3de5d7e92922e54781347503fa14b8ded0a1c1c"
+      "sha256": "ee69f80c96193447817f839ba5c14ebf0ad36e4851dca666d2fb9760dc7018eb"
     },
     {
       "path": "contracts/generated/typescript/api-v1.d.ts",
-      "sha256": "232dd94ac2b339adb3c012b9a2297b8be85686a5a540e34986985c79d87df2b1"
+      "sha256": "6b67d6730759e2bcba5badee2ab52bd86a886c33584346d2e9aea259366694d4"
     },
     {
       "path": "contracts/openapi-v1.json",
-      "sha256": "0b18a4d1c29ba8f0d8e3ae2029d5515f89d82f030d8ad227a3ab199e3f1473e1"
+      "sha256": "97fbc700473eb157687ca88450c426415093f2e05438fa6055afa36605f89978"
     },
     {
       "path": "contracts/openapi-v1.yaml",
-      "sha256": "946c5677ce781ee48706f71677b2dd3a0d1fde4cd980a7e3d335756cc762bd69"
+      "sha256": "0868baca52691b79c7083d88ff9144c5e3237e5eff94e3066e83d1ce34e239ca"
     },
     {
       "path": "contracts/operation-inventory.json",
-      "sha256": "5f30966b968ef37e428d9d8edb52757ec5dfb4fc0a7770b7955fb973cceeee15"
+      "sha256": "1a3bc62639c7bb5c9f0daa1c8192606a73865dd9c5465b25c4939b1bbe9ec7e0"
     },
     {
       "path": "contracts/src/examples.mjs",
-      "sha256": "0a718bdbf23c2b344beadbc6d9f9a78fc96a112de62e2a17dbc4a332fa0934d3"
+      "sha256": "d4cdc3e55a13cc59dbdbf7bda2f1342e1243ca6a976e901aa91dd84ee83ea546"
     },
     {
       "path": "contracts/src/operations.mjs",
-      "sha256": "95c6426e4b077bfbe36220f92424a9d48868f30acaae0248604fabd2d8bf83db"
+      "sha256": "b0796bc8be768e5ab2cd86dbd63a7fabc176405b1b30ee9fb5369f8011272738"
     },
     {
       "path": "contracts/src/schemas.mjs",
-      "sha256": "e9a5a29693068a227153c43b1fc8380cb329d47c4f056132d99dea1bfd8853f9"
+      "sha256": "fd1263661980afda356d0b1cba226d4ed64d75155c53e1257f26f23f4db33c96"
     },
     {
       "path": "contracts/src/spec.mjs",

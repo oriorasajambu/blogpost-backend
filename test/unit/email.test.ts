@@ -72,7 +72,7 @@ test('invitation email escapes untrusted text and states the account rule', () =
   assert.ok(email.html.includes(escapeHtml(payload.inviterName)));
   assert.ok(email.html.includes(`href="${payload.inviteUrl}"`));
   assert.ok(email.text.includes(payload.inviteUrl));
-  assert.ok(email.text.includes('Google account for new.author@example.com'));
+  assert.ok(email.text.includes('verified account for new.author@example.com'));
   assert.ok(email.text.includes('(Asia/Jakarta)'));
   assert.throws(() => invitationPayload({ ...payload, extra: true }));
   assert.throws(() =>

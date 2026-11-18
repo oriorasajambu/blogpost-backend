@@ -11,6 +11,7 @@ import { initializeApp, deleteApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { createApp } from '../../src/app.js';
 import { AccountsService } from '../../src/modules/accounts/accounts.service.js';
+import { AccountSecurityService } from '../../src/modules/accounts/account-security.service.js';
 import { BreachCheck } from '../../src/platform/security/password-policy.js';
 import { readConfig } from '../../src/platform/config/config.js';
 import { DatabaseService } from '../../src/platform/database/database.service.js';
@@ -1214,9 +1215,247 @@ test(
         );
       },
     );
+    await t.test(
+      'password recovery and credential changes revoke sessions and notify the owner',
+      async () => {
+        const noBreach = new BreachCheck(async () => new Response(''));
+        app.get(AccountsService).breach = noBreach;
+        app.get(AccountSecurityService).breach = noBreach;
+        const oobCodes = async (type: string) => {
+          const response = await fetch(
+            `http://auth:9099/emulator/v1/projects/${config.identityProject}/oobCodes`,
+            { signal: AbortSignal.timeout(10_000) },
+          );
+          return (
+            (await response.json()) as {
+              oobCodes: {
+                email: string;
+                oobCode: string;
+                requestType: string;
+              }[];
+            }
+          ).oobCodes.filter((entry) => entry.requestType === type);
+        };
+        const emails = (email: string, kind: string) =>
+          database.prisma.emailOutbox.count({
+            where: { toEmail: email, kind },
+          });
+        const attempt = (email: string, password: string) =>
+          fetch(
+            `http://auth:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=disposable`,
+            {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                email,
+                password,
+                returnSecureToken: true,
+              }),
+              signal: AbortSignal.timeout(10_000),
+            },
+          );
+        const idToken = async (email: string, password: string) =>
+          (
+            (await (await attempt(email, password)).json()) as {
+              idToken: string;
+            }
+          ).idToken;
+        // Each exchange and credential change spends the member's identity allowance (five a minute).
+        let limited = '';
+        const refill = () =>
+          limited
+            ? database.prisma.rateLimitBucket.deleteMany({
+                where: { memberId: limited },
+              })
+            : undefined;
+        const post = async (
+          operation: string,
+          path: string,
+          status: number,
+          body: unknown,
+          session?: string,
+        ) => {
+          await refill();
+          return request(operation, path, status, {
+            method: 'POST',
+            body,
+            session,
+          });
+        };
+
+        const email = `recover-${randomUUID()}@example.test`;
+        const first = 'the first long passphrase';
+        const second = 'the second long passphrase';
+        const third = 'the third long passphrase';
+        const created = await admin.createUser({
+          email,
+          emailVerified: true,
+          password: first,
+        });
+        const row = await database.prisma.member.create({
+          data: {
+            identityUid: created.uid,
+            email,
+            displayName: 'Recovery member',
+            handle: `recover-${randomUUID()}`,
+            role: 'AUTHOR',
+          },
+        });
+        limited = row.id;
+        const openSession = async (password: string, address = email) => {
+          await refill();
+          return (await exchangeToken(await idToken(address, password), 200))
+            .body.data.sessionCookie;
+        };
+
+        // Forgot: a known address gets one link; an unknown address gets the same answer and nothing.
+        let oldSession = await openSession(first);
+        // Revocation compares whole seconds, so a session minted this second would survive it.
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+        assert.deepEqual(
+          (
+            await post('forgotPassword', '/v1/auth/forgot-password', 202, {
+              email,
+            })
+          ).body.data,
+          { status: 'ACCEPTED' },
+        );
+        assert.equal(await emails(email, 'PASSWORD_RESET'), 1);
+        const nobody = `nobody-${randomUUID()}@example.test`;
+        assert.deepEqual(
+          (
+            await post('forgotPassword', '/v1/auth/forgot-password', 202, {
+              email: nobody,
+            })
+          ).body.data,
+          { status: 'ACCEPTED' },
+        );
+        assert.equal(await emails(nobody, 'PASSWORD_RESET'), 0);
+
+        // Reset: bad input and bad codes are refused; a good code sets the password and ends sessions.
+        const code = (await oobCodes('PASSWORD_RESET'))
+          .filter((c) => c.email === email)
+          .at(-1)!.oobCode;
+        assert.equal(
+          (
+            await post('resetPassword', '/v1/auth/reset-password', 422, {
+              code,
+              password: 'short',
+            })
+          ).body.error.code,
+          'VALIDATION_FAILED',
+        );
+        assert.equal(
+          (
+            await post('resetPassword', '/v1/auth/reset-password', 422, {
+              code: 'A'.repeat(40),
+              password: second,
+            })
+          ).body.error.code,
+          'VALIDATION_FAILED',
+        );
+        await post('resetPassword', '/v1/auth/reset-password', 202, {
+          code,
+          password: second,
+        });
+        assert.equal((await attempt(email, first)).status, 400);
+        assert.equal((await attempt(email, second)).status, 200);
+        assert.equal(await emails(email, 'PASSWORD_CHANGED_NOTICE'), 1);
+        await request('getMe', '/v1/me', 401, { session: oldSession });
+        // The same code cannot be used twice.
+        await post('resetPassword', '/v1/auth/reset-password', 422, {
+          code,
+          password: third,
+        });
+
+        // Change password: needs a fresh token for this account, then ends every session.
+        oldSession = await openSession(second);
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+        const proof = await idToken(email, second);
+        const stranger = (await google('stranger')).token;
+        await post(
+          'changePassword',
+          '/v1/me/password',
+          403,
+          { idToken: stranger, newPassword: third },
+          oldSession,
+        );
+        await post(
+          'changePassword',
+          '/v1/me/password',
+          422,
+          { idToken: proof, newPassword: 'short' },
+          oldSession,
+        );
+        await post(
+          'changePassword',
+          '/v1/me/password',
+          202,
+          { idToken: proof, newPassword: third },
+          oldSession,
+        );
+        await request('getMe', '/v1/me', 401, { session: oldSession });
+        assert.equal((await attempt(email, second)).status, 400);
+        assert.equal((await attempt(email, third)).status, 200);
+        assert.equal(await emails(email, 'PASSWORD_CHANGED_NOTICE'), 2);
+
+        // Change email: link to the new address, notice to the old one, nothing changes until confirmed.
+        const session = await openSession(third);
+        const changed = `changed-${randomUUID()}@example.test`;
+        await post(
+          'requestEmailChange',
+          '/v1/me/email-change',
+          422,
+          { idToken: await idToken(email, third), newEmail: email },
+          session,
+        );
+        await post(
+          'requestEmailChange',
+          '/v1/me/email-change',
+          202,
+          { idToken: await idToken(email, third), newEmail: changed },
+          session,
+        );
+        assert.equal(await emails(changed, 'EMAIL_CHANGE_VERIFY'), 1);
+        assert.equal(await emails(email, 'EMAIL_CHANGE_NOTICE'), 1);
+        assert.equal(
+          (
+            await database.prisma.member.findUniqueOrThrow({
+              where: { id: row.id },
+            })
+          ).email,
+          email,
+        );
+        await rest('update', {
+          oobCode: (await oobCodes('VERIFY_AND_CHANGE_EMAIL')).at(-1)!.oobCode,
+        });
+        // The next sign-in under the new address carries the change into the member row.
+        const confirmed = await openSession(third, changed);
+        assert.ok(confirmed);
+        assert.equal(
+          (
+            await database.prisma.member.findUniqueOrThrow({
+              where: { id: row.id },
+            })
+          ).email,
+          changed,
+        );
+        // An address that already has an account is answered the same way, without a link.
+        const taken = (await google('taken')).email;
+        const before = await emails(taken, 'EMAIL_CHANGE_VERIFY');
+        await post(
+          'requestEmailChange',
+          '/v1/me/email-change',
+          202,
+          { idToken: await idToken(changed, third), newEmail: taken },
+          confirmed,
+        );
+        assert.equal(await emails(taken, 'EMAIL_CHANGE_VERIFY'), before);
+      },
+    );
     await request('getApiMeta', '/v1/meta', 200);
     const report = coverage('backend', executed);
-    assert.equal(report.executed, 6);
+    assert.equal(report.executed, 10);
     assert.equal(report.pending.length, 48);
     assert.equal(report.complete, false);
     const runId = process.env.BLOGPOST_IDENTITY_RUN_ID;

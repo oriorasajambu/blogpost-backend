@@ -438,6 +438,22 @@ export function requestExample(operation) {
       password: 'SYNTHETIC-FIXTURE-PASSWORD',
       captchaToken: 'SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL',
     },
+    ForgotPasswordInput: {
+      email: 'new.member@example.test',
+      captchaToken: 'SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL',
+    },
+    ResetPasswordInput: {
+      code: 'SYNTHETIC_FIXTURE_CODE_0123456789',
+      password: 'SYNTHETIC-FIXTURE-PASSWORD',
+    },
+    ChangePasswordInput: {
+      idToken: 'SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL',
+      newPassword: 'SYNTHETIC-FIXTURE-PASSWORD',
+    },
+    RequestEmailChangeInput: {
+      idToken: 'SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL',
+      newEmail: 'changed.member@example.test',
+    },
     ResendVerificationInput: {
       email: 'new.member@example.test',
       captchaToken: 'SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL',
