@@ -76,8 +76,19 @@ const env = {
   MEDIA_BUCKET: profile.media.bucket,
   MEDIA_BUCKET_PROJECT_ID: profile.media.projectId,
   RUNTIME_SERVICE_ACCOUNT: profile.serviceAccounts.api,
+  // A profile with an email block makes the API require these bindings, as deployed.
+  ...(profile.email && {
+    EMAIL_FROM: profile.email.from,
+    EMAIL_DISPATCH_AUDIENCE: profile.email.dispatchAudience,
+    EMAIL_DISPATCH_INVOKER: profile.email.dispatchInvoker,
+    RESEND_API_KEY: ['re', 'synthetic', 'do-not-leak'].join('_'),
+    EMAIL_PAYLOAD_KEY: '8'.repeat(64),
+    RESEND_SECRET_REF: profile.email.secretVersions.RESEND_API_KEY,
+    EMAIL_PAYLOAD_SECRET_REF: profile.email.secretVersions.EMAIL_PAYLOAD_KEY,
+  }),
 };
 const config = readConfig(env);
+assert.equal(config.email?.driver ?? null, profile.email ? 'resend' : null);
 assert.equal(config.configurationDigest, expected.configurationDigest);
 assert.equal(config.buildSha, build.sourceSha);
 assert.equal(config.runtimeInputDigest, build.runtimeInputDigest);
@@ -98,6 +109,10 @@ for (const patch of [
   { RUNTIME_SERVICE_ACCOUNT: profile.serviceAccounts.ops },
   { SQL_APP_SECRET_REF: latestAppSecret },
   { FIREBASE_AUTH_EMULATOR_HOST: '127.0.0.1:9099' },
+  // Email is all-or-nothing: a missing binding fails, and none may appear without the block.
+  profile.email
+    ? { EMAIL_FROM: '' }
+    : { EMAIL_FROM: 'Blogpost <no-reply@example.test>' },
 ])
   assert.throws(() => readConfig({ ...env, ...patch }));
 if (operations) {
@@ -171,6 +186,7 @@ try {
     profile.media.bucket,
     profile.serviceAccounts.api,
     env.SQL_APP_PASSWORD,
+    ...(profile.email ? [env.RESEND_API_KEY, env.EMAIL_PAYLOAD_KEY] : []),
   ])
     assert.ok(!JSON.stringify(meta).includes(privateValue));
   assert.equal(
