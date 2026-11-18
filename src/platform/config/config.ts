@@ -29,6 +29,8 @@ export interface AppConfig {
   webOrigin: string;
   /** Null when invitation email is not configured; invitations then use the copy-link flow only. */
   email: EmailConfig | null;
+  /** Turnstile secret for public registration; null skips the check (development only). */
+  captchaSecret: string | null;
   configurationDigest: string;
   runtimeInputDigest: string;
   build: BuildProvenance;
@@ -237,6 +239,17 @@ export function readConfig(
     required(env, 'MEDIA_LOCAL_ROOT');
   }
   const email = emailConfig(env, purpose, cloud, !!build.configuration?.email);
+  // Cloud captcha needs a profile secret reference (not yet defined), so only development reads it.
+  if (cloud && env.TURNSTILE_SECRET_KEY)
+    throw new Error(
+      'Captcha configuration requires a profile secret reference',
+    );
+  const captchaSecret =
+    !cloud && purpose === 'api'
+      ? env.TURNSTILE_SECRET_KEY?.trim() || null
+      : null;
+  if (captchaSecret !== null && !/^[!-~]{8,256}$/.test(captchaSecret))
+    throw new Error('Invalid TURNSTILE_SECRET_KEY');
   const port = Number(env.PORT ?? '8080');
   if (!Number.isInteger(port) || port < 1 || port > 65535)
     throw new Error('Invalid PORT');
@@ -274,6 +287,7 @@ export function readConfig(
     apiOrigin,
     webOrigin,
     email,
+    captchaSecret,
     configurationDigest,
     runtimeInputDigest,
     build,

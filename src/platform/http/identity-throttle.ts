@@ -7,7 +7,12 @@ export function identityThrottle(clock: () => number = Date.now) {
     const route = request.path.toLowerCase().replace(/\/$/, '');
     if (
       request.method !== 'POST' ||
-      !['/v1/auth/web-session', '/v1/invitations/accept'].includes(route)
+      ![
+        '/v1/auth/web-session',
+        '/v1/invitations/accept',
+        '/v1/auth/register',
+        '/v1/auth/verify-email/resend',
+      ].includes(route)
     )
       return next();
     const now = clock();

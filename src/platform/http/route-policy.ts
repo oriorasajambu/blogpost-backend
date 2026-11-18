@@ -5,6 +5,8 @@ const methods = new Map<string, readonly string[]>([
   ['/v1/meta', ['GET', 'HEAD', 'OPTIONS']],
   ['/v1/me', ['GET', 'HEAD', 'PATCH', 'OPTIONS']],
   ['/v1/auth/web-session', ['POST', 'OPTIONS']],
+  ['/v1/auth/register', ['POST', 'OPTIONS']],
+  ['/v1/auth/verify-email/resend', ['POST', 'OPTIONS']],
   ['/v1/invitations/accept', ['POST', 'OPTIONS']],
   ['/v1/admin/members', ['GET', 'HEAD', 'OPTIONS']],
   ['/v1/admin/invitations', ['GET', 'HEAD', 'POST', 'OPTIONS']],

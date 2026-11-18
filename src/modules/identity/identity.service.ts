@@ -23,11 +23,26 @@ export function invalid(expired = false): ApiError {
     401,
     expired ? 'AUTHENTICATION_EXPIRED' : 'INVALID_CREDENTIAL',
     'Authentication required',
-    'Sign in again with the configured Google identity provider.',
+    'Sign in again with your email and password.',
   );
 }
 export function googleUser(user: IdentityUser): { uid: string; email: string } {
+  return identityUser(user, 'google.com');
+}
+/** The account must be enabled, verified, in the default tenant and linked to the given provider. */
+export function identityUser(
+  user: IdentityUser,
+  provider: 'google.com' | 'password',
+): { uid: string; email: string } {
   const email = normalizeIdentityEmail(user.email);
+  const linked = (
+    provider === 'google.com' ? user.googleProviders : user.passwordProviders
+  ).some(
+    (entry) =>
+      entry.uid &&
+      entry.email !== undefined &&
+      normalizeIdentityEmail(entry.email) === email,
+  );
   if (
     user.disabled ||
     !user.emailVerified ||
@@ -37,12 +52,7 @@ export function googleUser(user: IdentityUser): { uid: string; email: string } {
     [...user.uid].length > 128 ||
     user.uid.includes('\0') ||
     !isUnicodeScalarText(user.uid) ||
-    !user.googleProviders.some(
-      (provider) =>
-        provider.uid &&
-        provider.email !== undefined &&
-        normalizeIdentityEmail(provider.email) === email,
-    )
+    !linked
   )
     throw invalid();
   return { uid: user.uid, email };
@@ -60,7 +70,10 @@ export class IdentityService {
     kind: VerifiedIdentity['kind'],
   ): VerifiedIdentity {
     const now = Math.floor(Date.now() / 1000);
-    const user = googleUser(evidence.user);
+    if (evidence.provider !== 'google.com' && evidence.provider !== 'password')
+      throw invalid();
+    const provider = evidence.provider;
+    const user = identityUser(evidence.user, provider);
     const issuer =
       kind === 'id-token'
         ? 'https://securetoken.google.com/'
@@ -72,16 +85,22 @@ export class IdentityService {
       evidence.audience !== this.config.identityProject ||
       evidence.issuer !== issuer + this.config.identityProject ||
       evidence.emailVerified !== true ||
-      evidence.provider !== 'google.com' ||
       evidence.tenant !== undefined ||
-      !Array.isArray(evidence.googleIdentities) ||
-      !evidence.user.googleProviders.some(
-        (provider) =>
-          provider.email !== undefined &&
-          normalizeIdentityEmail(provider.email) === user.email &&
-          evidence.googleIdentities instanceof Array &&
-          evidence.googleIdentities.includes(provider.uid),
-      )
+      !(provider === 'google.com'
+        ? Array.isArray(evidence.googleIdentities) &&
+          evidence.user.googleProviders.some(
+            (entry) =>
+              entry.email !== undefined &&
+              normalizeIdentityEmail(entry.email) === user.email &&
+              (evidence.googleIdentities as unknown[]).includes(entry.uid),
+          )
+        : Array.isArray(evidence.passwordIdentities) &&
+          evidence.passwordIdentities.some(
+            (address) =>
+              typeof address === 'string' &&
+              address.length <= 320 &&
+              normalizeIdentityEmail(address) === user.email,
+          ))
     )
       throw invalid();
     if (email !== user.email) throw invalid(true);

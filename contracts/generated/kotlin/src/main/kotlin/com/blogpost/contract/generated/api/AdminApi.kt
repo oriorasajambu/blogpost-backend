@@ -9,6 +9,7 @@ import com.blogpost.contract.generated.model.InvitationStatus
 import com.blogpost.contract.generated.model.ListAuditEventsEnvelope
 import com.blogpost.contract.generated.model.ListInvitationsEnvelope
 import com.blogpost.contract.generated.model.ListMembersEnvelope
+import com.blogpost.contract.generated.model.MemberStatus
 import com.blogpost.contract.generated.model.ReassignAuthorInput
 import com.blogpost.contract.generated.model.ReassignPostAuthorEnvelope
 import com.blogpost.contract.generated.model.ReissueInvitationEnvelope
@@ -120,6 +121,7 @@ interface AdminApi {
 , @Query("pageSize") pageSize: kotlin.Int? = 20
 , @Query("role") role: Role? = null
 , @Query("active") active: kotlin.Boolean? = null
+, @Query("memberStatus") memberStatus: MemberStatus? = null
 ): Response<WirePayload<ListMembersEnvelope>>
 
 

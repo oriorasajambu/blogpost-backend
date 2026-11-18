@@ -30,6 +30,17 @@
         "identity": "",
         "name": "action",
         "position": 2,
+        "relation": "AnonymousRateLimit",
+        "required": true,
+        "type": "character varying(40)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "action",
+        "position": 2,
         "relation": "RateLimitBucket",
         "required": true,
         "type": "character varying(40)"
@@ -219,7 +230,7 @@
         "position": 3,
         "relation": "EmailOutbox",
         "required": true,
-        "type": "character varying(20)"
+        "type": "character varying(30)"
       },
       {
         "collation": "pg_catalog.default",
@@ -413,6 +424,17 @@
         "default_expression": null,
         "generated": "",
         "identity": "",
+        "name": "subjectHash",
+        "position": 1,
+        "relation": "AnonymousRateLimit",
+        "required": true,
+        "type": "character(64)"
+      },
+      {
+        "collation": "pg_catalog.default",
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
         "name": "subjectType",
         "position": 4,
         "relation": "AuditEvent",
@@ -473,6 +495,17 @@
         "relation": "AuditEvent",
         "required": true,
         "type": "character(32)"
+      },
+      {
+        "collation": null,
+        "default_expression": "'ACTIVE'::blogpost.\"MemberStatus\"",
+        "generated": "",
+        "identity": "",
+        "name": "status",
+        "position": 12,
+        "relation": "Member",
+        "required": true,
+        "type": "blogpost.\"MemberStatus\""
       },
       {
         "collation": null,
@@ -561,6 +594,17 @@
         "relation": "MediaAsset",
         "required": true,
         "type": "bigint"
+      },
+      {
+        "collation": null,
+        "default_expression": "0",
+        "generated": "",
+        "identity": "",
+        "name": "count",
+        "position": 4,
+        "relation": "AnonymousRateLimit",
+        "required": true,
+        "type": "integer"
       },
       {
         "collation": null,
@@ -1097,6 +1141,17 @@
         "identity": "",
         "name": "expiresAt",
         "position": 5,
+        "relation": "AnonymousRateLimit",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "expiresAt",
+        "position": 5,
         "relation": "RateLimitBucket",
         "required": true,
         "type": "timestamp(3) with time zone"
@@ -1296,7 +1351,7 @@
         "name": "invitationId",
         "position": 2,
         "relation": "EmailOutbox",
-        "required": true,
+        "required": false,
         "type": "uuid"
       },
       {
@@ -1418,6 +1473,17 @@
         "position": 1,
         "relation": "RateLimitBucket",
         "required": true,
+        "type": "uuid"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "memberId",
+        "position": 16,
+        "relation": "EmailOutbox",
+        "required": false,
         "type": "uuid"
       },
       {
@@ -1878,6 +1944,17 @@
         "identity": "",
         "name": "windowStart",
         "position": 3,
+        "relation": "AnonymousRateLimit",
+        "required": true,
+        "type": "timestamp(3) with time zone"
+      },
+      {
+        "collation": null,
+        "default_expression": null,
+        "generated": "",
+        "identity": "",
+        "name": "windowStart",
+        "position": 3,
         "relation": "RateLimitBucket",
         "required": true,
         "type": "timestamp(3) with time zone"
@@ -2006,6 +2083,15 @@
       {
         "deferrable": false,
         "deferred": false,
+        "definition": "CHECK (\"subjectHash\" ~ '^[a-f0-9]{64}$'::text)",
+        "kind": "c",
+        "name": "anonymous_rate_limit_subject",
+        "relation": "AnonymousRateLimit",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
         "definition": "CHECK (\"toEmail\"::text = lower(\"toEmail\"::text) AND POSITION(('@'::text) IN (\"toEmail\")) > 1)",
         "kind": "c",
         "name": "email_outbox_email",
@@ -2051,6 +2137,15 @@
       {
         "deferrable": false,
         "deferred": false,
+        "definition": "CHECK (active = (status = 'ACTIVE'::blogpost.\"MemberStatus\"))",
+        "kind": "c",
+        "name": "member_status_active",
+        "relation": "Member",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
         "definition": "CHECK (attempts >= 0 AND attempts <= 6)",
         "kind": "c",
         "name": "email_outbox_attempts",
@@ -2073,6 +2168,15 @@
         "kind": "c",
         "name": "revision_checksum",
         "relation": "Revision",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (count > 0)",
+        "kind": "c",
+        "name": "anonymous_rate_limit_count",
+        "relation": "AnonymousRateLimit",
         "validated": true
       },
       {
@@ -2123,7 +2227,16 @@
       {
         "deferrable": false,
         "deferred": false,
-        "definition": "CHECK (kind::text = 'INVITATION'::text)",
+        "definition": "CHECK (kind::text = 'INVITATION'::text AND \"invitationId\" IS NOT NULL AND \"memberId\" IS NULL OR kind::text <> 'INVITATION'::text AND \"invitationId\" IS NULL AND \"memberId\" IS NOT NULL)",
+        "kind": "c",
+        "name": "email_outbox_owner",
+        "relation": "EmailOutbox",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "CHECK (kind::text = ANY (ARRAY['INVITATION'::character varying, 'VERIFY_EMAIL'::character varying, 'PASSWORD_RESET'::character varying, 'PASSWORD_SET'::character varying, 'PASSWORD_CHANGED_NOTICE'::character varying, 'EMAIL_CHANGE_VERIFY'::character varying, 'EMAIL_CHANGE_NOTICE'::character varying, 'ACCOUNT_EXISTS_NOTICE'::character varying]::text[]))",
         "kind": "c",
         "name": "email_outbox_kind",
         "relation": "EmailOutbox",
@@ -2341,6 +2454,15 @@
         "deferred": false,
         "definition": "FOREIGN KEY (\"memberId\") REFERENCES blogpost.\"Member\"(id) ON UPDATE CASCADE ON DELETE CASCADE",
         "kind": "f",
+        "name": "EmailOutbox_memberId_fkey",
+        "relation": "EmailOutbox",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": "FOREIGN KEY (\"memberId\") REFERENCES blogpost.\"Member\"(id) ON UPDATE CASCADE ON DELETE CASCADE",
+        "kind": "f",
         "name": "RateLimitBucket_memberId_fkey",
         "relation": "RateLimitBucket",
         "validated": true
@@ -2546,6 +2668,15 @@
       {
         "deferrable": false,
         "deferred": false,
+        "definition": "PRIMARY KEY (\"subjectHash\", action, \"windowStart\")",
+        "kind": "p",
+        "name": "AnonymousRateLimit_pkey",
+        "relation": "AnonymousRateLimit",
+        "validated": true
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
         "definition": "PRIMARY KEY (id)",
         "kind": "p",
         "name": "AuditEvent_pkey",
@@ -2721,9 +2852,31 @@
         "parallel": "u",
         "security_definer": false,
         "volatility": "v"
+      },
+      {
+        "arguments": "",
+        "configuration": [],
+        "definition": "CREATE OR REPLACE FUNCTION blogpost.sync_member_status()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n  IF TG_OP = 'INSERT' THEN\n    IF NEW.\"status\" = 'ACTIVE' AND NOT NEW.\"active\" THEN NEW.\"status\" := 'DISABLED';\n    ELSIF NEW.\"status\" <> 'ACTIVE' AND NEW.\"active\" THEN NEW.\"active\" := false;\n    END IF;\n  ELSIF NEW.\"active\" IS DISTINCT FROM OLD.\"active\" AND NEW.\"status\" IS NOT DISTINCT FROM OLD.\"status\" THEN\n    NEW.\"status\" := CASE WHEN NEW.\"active\" THEN 'ACTIVE'::\"MemberStatus\" ELSE 'DISABLED'::\"MemberStatus\" END;\n  ELSIF NEW.\"status\" IS DISTINCT FROM OLD.\"status\" AND NEW.\"active\" IS NOT DISTINCT FROM OLD.\"active\" THEN\n    NEW.\"active\" := NEW.\"status\" = 'ACTIVE';\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "kind": "f",
+        "leakproof": false,
+        "name": "sync_member_status",
+        "owner": "blogpost_migrator",
+        "parallel": "u",
+        "security_definer": false,
+        "volatility": "v"
       }
     ],
     "indexes": [
+      {
+        "definition": "CREATE INDEX \"AnonymousRateLimit_expiresAt_idx\" ON blogpost.\"AnonymousRateLimit\" USING btree (\"expiresAt\")",
+        "live": true,
+        "name": "AnonymousRateLimit_expiresAt_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "AnonymousRateLimit",
+        "unique": false,
+        "valid": true
+      },
       {
         "definition": "CREATE INDEX \"AuditEvent_actorId_idx\" ON blogpost.\"AuditEvent\" USING btree (\"actorId\")",
         "live": true,
@@ -2768,6 +2921,16 @@
         "definition": "CREATE INDEX \"EmailOutbox_invitationId_idx\" ON blogpost.\"EmailOutbox\" USING btree (\"invitationId\")",
         "live": true,
         "name": "EmailOutbox_invitationId_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "EmailOutbox",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"EmailOutbox_memberId_idx\" ON blogpost.\"EmailOutbox\" USING btree (\"memberId\")",
+        "live": true,
+        "name": "EmailOutbox_memberId_idx",
         "primary": false,
         "ready": true,
         "relation": "EmailOutbox",
@@ -2888,6 +3051,16 @@
         "definition": "CREATE INDEX \"Member_active_role_idx\" ON blogpost.\"Member\" USING btree (active, role)",
         "live": true,
         "name": "Member_active_role_idx",
+        "primary": false,
+        "ready": true,
+        "relation": "Member",
+        "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE INDEX \"Member_status_createdAt_idx\" ON blogpost.\"Member\" USING btree (status, \"createdAt\")",
+        "live": true,
+        "name": "Member_status_createdAt_idx",
         "primary": false,
         "ready": true,
         "relation": "Member",
@@ -3042,6 +3215,16 @@
         "ready": true,
         "relation": "SlugHistory",
         "unique": false,
+        "valid": true
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX \"AnonymousRateLimit_pkey\" ON blogpost.\"AnonymousRateLimit\" USING btree (\"subjectHash\", action, \"windowStart\")",
+        "live": true,
+        "name": "AnonymousRateLimit_pkey",
+        "primary": true,
+        "ready": true,
+        "relation": "AnonymousRateLimit",
+        "unique": true,
         "valid": true
       },
       {
@@ -3431,6 +3614,16 @@
       {
         "force_row_security": false,
         "kind": "r",
+        "name": "AnonymousRateLimit",
+        "options": [],
+        "owner": "blogpost_migrator",
+        "persistence": "p",
+        "replica_identity": "d",
+        "row_security": false
+      },
+      {
+        "force_row_security": false,
+        "kind": "r",
         "name": "AuditEvent",
         "options": [],
         "owner": "blogpost_migrator",
@@ -3634,6 +3827,16 @@
       {
         "deferrable": false,
         "deferred": false,
+        "definition": "CREATE TRIGGER member_status_sync BEFORE INSERT OR UPDATE ON blogpost.\"Member\" FOR EACH ROW EXECUTE FUNCTION blogpost.sync_member_status()",
+        "enabled": "O",
+        "function": "blogpost.sync_member_status",
+        "internal": false,
+        "name": "member_status_sync",
+        "relation": "Member"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
         "definition": "CREATE TRIGGER preserve_slug_reservation BEFORE UPDATE ON blogpost.\"SlugHistory\" FOR EACH ROW EXECUTE FUNCTION blogpost.preserve_slug_reservation()",
         "enabled": "O",
         "function": "blogpost.preserve_slug_reservation",
@@ -3680,6 +3883,16 @@
         "internal": true,
         "name": "EmailOutbox_invitationId_fkey:RI_FKey_cascade_del:9",
         "relation": "Invitation"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_del",
+        "internal": true,
+        "name": "EmailOutbox_memberId_fkey:RI_FKey_cascade_del:9",
+        "relation": "Member"
       },
       {
         "deferrable": false,
@@ -3780,6 +3993,16 @@
         "internal": true,
         "name": "EmailOutbox_invitationId_fkey:RI_FKey_cascade_upd:17",
         "relation": "Invitation"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_cascade_upd",
+        "internal": true,
+        "name": "EmailOutbox_memberId_fkey:RI_FKey_cascade_upd:17",
+        "relation": "Member"
       },
       {
         "deferrable": false,
@@ -4009,6 +4232,16 @@
         "function": "pg_catalog.RI_FKey_check_ins",
         "internal": true,
         "name": "EmailOutbox_invitationId_fkey:RI_FKey_check_ins:5",
+        "relation": "EmailOutbox"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_ins",
+        "internal": true,
+        "name": "EmailOutbox_memberId_fkey:RI_FKey_check_ins:5",
         "relation": "EmailOutbox"
       },
       {
@@ -4309,6 +4542,16 @@
         "function": "pg_catalog.RI_FKey_check_upd",
         "internal": true,
         "name": "EmailOutbox_invitationId_fkey:RI_FKey_check_upd:17",
+        "relation": "EmailOutbox"
+      },
+      {
+        "deferrable": false,
+        "deferred": false,
+        "definition": null,
+        "enabled": "O",
+        "function": "pg_catalog.RI_FKey_check_upd",
+        "internal": true,
+        "name": "EmailOutbox_memberId_fkey:RI_FKey_check_upd:17",
         "relation": "EmailOutbox"
       },
       {
@@ -4918,6 +5161,15 @@
         "default_expression": null,
         "kind": "c",
         "labels": "{}",
+        "name": "AnonymousRateLimit",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "c",
+        "labels": "{}",
         "name": "AuditEvent",
         "owner": "blogpost_migrator",
         "required": false
@@ -5124,6 +5376,15 @@
         "base_type": null,
         "default_expression": null,
         "kind": "e",
+        "labels": "{PENDING,ACTIVE,DISABLED}",
+        "name": "MemberStatus",
+        "owner": "blogpost_migrator",
+        "required": false
+      },
+      {
+        "base_type": null,
+        "default_expression": null,
+        "kind": "e",
         "labels": "{PROCESSING,READY,DELETING}",
         "name": "MediaState",
         "owner": "blogpost_migrator",
@@ -5131,9 +5392,9 @@
       }
     ]
   },
-  "migrationDigest": "f4d7c1282ba822fc1407e25b8835ddde08b3cfb62402b0b167b7fd3b1175a3a0",
-  "permissionDigest": "678f5f6c1e95bc48c9eca67ca21db97393090ef2a59cf691787a66baa9f41cd7",
+  "migrationDigest": "454b0515974b57c36105984446992f9fa928d150c84b9c680bd8ac8630d5d608",
+  "permissionDigest": "26553da87c7db877746b44fb3de3f1b0cb4e37d62cd6e4f3a147d6fe5fb137fb",
   "postgresMajor": 17,
-  "schemaDigest": "183898e00899d8b5a0b95f42173743f50aa6c97d0e75bbf31f7edd2e633b8283",
+  "schemaDigest": "f8134c741dcfd85455c26640fa8c42bad5c8d999e3e995b226a1116647c05a25",
   "schemaVersion": 1
 }

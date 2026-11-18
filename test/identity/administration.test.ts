@@ -135,6 +135,7 @@ test(
           'handle',
           'id',
           'role',
+          'status',
           'updatedAt',
           'version',
         ]);

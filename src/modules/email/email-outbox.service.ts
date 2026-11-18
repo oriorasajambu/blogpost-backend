@@ -16,6 +16,13 @@ import {
   renderInvitationEmail,
   type InvitationEmailPayload,
 } from './invitation-email.js';
+import {
+  accountPayload,
+  isAccountEmailKind,
+  renderAccountEmail,
+  type AccountEmailKind,
+  type AccountEmailPayload,
+} from './account-email.js';
 import { MAX_ATTEMPTS, nextAttemptDelay } from './retry.js';
 
 export type DeliveryStatus =
@@ -63,7 +70,9 @@ const FINAL = ['SENT', 'FAILED', 'CANCELLED'] as const;
 
 interface ClaimedRow {
   id: string;
-  invitationId: string;
+  kind: string;
+  invitationId: string | null;
+  memberId: string | null;
   toEmail: string;
   payloadCiphertext: Uint8Array;
   attempts: number;
@@ -109,6 +118,8 @@ export class EmailOutboxService {
       : await tx.emailOutbox.findFirst({
           where: {
             toEmail,
+            // Account email must not block an administrator's invitation.
+            kind: 'INVITATION',
             createdAt: { gt: new Date(now.getTime() - this.cooldownMs) },
           },
           orderBy: { createdAt: 'desc' },
@@ -144,6 +155,64 @@ export class EmailOutboxService {
       },
     });
     return id;
+  }
+  /**
+   * Queues account email (verification, reset, notices) inside the caller's transaction. Unlike
+   * invitations this never throws on the per-recipient cooldown: anonymous callers must not learn
+   * whether an address exists, so a repeat of the same kind within the cooldown is skipped and
+   * reported as null. Notices are exempt because they follow another email on purpose.
+   */
+  async enqueueAccount(
+    tx: Transaction,
+    memberId: string,
+    kind: AccountEmailKind,
+    toEmail: string,
+    payload: AccountEmailPayload,
+    now: Date,
+  ): Promise<string | null> {
+    if (!this.key) return null;
+    accountPayload(kind, payload);
+    const notice = kind.endsWith('_NOTICE');
+    if (!notice && this.cooldownMs) {
+      const recent = await tx.emailOutbox.findFirst({
+        where: {
+          toEmail,
+          kind,
+          createdAt: { gt: new Date(now.getTime() - this.cooldownMs) },
+        },
+        select: { id: true },
+      });
+      if (recent) return null;
+    }
+    const id = randomUUID();
+    await tx.emailOutbox.create({
+      data: {
+        id,
+        memberId,
+        kind,
+        toEmail,
+        payloadCiphertext: new Uint8Array(sealPayload(this.key, id, payload)),
+        status: 'QUEUED',
+        nextAttemptAt: now,
+        createdAt: now,
+      },
+    });
+    return id;
+  }
+  /** Cancels still-pending account email of the given kinds, e.g. superseded reset links. */
+  async cancelAccount(
+    tx: Transaction,
+    memberId: string,
+    kinds: AccountEmailKind[],
+  ): Promise<void> {
+    await tx.emailOutbox.updateMany({
+      where: {
+        memberId,
+        kind: { in: kinds },
+        status: { in: ['QUEUED', 'SENDING'] },
+      },
+      data: { status: 'CANCELLED', payloadCiphertext: null, lockedUntil: null },
+    });
   }
   /** Cancels pending email for an invitation that was reissued, revoked or accepted. */
   async cancelFor(tx: Transaction, invitationId: string): Promise<void> {
@@ -195,22 +264,21 @@ export class EmailOutboxService {
     const filter = only ? Prisma.sql`AND id = ${only}::uuid` : Prisma.empty;
     // An attempt whose worker vanished after the last allowed try can no longer be retried.
     const exhausted = await prisma.$queryRaw<
-      { id: string; invitationId: string; attempts: number }[]
+      {
+        id: string;
+        invitationId: string | null;
+        memberId: string | null;
+        attempts: number;
+      }[]
     >`UPDATE blogpost."EmailOutbox"
       SET status = 'FAILED', "payloadCiphertext" = NULL, "lockedUntil" = NULL,
         "lastErrorCode" = 'ATTEMPT_ABANDONED'
       WHERE status = 'SENDING' AND "lockedUntil" < clock_timestamp()
         AND attempts >= ${MAX_ATTEMPTS} ${filter}
-      RETURNING id, "invitationId", attempts`;
+      RETURNING id, "invitationId", "memberId", attempts`;
     for (const row of exhausted) {
       summary.failed++;
-      await this.auditFailure(
-        row.invitationId,
-        row.id,
-        row.attempts,
-        'ATTEMPT_ABANDONED',
-        traceId,
-      );
+      await this.auditFailure(row, row.attempts, 'ATTEMPT_ABANDONED', traceId);
     }
     // Claim one row right before delivering it, so each lease covers a single send (bounded by
     // the provider timeout) rather than a whole batch processed in sequence.
@@ -230,7 +298,7 @@ export class EmailOutboxService {
           "lockedUntil" = clock_timestamp() + ${LOCK_INTERVAL},
           "lastAttemptAt" = clock_timestamp()
         FROM due WHERE o.id = due.id
-        RETURNING o.id, o."invitationId", o."toEmail", o."payloadCiphertext", o.attempts`;
+        RETURNING o.id, o.kind, o."invitationId", o."memberId", o."toEmail", o."payloadCiphertext", o.attempts`;
       if (!row) break;
       summary.claimed++;
       const outcome = await this.deliver(row, traceId, timeoutMs);
@@ -244,37 +312,67 @@ export class EmailOutboxService {
     timeoutMs: number,
   ): Promise<'sent' | 'retried' | 'failed' | 'cancelled'> {
     const prisma = this.database.prisma;
-    const invitation = await prisma.invitation.findUnique({
-      where: { id: row.invitationId },
-      select: { acceptedAt: true, revokedAt: true, expiresAt: true },
-    });
-    if (
-      !invitation ||
-      invitation.acceptedAt ||
-      invitation.revokedAt ||
-      invitation.expiresAt <= new Date()
-    ) {
-      await this.finish(row, {
-        status: 'CANCELLED',
-        lastErrorCode: 'INVITATION_UNAVAILABLE',
+    let rendered: ReturnType<typeof renderInvitationEmail>;
+    let replyTo: string | null = null;
+    if (row.invitationId) {
+      const invitation = await prisma.invitation.findUnique({
+        where: { id: row.invitationId },
+        select: { acceptedAt: true, revokedAt: true, expiresAt: true },
       });
-      return 'cancelled';
-    }
-    let payload: InvitationEmailPayload;
-    try {
-      payload = invitationPayload(
-        openPayload(this.key!, row.id, row.payloadCiphertext),
-      );
-    } catch {
-      return this.fail(row, 'PAYLOAD_UNREADABLE', traceId);
+      if (
+        !invitation ||
+        invitation.acceptedAt ||
+        invitation.revokedAt ||
+        invitation.expiresAt <= new Date()
+      ) {
+        await this.finish(row, {
+          status: 'CANCELLED',
+          lastErrorCode: 'INVITATION_UNAVAILABLE',
+        });
+        return 'cancelled';
+      }
+      try {
+        const payload = invitationPayload(
+          openPayload(this.key!, row.id, row.payloadCiphertext),
+        );
+        rendered = renderInvitationEmail(payload, row.toEmail);
+        replyTo = payload.inviterEmail || null;
+      } catch {
+        return this.fail(row, 'PAYLOAD_UNREADABLE', traceId);
+      }
+    } else {
+      const member = row.memberId
+        ? await prisma.member.findUnique({
+            where: { id: row.memberId },
+            select: { status: true },
+          })
+        : null;
+      if (
+        !member ||
+        !isAccountEmailKind(row.kind) ||
+        member.status === 'DISABLED'
+      ) {
+        await this.finish(row, {
+          status: 'CANCELLED',
+          lastErrorCode: 'ACCOUNT_UNAVAILABLE',
+        });
+        return 'cancelled';
+      }
+      try {
+        rendered = renderAccountEmail(
+          row.kind,
+          accountPayload(
+            row.kind,
+            openPayload(this.key!, row.id, row.payloadCiphertext),
+          ),
+          row.toEmail,
+        );
+      } catch {
+        return this.fail(row, 'PAYLOAD_UNREADABLE', traceId);
+      }
     }
     const result = await this.gateway.send(
-      {
-        ...renderInvitationEmail(payload, row.toEmail),
-        to: row.toEmail,
-        replyTo: payload.inviterEmail || null,
-        idempotencyKey: row.id,
-      },
+      { ...rendered, to: row.toEmail, replyTo, idempotencyKey: row.id },
       timeoutMs,
     );
     if (result.ok) {
@@ -309,14 +407,7 @@ export class EmailOutboxService {
       status: 'FAILED',
       lastErrorCode: code.slice(0, 80),
     });
-    if (changed)
-      await this.auditFailure(
-        row.invitationId,
-        row.id,
-        row.attempts,
-        code,
-        traceId,
-      );
+    if (changed) await this.auditFailure(row, row.attempts, code, traceId);
     return 'failed';
   }
   /**
@@ -339,14 +430,33 @@ export class EmailOutboxService {
     return result.count === 1;
   }
   private async auditFailure(
-    invitationId: string,
-    outboxId: string,
+    row: { id: string; invitationId: string | null; memberId: string | null },
     attempts: number,
     errorCode: string,
     traceId: string,
   ): Promise<void> {
+    const changes = {
+      outboxId: row.id,
+      attempts,
+      errorCode: errorCode.slice(0, 80),
+    };
+    if (!row.invitationId) {
+      // The member the email was meant for is the actor: the audit list requires one.
+      if (!row.memberId) return;
+      await this.database.prisma.auditEvent.create({
+        data: {
+          actorId: row.memberId,
+          action: 'ACCOUNT_EMAIL_FAILED',
+          subjectType: 'MEMBER',
+          subjectId: row.memberId,
+          changes,
+          traceId,
+        },
+      });
+      return;
+    }
     const invitation = await this.database.prisma.invitation.findUnique({
-      where: { id: invitationId },
+      where: { id: row.invitationId },
       select: { issuerId: true },
     });
     if (!invitation) return;
@@ -356,8 +466,8 @@ export class EmailOutboxService {
         actorId: invitation.issuerId,
         action: 'INVITATION_EMAIL_FAILED',
         subjectType: 'INVITATION',
-        subjectId: invitationId,
-        changes: { outboxId, attempts, errorCode: errorCode.slice(0, 80) },
+        subjectId: row.invitationId,
+        changes,
         traceId,
       },
     });

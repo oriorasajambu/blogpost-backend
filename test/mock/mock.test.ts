@@ -1729,7 +1729,62 @@ test('create receipts and expired-key reconciliation respect current ownership a
   );
 });
 
-test('every one of the 52 authored application operations has executed a schema-valid success', () => {
+test('registration answers identically for any address and rejects a failed captcha', async (t) => {
+  const { call } = setup(t);
+  const body = {
+    email: 'new.member@example.test',
+    password: 'a long enough passphrase',
+    captchaToken: 'token',
+  };
+  const first = parse<DTO<'AccountRequestAccepted'>>(
+    await call('POST', '/v1/auth/register', body, undefined, undefined, null),
+    202,
+  );
+  const again = parse<DTO<'AccountRequestAccepted'>>(
+    await call('POST', '/v1/auth/register', body, undefined, undefined, null),
+    202,
+  );
+  assert.deepEqual(first.data, again.data);
+  assert.equal(first.data.status, 'ACCEPTED');
+  parse(
+    await call(
+      'POST',
+      '/v1/auth/verify-email/resend',
+      { email: body.email },
+      undefined,
+      undefined,
+      null,
+    ),
+    202,
+  );
+  assert.equal(
+    parse(
+      await call(
+        'POST',
+        '/v1/auth/register',
+        { ...body, captchaToken: 'mock-captcha-fail' },
+        undefined,
+        undefined,
+        null,
+      ),
+      422,
+    ).error?.code,
+    'CAPTCHA_FAILED',
+  );
+  parse(
+    await call(
+      'POST',
+      '/v1/auth/register',
+      { ...body, password: 'short' },
+      undefined,
+      undefined,
+      null,
+    ),
+    422,
+  );
+});
+
+test('every one of the 54 authored application operations has executed a schema-valid success', () => {
   assert.equal(coverage('mock', exercisedOperations).complete, true);
   assert.deepEqual(
     operations

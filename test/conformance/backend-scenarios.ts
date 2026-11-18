@@ -9,6 +9,8 @@ export const backendScenarios = new Map<
 >([
   ['getApiMeta', 'ANONYMOUS_READ_FIXTURE'],
   ['createWebSession', 'ISOLATED_IDENTITY_SQL_FIXTURE'],
+  ['registerAccount', 'ISOLATED_IDENTITY_SQL_FIXTURE'],
+  ['resendVerificationEmail', 'ISOLATED_IDENTITY_SQL_FIXTURE'],
   ['getMe', 'ISOLATED_IDENTITY_SQL_FIXTURE'],
   ['updateMe', 'ISOLATED_IDENTITY_SQL_FIXTURE'],
   ...[

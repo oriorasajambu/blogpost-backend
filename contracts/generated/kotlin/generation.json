@@ -2,9 +2,9 @@
   "status": "DRAFT",
   "generatorVersion": "7.26.0",
   "generatorSha256": "1760050094997b9cc790cc1350be095f15da8c08a996b184d3eadc4ccda5e35e",
-  "sourceOpenApiSha256": "52639b514e50613fb44a9474ee617d0fa45d46a243780baf275bf73adfafc1c6",
+  "sourceOpenApiSha256": "0b18a4d1c29ba8f0d8e3ae2029d5515f89d82f030d8ad227a3ab199e3f1473e1",
   "projectionPolicy": 1,
-  "operationCount": 52,
+  "operationCount": 54,
   "configuration": {
     "generatorName": "kotlin",
     "library": "jvm-retrofit2",
@@ -23,6 +23,6 @@
       "modelPackage": "com.blogpost.contract.generated.model"
     }
   },
-  "validationRulesSha256": "8414db03b840741cb94139c7b5884f509ca223705f5bfa622422df4b1ee77748",
-  "kotlinSourceFiles": 129
+  "validationRulesSha256": "677acb1ef40000027374d694d3de5d7e92922e54781347503fa14b8ded0a1c1c",
+  "kotlinSourceFiles": 135
 }

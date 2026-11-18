@@ -8,6 +8,7 @@ export interface MemberRow {
   bio: string;
   role: MemberRole;
   active: boolean;
+  status: 'PENDING' | 'ACTIVE' | 'DISABLED';
   version: number;
 }
 export interface Me {
@@ -21,6 +22,7 @@ export interface Me {
   version: number;
 }
 export interface AdminMember extends Me {
+  status: 'PENDING' | 'ACTIVE' | 'DISABLED';
   createdAt: string;
   updatedAt: string;
 }
@@ -29,6 +31,7 @@ export function toAdminMember(
 ): AdminMember {
   return {
     ...toMe(member),
+    status: member.status,
     createdAt: member.createdAt.toISOString(),
     updatedAt: member.updatedAt.toISOString(),
   };

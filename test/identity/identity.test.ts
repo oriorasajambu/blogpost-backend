@@ -10,6 +10,8 @@ import { writeFile } from 'node:fs/promises';
 import { initializeApp, deleteApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { createApp } from '../../src/app.js';
+import { AccountsService } from '../../src/modules/accounts/accounts.service.js';
+import { BreachCheck } from '../../src/platform/security/password-policy.js';
 import { readConfig } from '../../src/platform/config/config.js';
 import { DatabaseService } from '../../src/platform/database/database.service.js';
 import { FirebaseIdentityGateway } from '../../src/modules/identity/firebase-identity.gateway.js';
@@ -228,6 +230,11 @@ test(
         body: { idToken: account.token },
         headers,
       });
+    const exchangeToken = (idToken: string, status: number) =>
+      request('createWebSession', '/v1/auth/web-session', status, {
+        method: 'POST',
+        body: { idToken },
+      });
     const patch = (
       account: Account,
       body: unknown,
@@ -432,7 +439,24 @@ test(
           password: 'disposable-password-123',
           returnSecureToken: true,
         });
-        await me({ ...author, token: password.idToken! }, 401);
+        // A verified password account is a valid identity but has no membership.
+        const unaffiliated = await me(
+          { ...author, token: password.idToken! },
+          403,
+        );
+        assert.equal(unaffiliated.body.error.code, 'INSUFFICIENT_PERMISSION');
+        const unverifiedEmail = `unverified-${randomUUID()}@example.test`;
+        await admin.createUser({
+          email: unverifiedEmail,
+          emailVerified: false,
+          password: 'disposable-password-123',
+        });
+        const unverified = await rest('signInWithPassword', {
+          email: unverifiedEmail,
+          password: 'disposable-password-123',
+          returnSecureToken: true,
+        });
+        await me({ ...author, token: unverified.idToken! }, 401);
         await me(
           { ...author, token: mutate(author.token, { email_verified: false }) },
           401,
@@ -1061,9 +1085,138 @@ test(
         assert.equal(current.email, bounded.email);
       },
     );
+    await t.test(
+      'registration creates a pending member, answers identically for known addresses and gates sign-in',
+      async () => {
+        // No network: an empty range response means the password is not in a known breach.
+        app.get(AccountsService).breach = new BreachCheck(
+          async () => new Response(''),
+        );
+        const register = (email: string, password: string, status = 202) =>
+          request('registerAccount', '/v1/auth/register', status, {
+            method: 'POST',
+            body: { email, password },
+          });
+        const resend = (email: string) =>
+          request(
+            'resendVerificationEmail',
+            '/v1/auth/verify-email/resend',
+            202,
+            { method: 'POST', body: { email } },
+          );
+        const emails = (email: string, kind: string) =>
+          database.prisma.emailOutbox.count({
+            where: { toEmail: email, kind },
+          });
+        const oobCode = async (email: string) => {
+          const response = await fetch(
+            `http://auth:9099/emulator/v1/projects/${config.identityProject}/oobCodes`,
+            { signal: AbortSignal.timeout(10_000) },
+          );
+          const codes = (
+            (await response.json()) as {
+              oobCodes: {
+                email: string;
+                oobCode: string;
+                requestType: string;
+              }[];
+            }
+          ).oobCodes.filter(
+            (entry) =>
+              entry.email === email && entry.requestType === 'VERIFY_EMAIL',
+          );
+          assert.ok(codes.length > 0, 'No verification code was issued');
+          return codes[codes.length - 1]!.oobCode;
+        };
+        const email = `register-${randomUUID()}@example.test`;
+        const password = 'a long enough passphrase 1';
+
+        const accepted = await register(email, password);
+        assert.deepEqual(accepted.body.data, { status: 'ACCEPTED' });
+        const pending = await database.prisma.member.findFirstOrThrow({
+          where: { email },
+        });
+        assert.equal(pending.status, 'PENDING');
+        assert.equal(pending.active, false);
+        assert.equal(pending.role, 'AUTHOR');
+        assert.equal(await emails(email, 'VERIFY_EMAIL'), 1);
+        const row = await database.prisma.emailOutbox.findFirstOrThrow({
+          where: { toEmail: email },
+        });
+        assert.equal(row.memberId, pending.id);
+        assert.equal(row.invitationId, null);
+        assert.equal(row.status, 'SENT');
+        assert.equal(row.payloadCiphertext, null);
+
+        // The same address again: identical answer, no second member.
+        assert.deepEqual((await register(email, password)).body.data, {
+          status: 'ACCEPTED',
+        });
+        assert.equal(
+          await database.prisma.member.count({ where: { email } }),
+          1,
+        );
+        // Invalid input is rejected without creating anything.
+        const other = `short-${randomUUID()}@example.test`;
+        assert.equal(
+          (await register(other, 'too short', 422)).body.error.code,
+          'VALIDATION_FAILED',
+        );
+        assert.equal(
+          await database.prisma.member.count({ where: { email: other } }),
+          0,
+        );
+
+        // Sign-in before verification is refused, after it the pending member is still refused.
+        const signIn = () =>
+          rest('signInWithPassword', {
+            email,
+            password,
+            returnSecureToken: true,
+          });
+        await exchangeToken((await signIn()).idToken!, 401);
+        await rest('update', { oobCode: await oobCode(email) });
+        const verified = (await signIn()).idToken!;
+        assert.equal(
+          (await exchangeToken(verified, 403)).body.error.code,
+          'ACCOUNT_PENDING',
+        );
+
+        // Approval (done through the admin API elsewhere) lets the same credential in.
+        await database.prisma.member.update({
+          where: { id: pending.id },
+          data: { active: true, status: 'ACTIVE' },
+        });
+        const session = await exchangeToken((await signIn()).idToken!, 200);
+        assert.equal(session.body.data.member.id, pending.id);
+
+        // A verified owner registering again is only told the account exists.
+        await register(email, password);
+        assert.equal(await emails(email, 'ACCOUNT_EXISTS_NOTICE'), 1);
+        assert.equal(
+          await database.prisma.member.count({ where: { email } }),
+          1,
+        );
+
+        // Resending: unverified accounts get a new link, unknown addresses get the same answer.
+        const second = `resend-${randomUUID()}@example.test`;
+        await register(second, password);
+        await resend(second);
+        assert.equal(await emails(second, 'VERIFY_EMAIL'), 2);
+        const unknown = `unknown-${randomUUID()}@example.test`;
+        assert.deepEqual((await resend(unknown)).body.data, {
+          status: 'ACCEPTED',
+        });
+        assert.equal(await emails(unknown, 'VERIFY_EMAIL'), 0);
+        assert.equal(
+          await database.prisma.member.count({ where: { email: unknown } }),
+          0,
+        );
+      },
+    );
     await request('getApiMeta', '/v1/meta', 200);
     const report = coverage('backend', executed);
-    assert.equal(report.executed, 4);
+    assert.equal(report.executed, 6);
     assert.equal(report.pending.length, 48);
     assert.equal(report.complete, false);
     const runId = process.env.BLOGPOST_IDENTITY_RUN_ID;

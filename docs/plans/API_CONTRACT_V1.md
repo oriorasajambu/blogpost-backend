@@ -237,7 +237,7 @@ Collect up to 50 safely determinable field issues in deterministic location/path
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `400`       | `INVALID_CLIENT_METADATA`, `MALFORMED_JSON`, `INVALID_CURSOR`, `INVALID_IDEMPOTENCY_KEY`, `INVALID_EXPECTED_VERSION`, `AMBIGUOUS_CREDENTIALS`                                                       |
 | `401`       | `AUTHENTICATION_REQUIRED`, `INVALID_CREDENTIAL`, `AUTHENTICATION_EXPIRED`                                                                                                                           |
-| `403`       | `INSUFFICIENT_PERMISSION`, `ACCESS_REVOKED`, `INVITATION_ACCOUNT_MISMATCH`, `CSRF_VALIDATION_FAILED`                                                                                                |
+| `403`       | `INSUFFICIENT_PERMISSION`, `ACCESS_REVOKED`, `ACCOUNT_PENDING`, `INVITATION_ACCOUNT_MISMATCH`, `CSRF_VALIDATION_FAILED`                                                                             |
 | `404`       | `RESOURCE_NOT_FOUND`, `INVITATION_INVALID`                                                                                                                                                          |
 | `405`       | `METHOD_NOT_ALLOWED`, with `Allow`                                                                                                                                                                  |
 | `409`       | `WORKFLOW_CONFLICT`, `SLUG_CONFLICT`, `LAST_ADMIN_REQUIRED`, `MEMBER_ALREADY_EXISTS`, `CLIENT_DRAFT_ALREADY_EXISTS`, `IDEMPOTENCY_KEY_REUSED`, `IDEMPOTENCY_IN_PROGRESS`, `RESOURCE_QUOTA_EXCEEDED` |
@@ -245,7 +245,7 @@ Collect up to 50 safely determinable field issues in deterministic location/path
 | `412`       | `VERSION_CONFLICT`                                                                                                                                                                                  |
 | `413`       | `PAYLOAD_TOO_LARGE`, `UPLOAD_TOO_LARGE`                                                                                                                                                             |
 | `415`       | `UNSUPPORTED_MEDIA_TYPE`                                                                                                                                                                            |
-| `422`       | `VALIDATION_FAILED`, `MARKDOWN_UNSUPPORTED`, `SEARCH_QUERY_NOT_SEARCHABLE`                                                                                                                          |
+| `422`       | `VALIDATION_FAILED`, `CAPTCHA_FAILED`, `MARKDOWN_UNSUPPORTED`, `SEARCH_QUERY_NOT_SEARCHABLE`                                                                                                        |
 | `428`       | `EXPECTED_VERSION_REQUIRED`                                                                                                                                                                         |
 | `429`       | `RATE_LIMITED`                                                                                                                                                                                      |
 | `500`       | `INTERNAL_ERROR`                                                                                                                                                                                    |
@@ -453,12 +453,14 @@ Public taxonomy includes active entries plus archived entries still referenced b
 
 #### Identity/profile
 
-| Method/path                   | Access/input                        | Success data | Operation ID       |
-| ----------------------------- | ----------------------------------- | ------------ | ------------------ |
-| `POST /v1/auth/web-session`   | Recent token in body; no K          | `WebSession` | `createWebSession` |
-| `GET /v1/me`                  | Active member                       | `Me`         | `getMe`            |
-| `PATCH /v1/me`                | Active member; V,K; displayName/bio | `Me`         | `updateMe`         |
-| `POST /v1/invitations/accept` | Verified identity; K; `{token}`     | `Me`         | `acceptInvitation` |
+| Method/path                         | Access/input                                                 | Success data             | Operation ID              |
+| ----------------------------------- | ------------------------------------------------------------ | ------------------------ | ------------------------- |
+| `POST /v1/auth/web-session`         | Recent token in body; no K                                   | `WebSession`             | `createWebSession`        |
+| `POST /v1/auth/register`            | Anonymous, server proxy only; email, password, captcha; no K | `AccountRequestAccepted` | `registerAccount`         |
+| `POST /v1/auth/verify-email/resend` | Anonymous, server proxy only; email, captcha; no K           | `AccountRequestAccepted` | `resendVerificationEmail` |
+| `GET /v1/me`                        | Active member                                                | `Me`                     | `getMe`                   |
+| `PATCH /v1/me`                      | Active member; V,K; displayName/bio                          | `Me`                     | `updateMe`                |
+| `POST /v1/invitations/accept`       | Verified identity; K; `{token}`                              | `Me`                     | `acceptInvitation`        |
 
 Session exchange input is `{idToken}` and checks recent authentication within five minutes. `WebSession` is server-proxy-only and contains `sessionCookie`, `expiresAt`, and `member`. Never expose it to browser JSON/storage. The session lasts five days.
 

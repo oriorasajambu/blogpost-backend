@@ -27,6 +27,12 @@ enum WorkflowState {
   CLEAN
 }
 
+enum MemberStatus {
+  PENDING
+  ACTIVE
+  DISABLED
+}
+
 enum MediaState {
   PROCESSING
   READY
@@ -42,6 +48,7 @@ model Member {
   bio         String   @default("")
   role        Role
   active      Boolean  @default(true)
+  status      MemberStatus @default(ACTIVE)
   version     Int      @default(1)
   createdAt   DateTime @default(now()) @db.Timestamptz(3)
   updatedAt   DateTime @updatedAt @db.Timestamptz(3)
@@ -56,7 +63,9 @@ model Member {
   uploads MediaAsset[]
   auditEvents AuditEvent[]
   rateLimits RateLimitBucket[]
+  accountEmails EmailOutbox[]
   @@index([active, role])
+  @@index([status, createdAt])
 }
 
 model Invitation {
@@ -82,8 +91,9 @@ model Invitation {
 
 model EmailOutbox {
   id String @id @default(uuid()) @db.Uuid
-  invitationId String @db.Uuid
-  kind String @db.VarChar(20)
+  invitationId String? @db.Uuid
+  memberId String? @db.Uuid
+  kind String @db.VarChar(30)
   toEmail String @db.VarChar(320)
   payloadCiphertext Bytes?
   payloadKeyVersion Int @default(1) @db.SmallInt
@@ -96,8 +106,10 @@ model EmailOutbox {
   lastErrorCode String? @db.VarChar(80)
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   sentAt DateTime? @db.Timestamptz(3)
-  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  invitation Invitation? @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  member Member? @relation(fields: [memberId], references: [id], onDelete: Cascade)
   @@index([invitationId])
+  @@index([memberId])
   @@index([toEmail, createdAt])
 }
 
@@ -347,6 +359,16 @@ model RateLimitBucket {
   expiresAt DateTime @db.Timestamptz(3)
   member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
   @@id([memberId, action, windowStart])
+  @@index([expiresAt])
+}
+
+model AnonymousRateLimit {
+  subjectHash String @db.Char(64)
+  action String @db.VarChar(40)
+  windowStart DateTime @db.Timestamptz(3)
+  count Int @default(0)
+  expiresAt DateTime @db.Timestamptz(3)
+  @@id([subjectHash, action, windowStart])
   @@index([expiresAt])
 }
 

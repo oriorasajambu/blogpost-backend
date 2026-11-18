@@ -4,6 +4,7 @@ import { digest } from '../platform/config/build-model.js';
 
 export const SCHEMA_LOCK = 78201907;
 export const APP_TABLES = [
+  'AnonymousRateLimit',
   'AuditEvent',
   'Category',
   'EmailOutbox',

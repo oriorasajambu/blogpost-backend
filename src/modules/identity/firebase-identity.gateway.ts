@@ -11,6 +11,7 @@ import { APP_CONFIG, type AppConfig } from '../../platform/config/config.js';
 import { ApiError } from '../../platform/errors/api-error.js';
 import { invalid } from './identity.service.js';
 import type {
+  ActionCodeKind,
   IdentityEvidence,
   IdentityGateway,
   IdentityUser,
@@ -62,6 +63,9 @@ function user(record: UserRecord): IdentityUser {
     tenantId: record.tenantId ?? undefined,
     googleProviders: record.providerData
       .filter((provider) => provider.providerId === 'google.com')
+      .map((provider) => ({ uid: provider.uid, email: provider.email })),
+    passwordProviders: record.providerData
+      .filter((provider) => provider.providerId === 'password')
       .map((provider) => ({ uid: provider.uid, email: provider.email })),
   };
 }
@@ -138,6 +142,7 @@ export class FirebaseIdentityGateway
       emailVerified: claims.email_verified,
       provider: claims.firebase?.sign_in_provider,
       googleIdentities: claims.firebase?.identities?.['google.com'],
+      passwordIdentities: claims.firebase?.identities?.['email'],
       tenant: claims.firebase?.tenant,
       authTime: claims.auth_time,
       issuedAt: claims.iat,
@@ -176,6 +181,61 @@ export class FirebaseIdentityGateway
   }
   userByEmail(email: string): Promise<IdentityUser> {
     return this.execute(async (auth) => user(await auth.getUserByEmail(email)));
+  }
+  findByEmail(email: string): Promise<IdentityUser | null> {
+    return this.execute(async (auth) => {
+      try {
+        return user(await auth.getUserByEmail(email));
+      } catch (error) {
+        if ((error as { code?: string })?.code === 'auth/user-not-found')
+          return null;
+        throw error;
+      }
+    });
+  }
+  createPasswordUser(
+    email: string,
+    password: string,
+  ): Promise<{ uid: string } | 'EXISTS'> {
+    return this.execute(async (auth) => {
+      try {
+        const created = await auth.createUser({
+          email,
+          password,
+          emailVerified: false,
+          disabled: false,
+        });
+        return { uid: created.uid };
+      } catch (error) {
+        if ((error as { code?: string })?.code === 'auth/email-already-exists')
+          return 'EXISTS' as const;
+        throw error;
+      }
+    });
+  }
+  actionCode(
+    kind: ActionCodeKind,
+    email: string,
+    newEmail?: string,
+  ): Promise<string> {
+    return this.execute(async (auth) => {
+      const link =
+        kind === 'VERIFY_EMAIL'
+          ? await auth.generateEmailVerificationLink(email)
+          : kind === 'PASSWORD_RESET'
+            ? await auth.generatePasswordResetLink(email)
+            : await auth.generateVerifyAndChangeEmailLink(email, newEmail!);
+      // Only the one-time code is kept; the link itself points at Firebase's hosted handler.
+      const code = new URL(link).searchParams.get('oobCode');
+      if (!code) throw dependency();
+      return code;
+    });
+  }
+  deleteUser(uid: string): Promise<void> {
+    return this.execute((auth) => auth.deleteUser(uid));
+  }
+  revokeSessions(uid: string): Promise<void> {
+    return this.execute((auth) => auth.revokeRefreshTokens(uid));
   }
   async onModuleDestroy(): Promise<void> {
     if (this.app) await deleteApp(this.app);

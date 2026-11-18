@@ -1682,6 +1682,232 @@ paths:
           $ref: '#/components/responses/Error503'
         '504':
           $ref: '#/components/responses/Error504'
+  /v1/auth/register:
+    post:
+      operationId: registerAccount
+      tags:
+        - auth
+      parameters:
+        - $ref: '#/components/parameters/X-Device-ID'
+        - $ref: '#/components/parameters/X-Device-OS'
+        - $ref: '#/components/parameters/X-Device-Version'
+        - $ref: '#/components/parameters/X-App-Version'
+        - $ref: '#/components/parameters/X-App-Language'
+        - $ref: '#/components/parameters/Traceparent'
+      security: []
+      x-access: ANONYMOUS
+      x-runtime-implemented: true
+      x-idempotency-required: false
+      x-expected-version-required: false
+      x-success-schema: RegisterAccountEnvelope
+      x-request-example:
+        method: POST
+        path: /v1/auth/register
+        headers:
+          X-Device-ID: 8d5ca46a-7f59-4f64-9d91-fedc41b59e7a
+          X-Device-OS: ANDROID
+          X-Device-Version: unknown
+          X-App-Version: 0.0.0+fixture.1
+          X-App-Language: en
+        query: {}
+        body:
+          email: new.member@example.test
+          password: SYNTHETIC-FIXTURE-PASSWORD
+          captchaToken: SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL
+      x-server-proxy-only: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterAccountInput'
+            examples:
+              valid:
+                value:
+                  email: new.member@example.test
+                  password: SYNTHETIC-FIXTURE-PASSWORD
+                  captchaToken: SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL
+      responses:
+        '202':
+          description: AccountRequestAccepted
+          headers:
+            X-Trace-ID:
+              schema:
+                type: string
+                x-unicodeScalarText: true
+                maxLength: 32
+                minLength: 32
+                pattern: ^[a-f0-9]{32}$
+              description: Matches the envelope traceId.
+            X-API-Contract-Version:
+              schema:
+                type: string
+                const: 1.0.0
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterAccountEnvelope'
+              examples:
+                success:
+                  value:
+                    timestamp: 2026-10-25T08:20:30.123Z
+                    responseKey: SUCCESS
+                    statusCode: 202
+                    traceId: 4bf92f3577b34da6a3ce929d0e0e4736
+                    message:
+                      title: Request completed
+                      descriptions: The request completed successfully.
+                    data:
+                      status: ACCEPTED
+                    error: null
+                    meta:
+                      contractVersion: 1.0.0
+                      pagination: null
+                      idempotency: null
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '405':
+          $ref: '#/components/responses/Error405'
+        '410':
+          $ref: '#/components/responses/Error410'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+        '504':
+          $ref: '#/components/responses/Error504'
+  /v1/auth/verify-email/resend:
+    post:
+      operationId: resendVerificationEmail
+      tags:
+        - auth
+      parameters:
+        - $ref: '#/components/parameters/X-Device-ID'
+        - $ref: '#/components/parameters/X-Device-OS'
+        - $ref: '#/components/parameters/X-Device-Version'
+        - $ref: '#/components/parameters/X-App-Version'
+        - $ref: '#/components/parameters/X-App-Language'
+        - $ref: '#/components/parameters/Traceparent'
+      security: []
+      x-access: ANONYMOUS
+      x-runtime-implemented: true
+      x-idempotency-required: false
+      x-expected-version-required: false
+      x-success-schema: ResendVerificationEmailEnvelope
+      x-request-example:
+        method: POST
+        path: /v1/auth/verify-email/resend
+        headers:
+          X-Device-ID: 8d5ca46a-7f59-4f64-9d91-fedc41b59e7a
+          X-Device-OS: ANDROID
+          X-Device-Version: unknown
+          X-App-Version: 0.0.0+fixture.1
+          X-App-Language: en
+        query: {}
+        body:
+          email: new.member@example.test
+          captchaToken: SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL
+      x-server-proxy-only: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendVerificationInput'
+            examples:
+              valid:
+                value:
+                  email: new.member@example.test
+                  captchaToken: SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL
+      responses:
+        '202':
+          description: AccountRequestAccepted
+          headers:
+            X-Trace-ID:
+              schema:
+                type: string
+                x-unicodeScalarText: true
+                maxLength: 32
+                minLength: 32
+                pattern: ^[a-f0-9]{32}$
+              description: Matches the envelope traceId.
+            X-API-Contract-Version:
+              schema:
+                type: string
+                const: 1.0.0
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResendVerificationEmailEnvelope'
+              examples:
+                success:
+                  value:
+                    timestamp: 2026-10-25T08:20:30.123Z
+                    responseKey: SUCCESS
+                    statusCode: 202
+                    traceId: 4bf92f3577b34da6a3ce929d0e0e4736
+                    message:
+                      title: Request completed
+                      descriptions: The request completed successfully.
+                    data:
+                      status: ACCEPTED
+                    error: null
+                    meta:
+                      contractVersion: 1.0.0
+                      pagination: null
+                      idempotency: null
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '404':
+          $ref: '#/components/responses/Error404'
+        '405':
+          $ref: '#/components/responses/Error405'
+        '410':
+          $ref: '#/components/responses/Error410'
+        '413':
+          $ref: '#/components/responses/Error413'
+        '415':
+          $ref: '#/components/responses/Error415'
+        '422':
+          $ref: '#/components/responses/Error422'
+        '429':
+          $ref: '#/components/responses/Error429'
+        '500':
+          $ref: '#/components/responses/Error500'
+        '503':
+          $ref: '#/components/responses/Error503'
+        '504':
+          $ref: '#/components/responses/Error504'
   /v1/me:
     get:
       operationId: getMe
@@ -8196,6 +8422,11 @@ paths:
           in: query
           required: false
           schema: *a44
+        - name: memberStatus
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/MemberStatus'
       security:
         - IdentityPlatformToken: []
         - WebSession: []
@@ -8263,6 +8494,7 @@ paths:
                         role: AUTHOR
                         active: true
                         version: 1
+                        status: ACTIVE
                         createdAt: 2026-10-25T08:20:30.123Z
                         updatedAt: 2026-10-25T08:20:30.123Z
                     error: null
@@ -8408,6 +8640,7 @@ paths:
                       role: AUTHOR
                       active: true
                       version: 1
+                      status: ACTIVE
                       createdAt: 2026-10-25T08:20:30.123Z
                       updatedAt: 2026-10-25T08:20:30.123Z
                     error: null
@@ -8545,6 +8778,7 @@ paths:
                       role: EDITOR
                       active: true
                       version: 2
+                      status: ACTIVE
                       createdAt: 2026-10-25T08:20:30.123Z
                       updatedAt: 2026-10-25T08:20:30.123Z
                     error: null
@@ -8572,6 +8806,7 @@ paths:
                       role: EDITOR
                       active: true
                       version: 2
+                      status: ACTIVE
                       createdAt: 2026-10-25T08:20:30.123Z
                       updatedAt: 2026-10-25T08:20:30.123Z
                     error: null
@@ -10600,6 +10835,12 @@ components:
         - role
         - active
         - version
+    MemberStatus:
+      type: string
+      enum:
+        - PENDING
+        - ACTIVE
+        - DISABLED
     AdminMember:
       type: object
       properties:
@@ -10611,6 +10852,8 @@ components:
         role: *a82
         active: *a60
         version: *a70
+        status:
+          $ref: '#/components/schemas/MemberStatus'
         createdAt: *a61
         updatedAt: *a61
       required:
@@ -10622,6 +10865,7 @@ components:
         - role
         - active
         - version
+        - status
         - createdAt
         - updatedAt
     ManagedTaxon:
@@ -10844,6 +11088,15 @@ components:
         - subjectId
         - createdAt
         - changes
+    AccountRequestAccepted:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - ACCEPTED
+      required:
+        - status
     WebSession:
       type: object
       properties:
@@ -11235,6 +11488,47 @@ components:
           minLength: 1
       required:
         - idToken
+      additionalProperties: false
+    RegisterAccountInput:
+      type: object
+      properties:
+        email:
+          type: string
+          x-unicodeScalarText: true
+          maxLength: 320
+          minLength: 3
+          format: email
+        password:
+          type: string
+          x-unicodeScalarText: true
+          maxLength: 128
+          minLength: 12
+          description: At least 12 and at most 128 characters; checked against known breaches. Never logged or stored by the API.
+        captchaToken:
+          type: string
+          x-unicodeScalarText: true
+          maxLength: 2048
+          minLength: 1
+      required:
+        - email
+        - password
+      additionalProperties: false
+    ResendVerificationInput:
+      type: object
+      properties:
+        email:
+          type: string
+          x-unicodeScalarText: true
+          maxLength: 320
+          minLength: 3
+          format: email
+        captchaToken:
+          type: string
+          x-unicodeScalarText: true
+          maxLength: 2048
+          minLength: 1
+      required:
+        - email
       additionalProperties: false
     UpdateMeInput:
       type: object
@@ -11986,6 +12280,116 @@ components:
             - descriptions
         data:
           $ref: '#/components/schemas/WebSession'
+        error:
+          type: 'null'
+        meta:
+          type: object
+          properties:
+            contractVersion:
+              type: string
+              const: 1.0.0
+            pagination:
+              type: 'null'
+            idempotency:
+              type: 'null'
+          required:
+            - contractVersion
+            - pagination
+            - idempotency
+      required:
+        - timestamp
+        - responseKey
+        - statusCode
+        - traceId
+        - message
+        - data
+        - error
+        - meta
+    RegisterAccountEnvelope:
+      type: object
+      properties:
+        timestamp: *a84
+        responseKey:
+          type: string
+          const: SUCCESS
+        statusCode:
+          type: integer
+          const: 202
+        traceId:
+          type: string
+          x-unicodeScalarText: true
+          maxLength: 32
+          minLength: 32
+          pattern: ^[a-f0-9]{32}$
+        message:
+          type: object
+          properties:
+            title:
+              type: string
+              x-unicodeScalarText: true
+            descriptions:
+              type: string
+              x-unicodeScalarText: true
+          required:
+            - title
+            - descriptions
+        data:
+          $ref: '#/components/schemas/AccountRequestAccepted'
+        error:
+          type: 'null'
+        meta:
+          type: object
+          properties:
+            contractVersion:
+              type: string
+              const: 1.0.0
+            pagination:
+              type: 'null'
+            idempotency:
+              type: 'null'
+          required:
+            - contractVersion
+            - pagination
+            - idempotency
+      required:
+        - timestamp
+        - responseKey
+        - statusCode
+        - traceId
+        - message
+        - data
+        - error
+        - meta
+    ResendVerificationEmailEnvelope:
+      type: object
+      properties:
+        timestamp: *a84
+        responseKey:
+          type: string
+          const: SUCCESS
+        statusCode:
+          type: integer
+          const: 202
+        traceId:
+          type: string
+          x-unicodeScalarText: true
+          maxLength: 32
+          minLength: 32
+          pattern: ^[a-f0-9]{32}$
+        message:
+          type: object
+          properties:
+            title:
+              type: string
+              x-unicodeScalarText: true
+            descriptions:
+              type: string
+              x-unicodeScalarText: true
+          required:
+            - title
+            - descriptions
+        data:
+          $ref: '#/components/schemas/AccountRequestAccepted'
         error:
           type: 'null'
         meta:
@@ -14731,7 +15135,7 @@ components:
                   pagination: null
                   idempotency: null
     Error422:
-      description: VALIDATION_FAILED, MARKDOWN_UNSUPPORTED, SEARCH_QUERY_NOT_SEARCHABLE
+      description: VALIDATION_FAILED, CAPTCHA_FAILED, MARKDOWN_UNSUPPORTED, SEARCH_QUERY_NOT_SEARCHABLE
       headers:
         X-Trace-ID:
           schema:
@@ -14770,6 +15174,24 @@ components:
                 data: null
                 error:
                   code: VALIDATION_FAILED
+                  fieldErrors: []
+                  context: null
+                meta:
+                  contractVersion: 1.0.0
+                  pagination: null
+                  idempotency: null
+            CAPTCHA_FAILED:
+              value:
+                timestamp: 2026-10-25T08:20:30.123Z
+                responseKey: ERROR
+                statusCode: 422
+                traceId: 4bf92f3577b34da6a3ce929d0e0e4736
+                message:
+                  title: Request rejected
+                  descriptions: Use the stable error code to handle this response.
+                data: null
+                error:
+                  code: CAPTCHA_FAILED
                   fieldErrors: []
                   context: null
                 meta:
@@ -15007,7 +15429,7 @@ components:
                   pagination: null
                   idempotency: null
     Error403:
-      description: INSUFFICIENT_PERMISSION, ACCESS_REVOKED, INVITATION_ACCOUNT_MISMATCH, CSRF_VALIDATION_FAILED
+      description: INSUFFICIENT_PERMISSION, ACCESS_REVOKED, ACCOUNT_PENDING, INVITATION_ACCOUNT_MISMATCH, CSRF_VALIDATION_FAILED
       headers:
         X-Trace-ID:
           schema:
@@ -15064,6 +15486,24 @@ components:
                 data: null
                 error:
                   code: ACCESS_REVOKED
+                  fieldErrors: []
+                  context: null
+                meta:
+                  contractVersion: 1.0.0
+                  pagination: null
+                  idempotency: null
+            ACCOUNT_PENDING:
+              value:
+                timestamp: 2026-10-25T08:20:30.123Z
+                responseKey: ERROR
+                statusCode: 403
+                traceId: 4bf92f3577b34da6a3ce929d0e0e4736
+                message:
+                  title: Request rejected
+                  descriptions: Use the stable error code to handle this response.
+                data: null
+                error:
+                  code: ACCOUNT_PENDING
                   fieldErrors: []
                   context: null
                 meta:

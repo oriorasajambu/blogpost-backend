@@ -49,7 +49,7 @@ export class AdminController {
   ) {
     const result = await this.members.list(
       principal(request).identity,
-      cursorQuery(request, ['role', 'active']),
+      cursorQuery(request, ['role', 'active', 'memberStatus']),
     );
     response.locals.pagination = result.pagination;
     return result.data;

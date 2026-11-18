@@ -157,6 +157,7 @@ export class MockState {
         handle: `synthetic-${name}`,
         displayName: `Synthetic ${name}`,
         bio: '',
+        status: 'ACTIVE',
         email: `${name}@example.test`,
         role,
         active: true,
@@ -686,6 +687,13 @@ export class MockState {
         },
       };
     }
+    if (id === 'registerAccount' || id === 'resendVerificationEmail') {
+      if (actorId !== undefined) fail(400, 'AMBIGUOUS_CREDENTIALS');
+      // The real API answers identically whether or not the address is registered.
+      if (body.captchaToken === 'mock-captcha-fail')
+        fail(422, 'CAPTCHA_FAILED');
+      return { data: { status: 'ACCEPTED' } };
+    }
     if (id === 'getMe') return { data: this.me(actor!) };
     if (id === 'updateMe') {
       const displayName =
@@ -730,6 +738,7 @@ export class MockState {
         handle: 'synthetic-invited',
         displayName: 'Synthetic invited',
         bio: '',
+        status: 'ACTIVE',
         email: invitation.email,
         role: invitation.role,
         active: true,
@@ -1007,7 +1016,8 @@ export class MockState {
         [...this.members.values()].filter(
           (member) =>
             (!query.role || member.role === query.role) &&
-            (query.active === undefined || member.active === query.active),
+            (query.active === undefined || member.active === query.active) &&
+            (!query.memberStatus || member.status === query.memberStatus),
         ),
         query,
         id,
@@ -1035,6 +1045,8 @@ export class MockState {
         fail(409, 'LAST_ADMIN_REQUIRED');
       if (role !== member.role || active !== member.active) {
         member.role = role;
+        if (active !== member.active)
+          member.status = active ? 'ACTIVE' : 'DISABLED';
         member.active = active;
         member.version++;
         member.updatedAt = this.iso();
@@ -1100,7 +1112,7 @@ export class MockState {
   }
 
   private me(member: Member): DTO<'Me'> {
-    const { createdAt, updatedAt, ...result } = member;
+    const { createdAt, updatedAt, status, ...result } = member;
     return structuredClone(result);
   }
   private publicSummary(article: DTO<'PublicPost'>): DTO<'PublicPostSummary'> {

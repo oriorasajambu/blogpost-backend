@@ -41,7 +41,7 @@ function fixture(id: string): Exchange {
   };
 }
 
-test('independent conformance verifies all 50 JSON success fixtures, headers and versions', () => {
+test('independent conformance verifies all 52 JSON success fixtures, headers and versions', () => {
   let count = 0;
   for (const operation of catalog) {
     const status = Object.keys(
@@ -56,7 +56,7 @@ test('independent conformance verifies all 50 JSON success fixtures, headers and
     assertConforms(operation.operationId, fixture(operation.operationId));
     count++;
   }
-  assert.equal(count, 50);
+  assert.equal(count, 52);
 });
 
 test('documented 405 responses require a known path and an actually unsupported method', () => {
@@ -224,11 +224,13 @@ test('producer conformance rejects undeclared ORM fields even when response cons
 test('coverage reports absent backend implementation as incomplete and resolves literal routes first', () => {
   const report = coverage('backend', new Set(['getApiMeta']));
   assert.equal(report.executed, 1);
-  assert.equal(report.pending.length, 51);
+  assert.equal(report.pending.length, 53);
   assert.equal(report.complete, false);
   assert.deepEqual(report.configuredBackendOperations, [
     'getApiMeta',
     'createWebSession',
+    'registerAccount',
+    'resendVerificationEmail',
     'getMe',
     'updateMe',
     'acceptInvitation',

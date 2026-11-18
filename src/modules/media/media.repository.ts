@@ -131,7 +131,7 @@ export class MediaRepository {
     const ids = [...new Set([candidate.id, preview.authorId])].sort();
     const rows = await tx.$queryRaw<
       MemberRow[]
-    >(Prisma.sql`SELECT id, "identityUid", email, "displayName", handle, bio, role::text AS role, active, version
+    >(Prisma.sql`SELECT id, "identityUid", email, "displayName", handle, bio, role::text AS role, active, status::text AS status, version
       FROM blogpost."Member" WHERE id IN (${Prisma.join(ids.map((id) => Prisma.sql`${id}::uuid`))}) ORDER BY id FOR UPDATE`);
     const actor = activeMember(rows.find((row) => row.id === candidate.id));
     const locked = await this.posts.lock(tx, postId, true);

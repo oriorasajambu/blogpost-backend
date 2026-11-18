@@ -4,15 +4,15 @@
   "files": [
     {
       "path": "contracts/CHANGELOG.md",
-      "sha256": "c624868aeccac661d8793d59314a98e250967a06297c8726e65433e5e3c17c49"
+      "sha256": "5fa260630a760ada6022d5bc2c7ffbea466c5d7666f6b3398b88cc9ec3cb87ca"
     },
     {
       "path": "contracts/CONTRACT.md",
-      "sha256": "7a60750d11e2e8669149ee87a2186bc1e65535dfecbb64b25cadfcc8377e5056"
+      "sha256": "b9d5171e304eabe97fa3858873bbe1cc60b63d3f23d59703128e7f9520439e9c"
     },
     {
       "path": "contracts/README.md",
-      "sha256": "c63bf7608b82d2307d54be8c8669a22bb122ed50bb015ed3eb5944d5010f55fb"
+      "sha256": "cb4cb06b2e2a03560204e9d2d0046d89497e3a7d59c5294e6f34cfd62d07da64"
     },
     {
       "path": "contracts/compatibility-report.json",
@@ -20,7 +20,7 @@
     },
     {
       "path": "contracts/consumers/kotlin/README.md",
-      "sha256": "defc594770ee6efbed51ba3f6dd7f4df1482065dfdff68531ac2a2da644c8048"
+      "sha256": "df4d6fabd03c8c5ea784437a45f17afd70b02d5ea137f50636ea6758c1eb4b31"
     },
     {
       "path": "contracts/consumers/kotlin/consumer-rules.pro",
@@ -55,6 +55,10 @@
       "sha256": "41cdebf81bf1ea86462762543e78ab8f9a5adf7fc1219e9e4401c3b18b2e775f"
     },
     {
+      "path": "contracts/fixtures/errors/account-pending.json",
+      "sha256": "05fd30b01e73a49ff18933cc02e900959646dd49a241c707849347ee95b7bd4c"
+    },
+    {
       "path": "contracts/fixtures/errors/ambiguous-credentials.json",
       "sha256": "cd8e0e6f9c09c17f17092de5114ab87582741be51a23fc732805789446c8c2b5"
     },
@@ -69,6 +73,10 @@
     {
       "path": "contracts/fixtures/errors/authentication-required.json",
       "sha256": "52cc020fc583bbe46dcb14d1a76001b4b1f3f6488ad89ddec060ce27c517733e"
+    },
+    {
+      "path": "contracts/fixtures/errors/captcha-failed.json",
+      "sha256": "fa89ebef018a32c58ae5c3e52ab6b26c4e895312e4318d90ea0b2e5a40bca5fc"
     },
     {
       "path": "contracts/fixtures/errors/client-draft-already-exists.json",
@@ -332,7 +340,7 @@
     },
     {
       "path": "contracts/fixtures/operations/getMember.response.json",
-      "sha256": "cb5572c058dbd69baabdb125a1bf5f69bd60757b61714b9cb3f477141362b164"
+      "sha256": "b5f9f8dc65c2bd29da2fbafeed49747baa3327d6bcadbf403d99a62fb47a38cf"
     },
     {
       "path": "contracts/fixtures/operations/getPostByClientDraftId.request.json",
@@ -428,7 +436,7 @@
     },
     {
       "path": "contracts/fixtures/operations/listMembers.response.json",
-      "sha256": "fa56c7acad3e346623e6bc80928a0721af2b7fab263efb1107aefa35af9aad5b"
+      "sha256": "9b4cfadaf9486b8aafaf8568f7b0988933fe2c2d26911bb5df180bb268ed830c"
     },
     {
       "path": "contracts/fixtures/operations/listPostReviewEvents.request.json",
@@ -495,6 +503,14 @@
       "sha256": "f1e2c5819b8c351ea31db2d928b13af9fff43b2be706dedb67f9aa4487444813"
     },
     {
+      "path": "contracts/fixtures/operations/registerAccount.request.json",
+      "sha256": "191c44c392e7aaf34227a176a468447369de6e919635e04ca84660860e0ad9ca"
+    },
+    {
+      "path": "contracts/fixtures/operations/registerAccount.response.json",
+      "sha256": "80d805295e6f8f71d705df070c2be6f88f55851491842e4b15a3167a18948797"
+    },
+    {
       "path": "contracts/fixtures/operations/reissueInvitation.request.json",
       "sha256": "c8b807954545f8fc90b4fab9f727a2f318093349c7816ee7e4f10f06cfb685e2"
     },
@@ -509,6 +525,14 @@
     {
       "path": "contracts/fixtures/operations/rejectPostRevision.response.json",
       "sha256": "707ac929b84df2d133a232442f9fcb84ae80301dd48d21ae5829a8aaac43f216"
+    },
+    {
+      "path": "contracts/fixtures/operations/resendVerificationEmail.request.json",
+      "sha256": "90271074c9b84490517c5a9861f6a987f08452c79920be7a2478dddbd9faf75b"
+    },
+    {
+      "path": "contracts/fixtures/operations/resendVerificationEmail.response.json",
+      "sha256": "80d805295e6f8f71d705df070c2be6f88f55851491842e4b15a3167a18948797"
     },
     {
       "path": "contracts/fixtures/operations/resolvePublicPostSlug.request.json",
@@ -612,7 +636,7 @@
     },
     {
       "path": "contracts/fixtures/operations/updateMember.response.json",
-      "sha256": "14ae83d01cd5cda801d5f21ed81d9e00799890298da93e5ec3d276912c35ee04"
+      "sha256": "2027794d56c62ee2fa397488e0e7e0e5d05394b45ee6f13a829b5dfc3adde7a2"
     },
     {
       "path": "contracts/fixtures/operations/updateTag.request.json",
@@ -632,15 +656,15 @@
     },
     {
       "path": "contracts/generated/kotlin/generation.json",
-      "sha256": "dc8e33673ddcb710a838215b2b2f2ee1830835be2f5399a9fea6de93a9261d93"
+      "sha256": "4da3ef17f41f083dc9990556b765771aa522597cad74c06895813de778153b95"
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/AdminApi.kt",
-      "sha256": "6fa4a2a038f25c668ef4fe65b91c5827b2047c5edee4e12a3ed80d3fe56a7ba6"
+      "sha256": "f6e2d1a13a0f935781716d361cae356fdcca3396e0642702b40b8e6cf8e71b01"
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/AuthApi.kt",
-      "sha256": "ed6daf24c5ec8b532d8533ca7be77a492abcd889b855a9653646c718b64bdc13"
+      "sha256": "7ab8d39aa602fcb55590d17eacf9cffa6fbc1c1a8e6006ba78fe4815b3e73884"
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/CategoriesApi.kt",
@@ -683,8 +707,12 @@
       "sha256": "547cc684979bc274c0faba590ebbcabfd3e9b1b8e8ef1d87ee7300c2c67d7bf9"
     },
     {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/AccountRequestAccepted.kt",
+      "sha256": "cca6f7f57ab865bf97ab50c1b0f47fc633c39e4a15354315ce5abd2df6164106"
+    },
+    {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/AdminMember.kt",
-      "sha256": "7ed0c10ceaf9c7df37a4a76f87cc6dee3659c73c42bd9021f5ec2cb9c15b364f"
+      "sha256": "7cd22e79f87c6abe67c7b6c7955c833a5318f48970ba47f061a0a53a0e015871"
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ApiError.kt",
@@ -947,6 +975,10 @@
       "sha256": "7c7c0ee99d5517afa43631a5caf7fd3cf05bcad121888a8759366d1aeee2835b"
     },
     {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/MemberStatus.kt",
+      "sha256": "af3973a641d1bd22df2efeb4c237ccf8333e20250a787c0e9221188fa12c8a4f"
+    },
+    {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/MetaEnvelope.kt",
       "sha256": "9a052b9726d42f87b9fbb5a4bb7699c2717f5cbd683ad220e6a1271bc269cc18"
     },
@@ -991,6 +1023,14 @@
       "sha256": "8dd17237ab784b345a279ec8f0e9d41d76a0202d0bdd64146936e1f03709cf98"
     },
     {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/RegisterAccountEnvelope.kt",
+      "sha256": "d2e7fad5c8fd65012e62d99741177203af8bfe13f32e6c401c280e133c5ae166"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/RegisterAccountInput.kt",
+      "sha256": "28af6893bcf074d230477835fc22e06da0877e2204a0203029f977873a4f6b11"
+    },
+    {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ReissueInvitationEnvelope.kt",
       "sha256": "0df9344a76c53cdb52b74a39e24467fbcfed443fa2e9d01982373ee84ef5af54"
     },
@@ -1001,6 +1041,14 @@
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/RejectRevisionInput.kt",
       "sha256": "26a1df698f4fcd1dd95e8c76aec174a21783e548629b0b937f6d3c0e3e568bdb"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ResendVerificationEmailEnvelope.kt",
+      "sha256": "2e5e825f18452b5e288688eb3608ee1f650a02faf178770908623c08b9ff8f84"
+    },
+    {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ResendVerificationInput.kt",
+      "sha256": "eeb5615d461f40d5fd6c6490c7aff58fe869d5ff37925f05ad74574a96d94840"
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/ResolvePublicPostSlugEnvelope.kt",
@@ -1152,39 +1200,39 @@
     },
     {
       "path": "contracts/generated/kotlin/src/main/resources/blogpost-wire-v1.json",
-      "sha256": "8414db03b840741cb94139c7b5884f509ca223705f5bfa622422df4b1ee77748"
+      "sha256": "677acb1ef40000027374d694d3de5d7e92922e54781347503fa14b8ded0a1c1c"
     },
     {
       "path": "contracts/generated/typescript/api-v1.d.ts",
-      "sha256": "689d3836505f2619e8e11ebcdfae615ab36122e206a83b8c9223d66842355530"
+      "sha256": "232dd94ac2b339adb3c012b9a2297b8be85686a5a540e34986985c79d87df2b1"
     },
     {
       "path": "contracts/openapi-v1.json",
-      "sha256": "52639b514e50613fb44a9474ee617d0fa45d46a243780baf275bf73adfafc1c6"
+      "sha256": "0b18a4d1c29ba8f0d8e3ae2029d5515f89d82f030d8ad227a3ab199e3f1473e1"
     },
     {
       "path": "contracts/openapi-v1.yaml",
-      "sha256": "8cba43361d8e7f8b1419f272bc87190811b41d501bcb9e88f1f6f3b5b9385741"
+      "sha256": "946c5677ce781ee48706f71677b2dd3a0d1fde4cd980a7e3d335756cc762bd69"
     },
     {
       "path": "contracts/operation-inventory.json",
-      "sha256": "42ba3feb3df6ecefb945a30e14a1bc1048bf69331abefcd9015fd51bda747539"
+      "sha256": "5f30966b968ef37e428d9d8edb52757ec5dfb4fc0a7770b7955fb973cceeee15"
     },
     {
       "path": "contracts/src/examples.mjs",
-      "sha256": "5043bbddd344218aa24cd09e2043a8a60a2eadd4beb500b3818acf0c7d482927"
+      "sha256": "0a718bdbf23c2b344beadbc6d9f9a78fc96a112de62e2a17dbc4a332fa0934d3"
     },
     {
       "path": "contracts/src/operations.mjs",
-      "sha256": "ae20a86becbc6f12b1890d7d4d36f06e4b494a76ef9b441f5f08591e97144714"
+      "sha256": "95c6426e4b077bfbe36220f92424a9d48868f30acaae0248604fabd2d8bf83db"
     },
     {
       "path": "contracts/src/schemas.mjs",
-      "sha256": "4159989416e65640e0ba8bd9acdafb5bd4ac36afc0259124588bb5ec1256925b"
+      "sha256": "e9a5a29693068a227153c43b1fc8380cb329d47c4f056132d99dea1bfd8853f9"
     },
     {
       "path": "contracts/src/spec.mjs",
-      "sha256": "47e207f374f2c43790f46b5be8cc38a2a1aef71a610d3769e2963de28d2906ff"
+      "sha256": "d5202ed558c3dd1829b6c26aae91fc8c3f1a5ba346bac91e4908902b8059a9e9"
     }
   ]
 }

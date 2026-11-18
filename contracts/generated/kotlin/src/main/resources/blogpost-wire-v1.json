@@ -839,6 +839,10 @@
         "version"
       ]
     },
+    "MemberStatus": {
+      "type": "string",
+      "enum": ["PENDING", "ACTIVE", "DISABLED"]
+    },
     "AdminMember": {
       "type": "object",
       "properties": {
@@ -866,6 +870,7 @@
         "role": { "$ref": "#/components/schemas/Role" },
         "active": { "type": "boolean" },
         "version": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "status": { "$ref": "#/components/schemas/MemberStatus" },
         "createdAt": {
           "type": "string",
           "format": "date-time",
@@ -886,6 +891,7 @@
         "role",
         "active",
         "version",
+        "status",
         "createdAt",
         "updatedAt"
       ]
@@ -1199,6 +1205,11 @@
         "createdAt",
         "changes"
       ]
+    },
+    "AccountRequestAccepted": {
+      "type": "object",
+      "properties": { "status": { "type": "string", "enum": ["ACCEPTED"] } },
+      "required": ["status"]
     },
     "WebSession": {
       "type": "object",
@@ -1600,6 +1611,52 @@
         }
       },
       "required": ["idToken"],
+      "additionalProperties": false
+    },
+    "RegisterAccountInput": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 320,
+          "minLength": 3,
+          "format": "email"
+        },
+        "password": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 128,
+          "minLength": 12
+        },
+        "captchaToken": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 2048,
+          "minLength": 1
+        }
+      },
+      "required": ["email", "password"],
+      "additionalProperties": false
+    },
+    "ResendVerificationInput": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 320,
+          "minLength": 3,
+          "format": "email"
+        },
+        "captchaToken": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 2048,
+          "minLength": 1
+        }
+      },
+      "required": ["email"],
       "additionalProperties": false
     },
     "UpdateMeInput": {
@@ -2300,6 +2357,102 @@
           "required": ["title", "descriptions"]
         },
         "data": { "$ref": "#/components/schemas/WebSession" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "RegisterAccountEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 202 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/AccountRequestAccepted" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ResendVerificationEmailEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 202 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/AccountRequestAccepted" },
         "error": { "type": "null" },
         "meta": {
           "type": "object",
@@ -4424,6 +4577,34 @@
       "resourceVersion": false,
       "request": { "$ref": "#/components/schemas/WebSessionInput" },
       "response": { "$ref": "#/components/schemas/CreateWebSessionEnvelope" }
+    },
+    "registerAccount": {
+      "method": "POST",
+      "path": "/v1/auth/register",
+      "operationId": "registerAccount",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 202,
+      "binary": false,
+      "resourceVersion": false,
+      "request": { "$ref": "#/components/schemas/RegisterAccountInput" },
+      "response": { "$ref": "#/components/schemas/RegisterAccountEnvelope" }
+    },
+    "resendVerificationEmail": {
+      "method": "POST",
+      "path": "/v1/auth/verify-email/resend",
+      "operationId": "resendVerificationEmail",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 202,
+      "binary": false,
+      "resourceVersion": false,
+      "request": { "$ref": "#/components/schemas/ResendVerificationInput" },
+      "response": {
+        "$ref": "#/components/schemas/ResendVerificationEmailEnvelope"
+      }
     },
     "getMe": {
       "method": "GET",

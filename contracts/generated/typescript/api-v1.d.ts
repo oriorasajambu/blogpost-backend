@@ -159,6 +159,38 @@ export interface paths {
     readonly patch: operations['reassignPostAuthor'];
     readonly trace?: never;
   };
+  readonly '/v1/auth/register': {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    readonly post: operations['registerAccount'];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
+  readonly '/v1/auth/verify-email/resend': {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header?: never;
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly get?: never;
+    readonly put?: never;
+    readonly post: operations['resendVerificationEmail'];
+    readonly delete?: never;
+    readonly options?: never;
+    readonly head?: never;
+    readonly patch?: never;
+    readonly trace?: never;
+  };
   readonly '/v1/auth/web-session': {
     readonly parameters: {
       readonly query?: never;
@@ -748,6 +780,10 @@ export interface components {
       /** @description Base64url encoding of a random 256-bit secret. */
       readonly token: string;
     };
+    readonly AccountRequestAccepted: {
+      /** @enum {string} */
+      readonly status: 'ACCEPTED';
+    };
     readonly AdminMember: {
       readonly active: boolean;
       readonly bio: string;
@@ -760,6 +796,7 @@ export interface components {
       /** Format: uuid */
       readonly id: string;
       readonly role: components['schemas']['Role'];
+      readonly status: components['schemas']['MemberStatus'];
       /** Format: date-time */
       readonly updatedAt: string;
       readonly version: number;
@@ -1682,6 +1719,8 @@ export interface components {
       readonly name: components['schemas']['VariantName'];
       readonly width: number;
     };
+    /** @enum {string} */
+    readonly MemberStatus: 'PENDING' | 'ACTIVE' | 'DISABLED';
     readonly MetaEnvelope: {
       readonly data: components['schemas']['ApiMeta'];
       readonly error: null;
@@ -1807,6 +1846,34 @@ export interface components {
       readonly timestamp: string;
       readonly traceId: string;
     };
+    readonly RegisterAccountEnvelope: {
+      readonly data: components['schemas']['AccountRequestAccepted'];
+      readonly error: null;
+      readonly message: {
+        readonly descriptions: string;
+        readonly title: string;
+      };
+      readonly meta: {
+        /** @constant */
+        readonly contractVersion: '1.0.0';
+        readonly idempotency: null;
+        readonly pagination: null;
+      };
+      /** @constant */
+      readonly responseKey: 'SUCCESS';
+      /** @constant */
+      readonly statusCode: 202;
+      /** Format: date-time */
+      readonly timestamp: string;
+      readonly traceId: string;
+    };
+    readonly RegisterAccountInput: {
+      readonly captchaToken?: string;
+      /** Format: email */
+      readonly email: string;
+      /** @description At least 12 and at most 128 characters; checked against known breaches. Never logged or stored by the API. */
+      readonly password: string;
+    };
     readonly ReissueInvitationEnvelope: {
       readonly data: components['schemas']['InvitationIssueResult'];
       readonly error: null;
@@ -1853,6 +1920,32 @@ export interface components {
       readonly feedback: string;
       /** Format: uuid */
       readonly revisionId: string;
+    };
+    readonly ResendVerificationEmailEnvelope: {
+      readonly data: components['schemas']['AccountRequestAccepted'];
+      readonly error: null;
+      readonly message: {
+        readonly descriptions: string;
+        readonly title: string;
+      };
+      readonly meta: {
+        /** @constant */
+        readonly contractVersion: '1.0.0';
+        readonly idempotency: null;
+        readonly pagination: null;
+      };
+      /** @constant */
+      readonly responseKey: 'SUCCESS';
+      /** @constant */
+      readonly statusCode: 202;
+      /** Format: date-time */
+      readonly timestamp: string;
+      readonly traceId: string;
+    };
+    readonly ResendVerificationInput: {
+      readonly captchaToken?: string;
+      /** Format: email */
+      readonly email: string;
     };
     readonly ResolvePublicPostSlugEnvelope: {
       readonly data: components['schemas']['SlugResolution'];
@@ -2360,7 +2453,7 @@ export interface components {
         readonly 'application/json': components['schemas']['ErrorEnvelope'];
       };
     };
-    /** @description INSUFFICIENT_PERMISSION, ACCESS_REVOKED, INVITATION_ACCOUNT_MISMATCH, CSRF_VALIDATION_FAILED */
+    /** @description INSUFFICIENT_PERMISSION, ACCESS_REVOKED, ACCOUNT_PENDING, INVITATION_ACCOUNT_MISMATCH, CSRF_VALIDATION_FAILED */
     readonly Error403: {
       headers: {
         readonly 'Cache-Control'?: 'no-store';
@@ -2489,7 +2582,7 @@ export interface components {
         readonly 'application/json': components['schemas']['ErrorEnvelope'];
       };
     };
-    /** @description VALIDATION_FAILED, MARKDOWN_UNSUPPORTED, SEARCH_QUERY_NOT_SEARCHABLE */
+    /** @description VALIDATION_FAILED, CAPTCHA_FAILED, MARKDOWN_UNSUPPORTED, SEARCH_QUERY_NOT_SEARCHABLE */
     readonly Error422: {
       headers: {
         readonly 'Cache-Control'?: 'no-store';
@@ -3037,6 +3130,7 @@ export interface operations {
       readonly query?: {
         readonly active?: boolean;
         readonly cursor?: string;
+        readonly memberStatus?: components['schemas']['MemberStatus'];
         readonly pageSize?: number;
         readonly role?: components['schemas']['Role'];
       };
@@ -3271,6 +3365,114 @@ export interface operations {
       readonly 415: components['responses']['Error415'];
       readonly 422: components['responses']['Error422'];
       readonly 428: components['responses']['Error428'];
+      readonly 429: components['responses']['Error429'];
+      readonly 500: components['responses']['Error500'];
+      readonly 503: components['responses']['Error503'];
+      readonly 504: components['responses']['Error504'];
+    };
+  };
+  readonly registerAccount: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header: {
+        /** @description W3C trace context. Invalid/all-zero context is replaced, never used for authorization. */
+        readonly traceparent?: components['parameters']['Traceparent'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. One well-formed BCP 47 language tag, including valid unsupported languages. */
+        readonly 'X-App-Language': components['parameters']['X-App-Language'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. Strict SemVer with optional build metadata. */
+        readonly 'X-App-Version': components['parameters']['X-App-Version'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-ID': components['parameters']['X-Device-ID'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-OS': components['parameters']['X-Device-OS'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-Version': components['parameters']['X-Device-Version'];
+      };
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['RegisterAccountInput'];
+      };
+    };
+    readonly responses: {
+      /** @description AccountRequestAccepted */
+      readonly 202: {
+        headers: {
+          readonly 'Cache-Control'?: 'no-store';
+          readonly 'X-API-Contract-Version'?: '1.0.0';
+          readonly 'X-Content-Type-Options'?: 'nosniff';
+          /** @description Matches the envelope traceId. */
+          readonly 'X-Trace-ID'?: string;
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly 'application/json': components['schemas']['RegisterAccountEnvelope'];
+        };
+      };
+      readonly 400: components['responses']['Error400'];
+      readonly 401: components['responses']['Error401'];
+      readonly 404: components['responses']['Error404'];
+      readonly 405: components['responses']['Error405'];
+      readonly 410: components['responses']['Error410'];
+      readonly 413: components['responses']['Error413'];
+      readonly 415: components['responses']['Error415'];
+      readonly 422: components['responses']['Error422'];
+      readonly 429: components['responses']['Error429'];
+      readonly 500: components['responses']['Error500'];
+      readonly 503: components['responses']['Error503'];
+      readonly 504: components['responses']['Error504'];
+    };
+  };
+  readonly resendVerificationEmail: {
+    readonly parameters: {
+      readonly query?: never;
+      readonly header: {
+        /** @description W3C trace context. Invalid/all-zero context is replaced, never used for authorization. */
+        readonly traceparent?: components['parameters']['Traceparent'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. One well-formed BCP 47 language tag, including valid unsupported languages. */
+        readonly 'X-App-Language': components['parameters']['X-App-Language'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. Strict SemVer with optional build metadata. */
+        readonly 'X-App-Version': components['parameters']['X-App-Version'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-ID': components['parameters']['X-Device-ID'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-OS': components['parameters']['X-Device-OS'];
+        /** @description Required exactly once, including anonymous/media requests. No blank/control/comma-joined values. Probe and CORS preflight are exempt. */
+        readonly 'X-Device-Version': components['parameters']['X-Device-Version'];
+      };
+      readonly path?: never;
+      readonly cookie?: never;
+    };
+    readonly requestBody: {
+      readonly content: {
+        readonly 'application/json': components['schemas']['ResendVerificationInput'];
+      };
+    };
+    readonly responses: {
+      /** @description AccountRequestAccepted */
+      readonly 202: {
+        headers: {
+          readonly 'Cache-Control'?: 'no-store';
+          readonly 'X-API-Contract-Version'?: '1.0.0';
+          readonly 'X-Content-Type-Options'?: 'nosniff';
+          /** @description Matches the envelope traceId. */
+          readonly 'X-Trace-ID'?: string;
+          readonly [name: string]: unknown;
+        };
+        content: {
+          readonly 'application/json': components['schemas']['ResendVerificationEmailEnvelope'];
+        };
+      };
+      readonly 400: components['responses']['Error400'];
+      readonly 401: components['responses']['Error401'];
+      readonly 404: components['responses']['Error404'];
+      readonly 405: components['responses']['Error405'];
+      readonly 410: components['responses']['Error410'];
+      readonly 413: components['responses']['Error413'];
+      readonly 415: components['responses']['Error415'];
+      readonly 422: components['responses']['Error422'];
       readonly 429: components['responses']['Error429'];
       readonly 500: components['responses']['Error500'];
       readonly 503: components['responses']['Error503'];

@@ -443,7 +443,9 @@ export class InvitationService {
           const existing = await tx.member.findUnique({
             where: { identityUid: identity.uid },
           });
-          if (existing) activeMember(existing);
+          // A self-registered member waiting for approval is promoted by a matching invitation.
+          const pending = existing?.status === 'PENDING' ? existing : null;
+          if (existing && !pending) activeMember(existing);
           const row = await tx.invitation.findUnique({
             where: { tokenHash },
             include: selection,
@@ -459,7 +461,7 @@ export class InvitationService {
             throw new ApiError(
               403,
               'INVITATION_ACCOUNT_MISMATCH',
-              'Different Google account required',
+              'Different account required',
               'Sign in with the invited account.',
             );
           const now = await transactionTime(tx);
@@ -477,10 +479,13 @@ export class InvitationService {
           }
           used(row, now);
           if (
-            existing ||
-            (await tx.member.findFirst({
-              where: { email: { equals: identity.email, mode: 'insensitive' } },
-            }))
+            !pending &&
+            (existing ||
+              (await tx.member.findFirst({
+                where: {
+                  email: { equals: identity.email, mode: 'insensitive' },
+                },
+              })))
           )
             throw new ApiError(
               409,
@@ -488,18 +493,28 @@ export class InvitationService {
               'Member exists',
               'Use the existing member controls.',
             );
-          const id = randomUUID();
+          const id = pending?.id ?? randomUUID();
           // Display name is an editable safe initial value; the stable handle is independent of email/UID.
-          const member = await tx.member.create({
-            data: {
-              id,
-              identityUid: identity.uid,
-              email: identity.email,
-              displayName: 'Staff member',
-              handle: `member-${id}`,
-              role: row.role,
-            },
-          });
+          const member = pending
+            ? await tx.member.update({
+                where: { id },
+                data: {
+                  role: row.role,
+                  active: true,
+                  status: 'ACTIVE',
+                  version: nextVersion(pending.version),
+                },
+              })
+            : await tx.member.create({
+                data: {
+                  id,
+                  identityUid: identity.uid,
+                  email: identity.email,
+                  displayName: 'Staff member',
+                  handle: `member-${id}`,
+                  role: row.role,
+                },
+              });
           await consumeRate(tx, member.id, 'IDENTITY', now);
           await this.emails.cancelFor(tx, row.id);
           await tx.invitation.update({

@@ -23,6 +23,7 @@
 
 package com.blogpost.contract.generated.model
 
+import com.blogpost.contract.generated.model.MemberStatus
 import com.blogpost.contract.generated.model.Role
 
 import com.google.gson.annotations.SerializedName
@@ -38,6 +39,7 @@ import com.google.gson.annotations.SerializedName
  * @param role 
  * @param active 
  * @param version 
+ * @param status 
  * @param createdAt 
  * @param updatedAt 
  */
@@ -68,6 +70,9 @@ data class AdminMember (
 
     @SerializedName("version")
     val version: kotlin.Int,
+
+    @SerializedName("status")
+    val status: MemberStatus,
 
     @SerializedName("createdAt")
     val createdAt: kotlin.String,

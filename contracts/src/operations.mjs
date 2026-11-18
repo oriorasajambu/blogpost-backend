@@ -126,6 +126,32 @@ export const operations = [
     'RECENT_IDENTITY',
     { body: 'WebSessionInput', serverProxyOnly: true, implemented: true },
   ),
+  op(
+    'post',
+    '/v1/auth/register',
+    'registerAccount',
+    'AccountRequestAccepted',
+    'ANONYMOUS',
+    {
+      body: 'RegisterAccountInput',
+      serverProxyOnly: true,
+      implemented: true,
+      status: 202,
+    },
+  ),
+  op(
+    'post',
+    '/v1/auth/verify-email/resend',
+    'resendVerificationEmail',
+    'AccountRequestAccepted',
+    'ANONYMOUS',
+    {
+      body: 'ResendVerificationInput',
+      serverProxyOnly: true,
+      implemented: true,
+      status: 202,
+    },
+  ),
   op('get', '/v1/me', 'getMe', 'Me', 'MEMBER', {
     resourceVersion: true,
     implemented: true,

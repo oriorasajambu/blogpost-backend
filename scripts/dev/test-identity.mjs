@@ -542,7 +542,7 @@ try {
     observed.runId !== suffix ||
     observed.testProject !== project ||
     observed.contractSha256 !== baked.contractSha256 ||
-    observed.executed !== 4 ||
+    observed.executed !== 6 ||
     observed.complete !== false
   )
     throw new Error('Unexpected isolated conformance evidence');
