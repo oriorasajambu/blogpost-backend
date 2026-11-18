@@ -38,6 +38,37 @@ export async function javaExecutable() {
   }
   throw new Error('Set BLOGPOST_JAVA_HOME to an installed JDK 17 or newer.');
 }
+const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
+const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
+/**
+ * Fetches a pinned artifact, retrying rate limits (Maven Central throttles shared CI runners)
+ * and transient server errors with bounded backoff that honors a short Retry-After.
+ */
+export async function downloadWithRetry(
+  url,
+  { fetchImpl = fetch, wait = sleep, attempts = 5 } = {},
+) {
+  for (let attempt = 1; ; attempt++) {
+    let response;
+    try {
+      response = await fetchImpl(url, { signal: AbortSignal.timeout(120_000) });
+    } catch (error) {
+      if (attempt >= attempts) throw error;
+      await wait(2 ** attempt * 1000);
+      continue;
+    }
+    if (response.ok) return Buffer.from(await response.arrayBuffer());
+    await response.body?.cancel().catch(() => {});
+    if (!RETRY_STATUSES.has(response.status) || attempt >= attempts)
+      throw new Error(`Tool download failed: HTTP ${response.status}`);
+    const retryAfter = Number(response.headers.get('retry-after'));
+    await wait(
+      Number.isFinite(retryAfter) && retryAfter > 0
+        ? Math.min(retryAfter, 60) * 1000
+        : 2 ** attempt * 1000 + Math.floor(Math.random() * 1000),
+    );
+  }
+}
 async function verifiedDownload(asset, target) {
   try {
     const existing = await readFile(target);
@@ -47,12 +78,7 @@ async function verifiedDownload(asset, target) {
     /* Download a missing or incomplete artifact. */
   }
   await mkdir(dirname(target), { recursive: true });
-  const response = await fetch(asset.url, {
-    signal: AbortSignal.timeout(120_000),
-  });
-  if (!response.ok)
-    throw new Error(`Tool download failed: HTTP ${response.status}`);
-  const bytes = Buffer.from(await response.arrayBuffer());
+  const bytes = await downloadWithRetry(asset.url);
   if (createHash('sha256').update(bytes).digest('hex') !== asset.sha256)
     throw new Error('Pinned tool checksum mismatch.');
   const temporary = target + '.download';
