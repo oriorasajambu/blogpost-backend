@@ -30,5 +30,14 @@
     "SQL_MIGRATOR_PASSWORD": "projects/blogpost-staging/secrets/blogpost-db-migrator-password/versions/2",
     "SQL_ROOT_PASSWORD": "projects/blogpost-staging/secrets/blogpost-db-root-password/versions/2",
     "CURSOR_SIGNING_KEY": "projects/blogpost-staging/secrets/blogpost-cursor-signing-key/versions/2"
+  },
+  "email": {
+    "from": "Blogpost <no-reply@goblogs.app>",
+    "dispatchAudience": "https://blogpost-api-zym2bvhhqq-et.a.run.app",
+    "dispatchInvoker": "blogpost-scheduler@blogpost-staging.iam.gserviceaccount.com",
+    "secretVersions": {
+      "RESEND_API_KEY": "projects/blogpost-staging/secrets/blogpost-resend-api-key/versions/1",
+      "EMAIL_PAYLOAD_KEY": "projects/blogpost-staging/secrets/blogpost-email-payload-key/versions/1"
+    }
   }
 }
