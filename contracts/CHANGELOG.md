@@ -17,4 +17,6 @@
 
 - Added `sendPasswordSetup` (administrator) and `PasswordSetupResult`: emails every active member who has no password yet a one-time link to set one, for the move away from Google sign-in. The catalog now has 59 operations.
 
+- The `memberStatus` query parameter of `listMembers` declares an explicit default: its values are `ALL` (the default, no filter), `PENDING`, `ACTIVE` and `DISABLED`. Omitting the parameter and sending `ALL` are the same request.
+
 This remains draft authoring history. Owner review, explicit immutable publication and actual provider/client application-release gates remain open. No previously published contract exists for a historical baseline comparison.
