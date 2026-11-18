@@ -86,9 +86,22 @@ const env = {
     RESEND_SECRET_REF: profile.email.secretVersions.RESEND_API_KEY,
     EMAIL_PAYLOAD_SECRET_REF: profile.email.secretVersions.EMAIL_PAYLOAD_KEY,
   }),
+  // The optional accounts block (sign-up, password reset) adds its own bindings and one secret.
+  ...(profile.email?.accounts && {
+    IDENTITY_WEB_API_KEY: profile.email.accounts.identityWebApiKey,
+    TURNSTILE_SECRET_KEY: ['turnstile', 'synthetic', 'do-not-leak'].join('_'),
+    TURNSTILE_SECRET_REF: profile.email.accounts.turnstileSecretVersion,
+    GOOGLE_SIGN_IN_ENABLED: String(profile.email.accounts.googleSignIn ?? true),
+  }),
 };
 const config = readConfig(env);
 assert.equal(config.email?.driver ?? null, profile.email ? 'resend' : null);
+assert.equal(config.captchaSecret !== null, !!profile.email?.accounts);
+assert.equal(config.identityWebApiKey !== null, !!profile.email?.accounts);
+assert.equal(
+  config.googleSignIn,
+  profile.email?.accounts?.googleSignIn ?? true,
+);
 assert.equal(config.configurationDigest, expected.configurationDigest);
 assert.equal(config.buildSha, build.sourceSha);
 assert.equal(config.runtimeInputDigest, build.runtimeInputDigest);
@@ -113,6 +126,13 @@ for (const patch of [
   profile.email
     ? { EMAIL_FROM: '' }
     : { EMAIL_FROM: 'Blogpost <no-reply@example.test>' },
+  // The accounts block is all-or-nothing too: a missing secret fails, and none may appear without it.
+  profile.email?.accounts
+    ? { TURNSTILE_SECRET_KEY: '' }
+    : { TURNSTILE_SECRET_KEY: ['turnstile', 'stray', 'value'].join('_') },
+  ...(profile.email?.accounts
+    ? [{ IDENTITY_WEB_API_KEY: 'AIzaSyOtherOtherOtherOther1234567890' }]
+    : []),
 ])
   assert.throws(() => readConfig({ ...env, ...patch }));
 if (operations) {
@@ -187,6 +207,7 @@ try {
     profile.serviceAccounts.api,
     env.SQL_APP_PASSWORD,
     ...(profile.email ? [env.RESEND_API_KEY, env.EMAIL_PAYLOAD_KEY] : []),
+    ...(profile.email?.accounts ? [env.TURNSTILE_SECRET_KEY] : []),
   ])
     assert.ok(!JSON.stringify(meta).includes(privateValue));
   assert.equal(
