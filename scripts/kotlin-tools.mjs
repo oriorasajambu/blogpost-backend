@@ -69,6 +69,25 @@ export async function downloadWithRetry(
     );
   }
 }
+/**
+ * Downloads a pinned artifact from its URL, then from its listed mirrors. Every source must
+ * match the pinned SHA-256, so a mirror can only add availability, never change the bytes.
+ */
+export async function downloadPinned(asset, options) {
+  const sources = [asset.url, ...(asset.mirrors ?? [])];
+  let failure;
+  for (const url of sources) {
+    try {
+      const bytes = await downloadWithRetry(url, options);
+      if (createHash('sha256').update(bytes).digest('hex') === asset.sha256)
+        return bytes;
+      failure = new Error('Pinned tool checksum mismatch.');
+    } catch (error) {
+      failure = error;
+    }
+  }
+  throw failure;
+}
 async function verifiedDownload(asset, target) {
   try {
     const existing = await readFile(target);
@@ -78,9 +97,7 @@ async function verifiedDownload(asset, target) {
     /* Download a missing or incomplete artifact. */
   }
   await mkdir(dirname(target), { recursive: true });
-  const bytes = await downloadWithRetry(asset.url);
-  if (createHash('sha256').update(bytes).digest('hex') !== asset.sha256)
-    throw new Error('Pinned tool checksum mismatch.');
+  const bytes = await downloadPinned(asset);
   const temporary = target + '.download';
   await writeFile(temporary, bytes);
   await rename(temporary, target);
