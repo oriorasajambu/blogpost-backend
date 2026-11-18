@@ -1,8 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import {
   configuredGradleHome,
+  downloadPinned,
   downloadWithRetry,
 } from '../../scripts/kotlin-tools.mjs';
 
@@ -72,4 +75,54 @@ test('tool downloads stop on permanent errors and after the last attempt', async
     /HTTP 429/,
   );
   assert.equal(limited.calls.length, 3);
+});
+
+test('pinned tools fall back to listed mirrors and reject bytes that do not match', async () => {
+  const sha256 = createHash('sha256').update('jar').digest('hex');
+  const asset = {
+    url: 'https://primary.test/tool.jar',
+    mirrors: ['https://bad.test/tool.jar', 'https://mirror.test/tool.jar'],
+    sha256,
+  };
+  const calls = [];
+  const fetchImpl = async (url) => {
+    calls.push(url);
+    if (url.startsWith('https://primary')) return reply(429);
+    if (url.startsWith('https://bad'))
+      return new Response('tampered', { status: 200 });
+    return reply(200);
+  };
+  const bytes = await downloadPinned(asset, {
+    fetchImpl,
+    wait: async () => {},
+    attempts: 2,
+  });
+  assert.equal(bytes.toString(), 'jar');
+  assert.deepEqual(calls, [
+    asset.url,
+    asset.url,
+    asset.mirrors[0],
+    asset.mirrors[1],
+  ]);
+  await assert.rejects(
+    downloadPinned(
+      { url: 'https://bad.test/only.jar', sha256 },
+      { fetchImpl, wait: async () => {} },
+    ),
+    /checksum mismatch/,
+  );
+});
+
+test('every pinned generator mirror is HTTPS and serves the same artifact path', async () => {
+  const { generator } = JSON.parse(
+    await readFile(
+      new URL('../../tools/kotlin/toolchain.json', import.meta.url),
+      'utf8',
+    ),
+  );
+  const path = new URL(generator.url).pathname.replace(/^\/maven2/, '');
+  for (const mirror of generator.mirrors ?? []) {
+    assert.equal(new URL(mirror).protocol, 'https:');
+    assert.ok(new URL(mirror).pathname.endsWith(path));
+  }
 });
