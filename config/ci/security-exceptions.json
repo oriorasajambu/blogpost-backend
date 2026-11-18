@@ -54,6 +54,12 @@
       "literal": "AIzaSyBO22Vt8LJYHWX-g-IP6f1xmOezP0wvqZQ",
       "reason": "The same public Firebase web API key, which the generic rule also matches once the specific rule is allowed.",
       "expires": "2027-01-25"
+    },
+    {
+      "rule": "generic-api-key",
+      "literal": "32efd98c9ecaf02e80a179c3dc5d9d9bc2f5fd7911c07ed2c9b7d45ccb82ccb6",
+      "reason": "Public SHA-256 of the authored OpenAPI document after the memberStatus default, recorded by consumer generation; not an API key.",
+      "expires": "2027-01-25"
     }
   ]
 }

@@ -1892,3 +1892,63 @@ test('every one of the 59 authored application operations has executed a schema-
     [],
   );
 });
+
+test('the member list filters by approval status and treats ALL like no filter', async (t) => {
+  const { call } = setup(t);
+  const total = parse<DTO<'AdminMember'>[]>(
+    await call(
+      'GET',
+      '/v1/admin/members',
+      undefined,
+      undefined,
+      undefined,
+      'admin',
+    ),
+  ).data.length;
+  const all = parse<DTO<'AdminMember'>[]>(
+    await call(
+      'GET',
+      '/v1/admin/members?memberStatus=ALL',
+      undefined,
+      undefined,
+      undefined,
+      'admin',
+    ),
+  ).data;
+  assert.equal(all.length, total);
+  const active = parse<DTO<'AdminMember'>[]>(
+    await call(
+      'GET',
+      '/v1/admin/members?memberStatus=ACTIVE',
+      undefined,
+      undefined,
+      undefined,
+      'admin',
+    ),
+  ).data;
+  assert.ok(
+    active.length > 0 && active.every((member) => member.status === 'ACTIVE'),
+  );
+  const pending = parse<DTO<'AdminMember'>[]>(
+    await call(
+      'GET',
+      '/v1/admin/members?memberStatus=PENDING',
+      undefined,
+      undefined,
+      undefined,
+      'admin',
+    ),
+  ).data;
+  assert.equal(pending.length, 0);
+  parse(
+    await call(
+      'GET',
+      '/v1/admin/members?memberStatus=nonsense',
+      undefined,
+      undefined,
+      undefined,
+      'admin',
+    ),
+    422,
+  );
+});

@@ -696,11 +696,11 @@
     },
     {
       "path": "contracts/generated/kotlin/generation.json",
-      "sha256": "e9c178d507009c2fa4ad06fa8e8495aa3fde70878ed75491f61d5c723d8ae396"
+      "sha256": "640a3dfa9213de59215cc230f601508453c499a7ffe94530635eb6c74a7b3a61"
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/AdminApi.kt",
-      "sha256": "9b820053a2f9b524b8567202d0f69088be7857b3951121ec12717740689252b2"
+      "sha256": "e2ead7fa379efdd359431b66145f6c0c5b0b4ed88f82eb2285922a8df188c8e0"
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/AuthApi.kt",
@@ -1284,15 +1284,15 @@
     },
     {
       "path": "contracts/generated/typescript/api-v1.d.ts",
-      "sha256": "1831335eaedc6cd76c451ce748385ac6ee19c3495ff347ff23677750fcab2942"
+      "sha256": "df660258e197658b921e8cb15c93f341a5cbfe4a672730339f2824dfa14beaf4"
     },
     {
       "path": "contracts/openapi-v1.json",
-      "sha256": "2fe546c2f814624995d2f3bf9d0d56056bfe88dec3f763bbb4060d78a8f5b9bd"
+      "sha256": "32efd98c9ecaf02e80a179c3dc5d9d9bc2f5fd7911c07ed2c9b7d45ccb82ccb6"
     },
     {
       "path": "contracts/openapi-v1.yaml",
-      "sha256": "1db51f44615225051dd4c1b686afe188c7abe1d677d7966509e1a64076559988"
+      "sha256": "927644dfbeb0233e7153fcac866ee1a855c0e7c8fb34e0263aa4c31a3be9b55b"
     },
     {
       "path": "contracts/operation-inventory.json",
@@ -1312,7 +1312,7 @@
     },
     {
       "path": "contracts/src/spec.mjs",
-      "sha256": "d5202ed558c3dd1829b6c26aae91fc8c3f1a5ba346bac91e4908902b8059a9e9"
+      "sha256": "c0bd8f0f98494c0e6fbb97e8b68c74d080275d7ad309c0dc087bb52a07d57778"
     }
   ]
 }

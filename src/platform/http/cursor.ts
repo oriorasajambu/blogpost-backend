@@ -45,7 +45,7 @@ export interface CursorPagination {
 const choices = {
   role: ['AUTHOR', 'EDITOR', 'ADMIN'],
   status: ['PENDING', 'ACCEPTED', 'REVOKED', 'EXPIRED'],
-  memberStatus: ['PENDING', 'ACTIVE', 'DISABLED'],
+  memberStatus: ['ALL', 'PENDING', 'ACTIVE', 'DISABLED'],
   scope: ['OWN', 'ALL'],
   publicationState: ['NEVER_PUBLISHED', 'PUBLISHED', 'WITHDRAWN'],
   workflowState: ['DRAFT', 'IN_REVIEW', 'CHANGES_REQUESTED', 'CLEAN'],
@@ -89,7 +89,9 @@ export function cursorQuery(
         )
       )
         return invalidInput('/' + key, 'query');
-      filters[key] = value;
+      // ALL is the declared default: it is the same request as omitting the filter, so it must
+      // bind to the same cursor.
+      if (key !== 'memberStatus' || value !== 'ALL') filters[key] = value;
     } else if (key === 'subjectId')
       filters[key] = uuidInput(value, key, 'query');
     else {
