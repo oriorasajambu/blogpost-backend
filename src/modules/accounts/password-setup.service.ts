@@ -37,12 +37,13 @@ export class PasswordSetupService {
     identity: VerifiedIdentity,
     traceId: string,
   ): Promise<PasswordSetupResult> {
-    if (!this.outbox.enabled)
+    // Setup links are redeemed through password reset, which also needs the identity Web API key.
+    if (!this.outbox.enabled || this.config.identityWebApiKey === null)
       throw new ApiError(
         503,
         'DEPENDENCY_UNAVAILABLE',
-        'Email unavailable',
-        'Password setup links need email delivery to be configured.',
+        'Password setup unavailable',
+        'Password setup links need email delivery and password reset to be configured.',
       );
     const { actorId, members } = await this.operations.read(
       identity,

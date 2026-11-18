@@ -93,8 +93,8 @@ export class AccountSecurityService {
       ['idToken', 'newPassword'],
     );
     const proof = await this.recent(session, body.idToken);
-    const password = checkedPassword(body.newPassword);
-    await this.breach.assertNotBreached(password);
+    const password = checkedPassword(body.newPassword, '/newPassword');
+    await this.breach.assertNotBreached(password, '/newPassword');
     const member = await this.begin(session.uid);
     await this.gateway.setPassword(session.uid, password);
     // Every session ends, this one included: the member signs in again with the new password.

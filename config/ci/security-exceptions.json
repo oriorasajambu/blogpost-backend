@@ -24,6 +24,24 @@
       "literal": "MAX_UTF8_BYTES",
       "reason": "Public validation issue name passed to issue(key, code); not credential material.",
       "expires": "2027-01-25"
+    },
+    {
+      "rule": "generic-api-key",
+      "literal": "2fe546c2f814624995d2f3bf9d0d56056bfe88dec3f763bbb4060d78a8f5b9bd",
+      "reason": "Public SHA-256 of the authored OpenAPI document after the account endpoints, recorded by consumer generation; not an API key.",
+      "expires": "2027-01-25"
+    },
+    {
+      "rule": "generic-api-key",
+      "literal": "97fbc700473eb157687ca88450c426415093f2e05438fa6055afa36605f89978",
+      "reason": "Public SHA-256 of the authored OpenAPI document after the account endpoints, recorded by consumer generation; not an API key.",
+      "expires": "2027-01-25"
+    },
+    {
+      "rule": "generic-api-key",
+      "literal": "0b18a4d1c29ba8f0d8e3ae2029d5515f89d82f030d8ad227a3ab199e3f1473e1",
+      "reason": "Public SHA-256 of the authored OpenAPI document after the account endpoints, recorded by consumer generation; not an API key.",
+      "expires": "2027-01-25"
     }
   ]
 }

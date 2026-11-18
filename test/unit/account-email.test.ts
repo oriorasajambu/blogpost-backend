@@ -19,6 +19,7 @@ import { ApiError } from '../../src/platform/errors/api-error.js';
 const origin = 'https://app.example.com';
 const code = 'A1b2C3d4E5f6G7h8I9j0_-Kk';
 
+import { PasswordSetupService } from '../../src/modules/accounts/password-setup.service.js';
 test('action links carry only a URL-safe code and point at the matching web page', () => {
   assert.equal(
     accountActionUrl(origin, 'PASSWORD_RESET', code),
@@ -89,6 +90,17 @@ test('password policy is length-only and counts code points', () => {
     () => checkedPassword('short'),
     (error) => error instanceof ApiError && error.status === 422,
   );
+  // The pointer names the input that was rejected: /newPassword when changing a password.
+  const pointer = (error: unknown) =>
+    error instanceof ApiError ? error.fieldErrors[0]?.field : undefined;
+  assert.throws(
+    () => checkedPassword('short'),
+    (error) => pointer(error) === '/password',
+  );
+  assert.throws(
+    () => checkedPassword('short', '/newPassword'),
+    (error) => pointer(error) === '/newPassword',
+  );
 });
 
 test('breach check sends only a five-character hash prefix and fails open', async () => {
@@ -105,6 +117,12 @@ test('breach check sends only a five-character hash prefix and fails open', asyn
   await assert.rejects(
     found.assertNotBreached('password'),
     (error) => error instanceof ApiError && error.status === 422,
+  );
+  await assert.rejects(
+    found.assertNotBreached('password', '/newPassword'),
+    (error) =>
+      error instanceof ApiError &&
+      error.fieldErrors[0]?.field === '/newPassword',
   );
   const padded = new BreachCheck(
     async () => new Response('1E4C9B93F3F0682250B6CF8331B7EE68FD8:0\n'),
@@ -156,4 +174,28 @@ test('anonymous rate subjects are namespaced, case-insensitive hashes', () => {
   assert.equal(a, subjectHash('REGISTER_EMAIL', ' user@example.com '));
   assert.notEqual(a, subjectHash('FORGOT_EMAIL', 'user@example.com'));
   assert.match(a, /^[a-f0-9]{64}$/);
+});
+
+test('password setup links require password reset, not only email delivery', async () => {
+  let read = false;
+  const service = (identityWebApiKey: string | null) =>
+    new PasswordSetupService(
+      { identityWebApiKey } as never,
+      {} as never,
+      {
+        read: async () => {
+          read = true;
+          return { actorId: 'actor', members: [] };
+        },
+      } as never,
+      { enabled: true } as never,
+    );
+  await assert.rejects(
+    service(null).sendAll({ uid: 'admin' } as never, 'a'.repeat(32)),
+    (error) =>
+      error instanceof ApiError &&
+      error.status === 503 &&
+      error.code === 'DEPENDENCY_UNAVAILABLE',
+  );
+  assert.equal(read, false);
 });

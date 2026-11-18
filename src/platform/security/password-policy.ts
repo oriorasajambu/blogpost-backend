@@ -14,7 +14,8 @@ export function passwordIssue(value: unknown): string | null {
   if (value.includes('\0')) return 'Remove unsupported characters.';
   return null;
 }
-export function invalidPassword(issue: string): ApiError {
+/** `field` is the JSON Pointer of the rejected input: `/newPassword` when changing a password. */
+export function invalidPassword(issue: string, field = '/password'): ApiError {
   return new ApiError(
     422,
     'VALIDATION_FAILED',
@@ -23,16 +24,16 @@ export function invalidPassword(issue: string): ApiError {
     [
       {
         location: 'body',
-        field: '/password',
+        field,
         code: 'INVALID_PASSWORD',
         params: {},
       },
     ],
   );
 }
-export function checkedPassword(value: unknown): string {
+export function checkedPassword(value: unknown, field?: string): string {
   const issue = passwordIssue(value);
-  if (issue) throw invalidPassword(issue);
+  if (issue) throw invalidPassword(issue, field);
   return value as string;
 }
 
@@ -74,10 +75,11 @@ export class BreachCheck {
     }
   }
   /** Throws a validation error when the password appears in a known breach. */
-  async assertNotBreached(password: string): Promise<void> {
+  async assertNotBreached(password: string, field?: string): Promise<void> {
     if ((await this.count(password)) > 0)
       throw invalidPassword(
         'This password appeared in a data breach. Choose a different one.',
+        field,
       );
   }
 }
