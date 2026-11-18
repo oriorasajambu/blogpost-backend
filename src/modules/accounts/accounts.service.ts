@@ -194,10 +194,7 @@ export class AccountsService {
     if (!(await this.allowed('FORGOT', email, FORGOT_LIMITS))) return ACCEPTED;
     const user = await this.gateway.findByEmail(email);
     if (!user) return ACCEPTED;
-    const member = await this.database.prisma.member.findUnique({
-      where: { identityUid: user.uid },
-      select: { id: true, status: true },
-    });
+    const member = await this.memberFor(user, traceId);
     if (!member || member.status === 'DISABLED') return ACCEPTED;
     const code = await this.gateway.actionCode('PASSWORD_RESET', email);
     const outboxId = await this.database.prisma.$transaction(
@@ -291,10 +288,7 @@ export class AccountsService {
   private async existing(email: string, traceId: string): Promise<void> {
     const user = await this.gateway.findByEmail(email);
     if (!user) return;
-    const member = await this.database.prisma.member.findUnique({
-      where: { identityUid: user.uid },
-      select: { id: true },
-    });
+    const member = await this.memberFor(user, traceId);
     if (!member) return;
     const kind: AccountEmailKind = user.emailVerified
       ? 'ACCOUNT_EXISTS_NOTICE'
@@ -307,6 +301,67 @@ export class AccountsService {
       { maxWait: 3000, timeout: 5000 },
     );
     if (outboxId) await this.outbox.sendNow(outboxId, traceId);
+  }
+  /**
+   * The member row for an identity. A password account without one is what a registration leaves
+   * behind when its cleanup failed during a provider outage; the row is recreated as pending, so
+   * the address can finish registering or reset its password instead of being stuck. Accounts
+   * without a password (for example a Google sign-in that never became a member) are left alone.
+   */
+  private async memberFor(
+    user: {
+      uid: string;
+      email?: string;
+      disabled: boolean;
+      passwordProviders: unknown[];
+    },
+    traceId: string,
+  ): Promise<{ id: string; status: 'PENDING' | 'ACTIVE' | 'DISABLED' } | null> {
+    const prisma = this.database.prisma;
+    const find = () =>
+      prisma.member.findUnique({
+        where: { identityUid: user.uid },
+        select: { id: true, status: true },
+      });
+    const found = await find();
+    if (found || user.disabled || !user.passwordProviders.length || !user.email)
+      return found;
+    const email = user.email;
+    try {
+      return await prisma.$transaction(
+        async (tx) => {
+          const id = randomUUID();
+          const created = await tx.member.create({
+            data: {
+              id,
+              identityUid: user.uid,
+              email,
+              displayName: 'New member',
+              handle: `member-${id}`,
+              role: 'AUTHOR',
+              active: false,
+              status: 'PENDING',
+            },
+            select: { id: true, status: true },
+          });
+          await tx.auditEvent.create({
+            data: {
+              actorId: id,
+              action: 'ACCOUNT_RECOVERED',
+              subjectType: 'MEMBER',
+              subjectId: id,
+              changes: {},
+              traceId,
+            },
+          });
+          return created;
+        },
+        { maxWait: 3000, timeout: 5000 },
+      );
+    } catch {
+      // A concurrent request may have created it first.
+      return find();
+    }
   }
   private async queue(
     tx: Transaction,

@@ -42,6 +42,18 @@
       "literal": "0b18a4d1c29ba8f0d8e3ae2029d5515f89d82f030d8ad227a3ab199e3f1473e1",
       "reason": "Public SHA-256 of the authored OpenAPI document after the account endpoints, recorded by consumer generation; not an API key.",
       "expires": "2027-01-25"
+    },
+    {
+      "rule": "gcp-api-key",
+      "literal": "AIzaSyBO22Vt8LJYHWX-g-IP6f1xmOezP0wvqZQ",
+      "reason": "Public Firebase web API key of the staging project, required in the reviewed profile; it identifies the project and grants no access.",
+      "expires": "2027-01-25"
+    },
+    {
+      "rule": "generic-api-key",
+      "literal": "AIzaSyBO22Vt8LJYHWX-g-IP6f1xmOezP0wvqZQ",
+      "reason": "The same public Firebase web API key, which the generic rule also matches once the specific rule is allowed.",
+      "expires": "2027-01-25"
     }
   ]
 }
