@@ -38,6 +38,10 @@
     "secretVersions": {
       "RESEND_API_KEY": "projects/blogpost-staging/secrets/blogpost-resend-api-key/versions/1",
       "EMAIL_PAYLOAD_KEY": "projects/blogpost-staging/secrets/blogpost-email-payload-key/versions/1"
+    },
+    "accounts": {
+      "identityWebApiKey": "AIzaSyBO22Vt8LJYHWX-g-IP6f1xmOezP0wvqZQ",
+      "turnstileSecretVersion": "projects/blogpost-staging/secrets/blogpost-turnstile-secret/versions/1"
     }
   }
 }
