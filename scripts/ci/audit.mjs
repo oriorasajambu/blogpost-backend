@@ -4,7 +4,8 @@ import { pathToFileURL } from 'node:url';
 
 const LEVELS = ['info', 'low', 'moderate', 'high', 'critical'];
 const ADVISORY = /^GHSA(?:-[23456789cfghjmpqrvwx]{4}){3}$/;
-const PREFIXES = new Set(['docker/auth']);
+// Dev/CI-only package directories; neither is installed in the runtime image.
+const PREFIXES = new Set(['docker/auth', 'tools/mock']);
 
 /**
  * Validates the bounded npm audit exception policy. Each entry names one advisory in one
@@ -93,7 +94,9 @@ export function auditFailures(report, policy, prefix, level, now = new Date()) {
 async function main() {
   const [prefix, level] = process.argv.slice(2);
   if (!PREFIXES.has(prefix) || !LEVELS.includes(level))
-    throw new Error('Usage: node scripts/ci/audit.mjs docker/auth <level>');
+    throw new Error(
+      'Usage: node scripts/ci/audit.mjs <docker/auth|tools/mock> <level>',
+    );
   const policy = JSON.parse(
     await readFile('config/ci/audit-exceptions.json', 'utf8'),
   );

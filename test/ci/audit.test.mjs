@@ -91,6 +91,7 @@ test('expired, malformed, duplicated or out-of-scope exceptions are rejected', (
   for (const bad of [
     policy({ ...exception, expires: '2026-11-17' }),
     policy({ ...exception, prefix: '.' }),
+    policy({ ...exception, prefix: 'docker/operations' }),
     policy({ ...exception, advisory: 'CVE-2026-0001' }),
     policy({ ...exception, reason: 'short' }),
     policy({ ...exception, extra: true }),

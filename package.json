@@ -55,6 +55,7 @@
     "security:check": "node scripts/ci/security.mjs",
     "security:test": "node scripts/ci/test-security.mjs",
     "audit:auth": "node scripts/ci/audit.mjs docker/auth high",
+    "audit:mock": "node scripts/ci/audit.mjs tools/mock moderate",
     "docs:check": "node scripts/ci/docs.mjs --all"
   },
   "dependencies": {
