@@ -241,23 +241,29 @@ export function readConfig(
     required(env, 'MEDIA_LOCAL_ROOT');
   }
   const email = emailConfig(env, purpose, cloud, !!build.configuration?.email);
-  // Cloud captcha needs a profile secret reference (not yet defined), so only development reads it.
-  if (cloud && env.TURNSTILE_SECRET_KEY)
-    throw new Error(
-      'Captcha configuration requires a profile secret reference',
-    );
-  const captchaSecret =
-    !cloud && purpose === 'api'
-      ? env.TURNSTILE_SECRET_KEY?.trim() || null
-      : null;
+  // Cloud takes both values from the profile's optional accounts block, all or nothing.
+  const accountsBlock = cloud
+    ? build.configuration?.email?.accounts
+    : undefined;
+  if (
+    cloud &&
+    !accountsBlock &&
+    (env.TURNSTILE_SECRET_KEY || env.IDENTITY_WEB_API_KEY)
+  )
+    throw new Error('Account settings require the profile accounts block');
+  if (cloud && purpose === 'api' && accountsBlock) {
+    required(env, 'TURNSTILE_SECRET_KEY');
+    required(env, 'IDENTITY_WEB_API_KEY');
+  }
+  const accountsActive = purpose === 'api' && (!cloud || !!accountsBlock);
+  const captchaSecret = accountsActive
+    ? env.TURNSTILE_SECRET_KEY?.trim() || null
+    : null;
   if (captchaSecret !== null && !/^[!-~]{8,256}$/.test(captchaSecret))
     throw new Error('Invalid TURNSTILE_SECRET_KEY');
-  if (cloud && env.IDENTITY_WEB_API_KEY)
-    throw new Error('The web API key requires a profile reference');
-  const identityWebApiKey =
-    !cloud && purpose === 'api'
-      ? env.IDENTITY_WEB_API_KEY?.trim() || null
-      : null;
+  const identityWebApiKey = accountsActive
+    ? env.IDENTITY_WEB_API_KEY?.trim() || null
+    : null;
   if (identityWebApiKey !== null && !/^[!-~]{1,256}$/.test(identityWebApiKey))
     throw new Error('Invalid IDENTITY_WEB_API_KEY');
   const port = Number(env.PORT ?? '8080');

@@ -210,6 +210,133 @@ test('cloud email is enabled only by a complete profile block', () => {
   );
 });
 
+test('cloud account sign-up is enabled only by the complete accounts block inside the email block', () => {
+  const { email: _none, ...base } = cloudProfile;
+  const accounts = {
+    identityWebApiKey: 'AIzaSyExampleExampleExampleExample123',
+    turnstileSecretVersion:
+      'projects/blogpost-staging/secrets/blogpost-turnstile-secret/versions/1',
+  };
+  const withAccounts = normalizeCloudProfile({
+    ...base,
+    email: { ...emailBlock, accounts },
+  });
+  assert.deepEqual(withAccounts.email?.accounts, accounts);
+  // Email alone leaves account sign-up off.
+  assert.equal(
+    normalizeCloudProfile({ ...base, email: emailBlock }).email?.accounts,
+    undefined,
+  );
+  for (const broken of [
+    {},
+    { identityWebApiKey: accounts.identityWebApiKey },
+    { turnstileSecretVersion: accounts.turnstileSecretVersion },
+    { ...accounts, identityWebApiKey: 'short' },
+    { ...accounts, identityWebApiKey: 'has spaces and is long enough ok' },
+    { ...accounts, extra: 'x' },
+    {
+      ...accounts,
+      turnstileSecretVersion:
+        'projects/other-project/secrets/blogpost-turnstile-secret/versions/1',
+    },
+    {
+      ...accounts,
+      turnstileSecretVersion: emailBlock.secretVersions.RESEND_API_KEY,
+    },
+    {
+      ...accounts,
+      turnstileSecretVersion: base.secretVersions.CURSOR_SIGNING_KEY,
+    },
+  ])
+    assert.throws(
+      () =>
+        normalizeCloudProfile({
+          ...base,
+          email: { ...emailBlock, accounts: broken },
+        }),
+      JSON.stringify(broken),
+    );
+
+  const provenance = { ...cloudProvenance, configuration: withAccounts };
+  const binding = cloudRuntimeBinding(provenance, 'api');
+  assert.equal(
+    binding.literals.IDENTITY_WEB_API_KEY,
+    accounts.identityWebApiKey,
+  );
+  assert.equal(
+    binding.literals.TURNSTILE_SECRET_REF,
+    accounts.turnstileSecretVersion,
+  );
+  assert.equal(
+    binding.secrets.TURNSTILE_SECRET_KEY,
+    accounts.turnstileSecretVersion,
+  );
+  const maintenance = cloudRuntimeBinding(provenance, 'maintenance');
+  assert.equal(maintenance.literals.IDENTITY_WEB_API_KEY, undefined);
+  assert.equal(maintenance.secrets.TURNSTILE_SECRET_KEY, undefined);
+
+  const env = {
+    ...cloudEnv,
+    EMAIL_FROM: emailBlock.from,
+    EMAIL_DISPATCH_AUDIENCE: emailBlock.dispatchAudience,
+    EMAIL_DISPATCH_INVOKER: emailBlock.dispatchInvoker,
+    RESEND_SECRET_REF: emailBlock.secretVersions.RESEND_API_KEY,
+    EMAIL_PAYLOAD_SECRET_REF: emailBlock.secretVersions.EMAIL_PAYLOAD_KEY,
+    RESEND_API_KEY: ['re', 'synthetic', 'value'].join('_'),
+    EMAIL_PAYLOAD_KEY: '4'.repeat(64),
+    IDENTITY_WEB_API_KEY: accounts.identityWebApiKey,
+    TURNSTILE_SECRET_REF: accounts.turnstileSecretVersion,
+    TURNSTILE_SECRET_KEY: '1x0000000000000000000000000000000AA',
+  };
+  const config = readConfig(env, 'api', provenance);
+  assert.equal(config.captchaSecret, env.TURNSTILE_SECRET_KEY);
+  assert.equal(config.identityWebApiKey, accounts.identityWebApiKey);
+  // Every value must be present and paired with the profile.
+  for (const key of ['TURNSTILE_SECRET_KEY', 'IDENTITY_WEB_API_KEY'] as const)
+    assert.throws(
+      () => readConfig({ ...env, [key]: '' }, 'api', provenance),
+      key,
+    );
+  assert.throws(() =>
+    readConfig(
+      { ...env, IDENTITY_WEB_API_KEY: 'AIzaSyOtherOtherOtherOther1234567' },
+      'api',
+      provenance,
+    ),
+  );
+  // Without the block, stray account settings fail closed and registration stays off.
+  const noAccounts = {
+    ...cloudProvenance,
+    configuration: normalizeCloudProfile({ ...base, email: emailBlock }),
+  };
+  const {
+    TURNSTILE_SECRET_KEY,
+    IDENTITY_WEB_API_KEY,
+    TURNSTILE_SECRET_REF,
+    ...plain
+  } = env;
+  void TURNSTILE_SECRET_KEY;
+  void IDENTITY_WEB_API_KEY;
+  void TURNSTILE_SECRET_REF;
+  const off = readConfig(plain, 'api', noAccounts);
+  assert.equal(off.captchaSecret, null);
+  assert.equal(off.identityWebApiKey, null);
+  assert.throws(() =>
+    readConfig(
+      { ...plain, TURNSTILE_SECRET_KEY: env.TURNSTILE_SECRET_KEY },
+      'api',
+      noAccounts,
+    ),
+  );
+  assert.throws(() =>
+    readConfig(
+      { ...plain, IDENTITY_WEB_API_KEY: accounts.identityWebApiKey },
+      'api',
+      noAccounts,
+    ),
+  );
+});
+
 test('development email is optional and may log instead of sending', () => {
   assert.equal(readConfig(developmentEnv).email, null);
   const local = readConfig({
