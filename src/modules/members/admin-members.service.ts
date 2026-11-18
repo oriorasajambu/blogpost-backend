@@ -13,6 +13,7 @@ import {
   expectVersion,
   nextVersion,
 } from '../../platform/database/operation.js';
+type MemberStatusValue = 'PENDING' | 'ACTIVE' | 'DISABLED';
 export interface MemberPatch {
   role?: MemberRole;
   active?: boolean;
@@ -43,8 +44,15 @@ export class AdminMembersService {
         '/v1/admin/members',
         query,
       );
+      const { memberStatus, ...filters } = query.filters;
       const rows = await tx.member.findMany({
-        where: { ...query.filters, ...afterCursor(point) },
+        where: {
+          ...filters,
+          ...(memberStatus
+            ? { status: memberStatus as MemberStatusValue }
+            : {}),
+          ...afterCursor(point),
+        },
         orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
         take: query.pageSize + 1,
       });
@@ -127,7 +135,19 @@ export class AdminMembersService {
         if (fields.length) {
           result = await tx.member.update({
             where: { id },
-            data: { role, active, version: nextVersion(member.version) },
+            data: {
+              role,
+              active,
+              // The database requires active to agree with status; a pending member who stays
+              // inactive stays pending until approved or disabled explicitly.
+              status:
+                active === member.active
+                  ? member.status
+                  : active
+                    ? 'ACTIVE'
+                    : 'DISABLED',
+              version: nextVersion(member.version),
+            },
           });
           await tx.auditEvent.create({
             data: {

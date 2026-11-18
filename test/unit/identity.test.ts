@@ -28,6 +28,7 @@ function evidence(kind: 'id-token' | 'session' = 'id-token'): IdentityEvidence {
     emailVerified: true,
     provider: 'google.com',
     googleIdentities: ['google-subject'],
+    passwordIdentities: undefined,
     tenant: undefined,
     authTime: now - 10,
     issuedAt: now,
@@ -40,6 +41,7 @@ function evidence(kind: 'id-token' | 'session' = 'id-token'): IdentityEvidence {
       googleProviders: [
         { uid: 'google-subject', email: 'author@example.test' },
       ],
+      passwordProviders: [],
     },
   };
 }
@@ -51,6 +53,13 @@ function service(value: IdentityEvidence) {
       evidence: evidence('session'),
     }),
     userByEmail: async () => value.user,
+    findByEmail: async () => value.user,
+    createPasswordUser: async () => ({ uid: 'new-uid' }),
+    actionCode: async () => 'A'.repeat(40),
+    revokeSessions: async () => undefined,
+    deleteUser: async () => undefined,
+    resetPassword: async () => 'author@example.test',
+    setPassword: async () => undefined,
   };
   return new IdentityService(gateway, readConfig(developmentEnv));
 }
@@ -112,6 +121,79 @@ test('identity policy rejects wrong project/issuer/provider/tenant/email, revoke
       (error) => error instanceof ApiError && error.status === 401,
     );
   }
+});
+
+function passwordEvidence(): IdentityEvidence {
+  const value = evidence();
+  return {
+    ...value,
+    provider: 'password',
+    googleIdentities: undefined,
+    passwordIdentities: ['author@example.test'],
+    user: {
+      ...value.user,
+      googleProviders: [],
+      passwordProviders: [
+        { uid: 'author@example.test', email: 'author@example.test' },
+      ],
+    },
+  };
+}
+test('identity policy accepts a verified password account and rejects unverified or mismatched ones', async () => {
+  const ok = await service(passwordEvidence()).verify(
+    'synthetic-token',
+    'id-token',
+  );
+  assert.equal(ok.email, 'author@example.test');
+  for (const patch of [
+    { emailVerified: false },
+    { passwordIdentities: undefined },
+    { passwordIdentities: ['other@example.test'] },
+    { passwordIdentities: [42] },
+    { provider: 'github.com' },
+  ])
+    await assert.rejects(
+      service({ ...passwordEvidence(), ...patch }).verify(
+        'synthetic-token',
+        'id-token',
+      ),
+      code('INVALID_CREDENTIAL'),
+    );
+  const noProvider = passwordEvidence();
+  noProvider.user = { ...noProvider.user, passwordProviders: [] };
+  await assert.rejects(
+    service(noProvider).verify('synthetic-token', 'id-token'),
+    code('INVALID_CREDENTIAL'),
+  );
+  const unverifiedUser = passwordEvidence();
+  unverifiedUser.user = { ...unverifiedUser.user, emailVerified: false };
+  await assert.rejects(
+    service(unverifiedUser).verify('synthetic-token', 'id-token'),
+    code('INVALID_CREDENTIAL'),
+  );
+});
+
+test('after the cutover Google credentials are refused while password accounts keep working', async () => {
+  const cutover = (value: IdentityEvidence) =>
+    new IdentityService(
+      {
+        verify: async () => value,
+        createSession: async () => {
+          throw new Error('unused');
+        },
+        userByEmail: async () => value.user,
+      } as unknown as IdentityGateway,
+      readConfig({ ...developmentEnv, AUTH_GOOGLE_ENABLED: 'false' }),
+    );
+  await assert.rejects(
+    cutover(evidence()).verify('synthetic-token', 'id-token'),
+    code('INVALID_CREDENTIAL'),
+  );
+  assert.equal(
+    (await cutover(passwordEvidence()).verify('synthetic-token', 'id-token'))
+      .email,
+    'author@example.test',
+  );
 });
 
 test('recent authentication and session lifetime/kind checks are independent of SQL roles', async () => {

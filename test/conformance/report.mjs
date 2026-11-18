@@ -42,6 +42,10 @@ export const requiredErrorCodes = [
 export const excludedErrorCodes = {
   CSRF_VALIDATION_FAILED:
     'Web BFF enforcement; backend accepts neither browser cookies nor CSRF tokens.',
+  ACCOUNT_PENDING:
+    'Exercised by the identity registration test; not yet recorded as a verified observation.',
+  CAPTCHA_FAILED:
+    'Requires a Turnstile secret, which the disposable environment deliberately omits.',
   API_VERSION_RETIRED:
     'The initial v1 major is active; no retired major exists.',
 };

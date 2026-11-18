@@ -10,6 +10,9 @@ import { writeFile } from 'node:fs/promises';
 import { initializeApp, deleteApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { createApp } from '../../src/app.js';
+import { AccountsService } from '../../src/modules/accounts/accounts.service.js';
+import { AccountSecurityService } from '../../src/modules/accounts/account-security.service.js';
+import { BreachCheck } from '../../src/platform/security/password-policy.js';
 import { readConfig } from '../../src/platform/config/config.js';
 import { DatabaseService } from '../../src/platform/database/database.service.js';
 import { FirebaseIdentityGateway } from '../../src/modules/identity/firebase-identity.gateway.js';
@@ -228,6 +231,11 @@ test(
         body: { idToken: account.token },
         headers,
       });
+    const exchangeToken = (idToken: string, status: number) =>
+      request('createWebSession', '/v1/auth/web-session', status, {
+        method: 'POST',
+        body: { idToken },
+      });
     const patch = (
       account: Account,
       body: unknown,
@@ -432,7 +440,24 @@ test(
           password: 'disposable-password-123',
           returnSecureToken: true,
         });
-        await me({ ...author, token: password.idToken! }, 401);
+        // A verified password account is a valid identity but has no membership.
+        const unaffiliated = await me(
+          { ...author, token: password.idToken! },
+          403,
+        );
+        assert.equal(unaffiliated.body.error.code, 'INSUFFICIENT_PERMISSION');
+        const unverifiedEmail = `unverified-${randomUUID()}@example.test`;
+        await admin.createUser({
+          email: unverifiedEmail,
+          emailVerified: false,
+          password: 'disposable-password-123',
+        });
+        const unverified = await rest('signInWithPassword', {
+          email: unverifiedEmail,
+          password: 'disposable-password-123',
+          returnSecureToken: true,
+        });
+        await me({ ...author, token: unverified.idToken! }, 401);
         await me(
           { ...author, token: mutate(author.token, { email_verified: false }) },
           401,
@@ -1061,9 +1086,510 @@ test(
         assert.equal(current.email, bounded.email);
       },
     );
+    await t.test(
+      'registration creates a pending member, answers identically for known addresses and gates sign-in',
+      async () => {
+        // No network: an empty range response means the password is not in a known breach.
+        app.get(AccountsService).breach = new BreachCheck(
+          async () => new Response(''),
+        );
+        const register = (email: string, password: string, status = 202) =>
+          request('registerAccount', '/v1/auth/register', status, {
+            method: 'POST',
+            body: { email, password },
+          });
+        const resend = (email: string) =>
+          request(
+            'resendVerificationEmail',
+            '/v1/auth/verify-email/resend',
+            202,
+            { method: 'POST', body: { email } },
+          );
+        const emails = (email: string, kind: string) =>
+          database.prisma.emailOutbox.count({
+            where: { toEmail: email, kind },
+          });
+        const oobCode = async (email: string) => {
+          const response = await fetch(
+            `http://auth:9099/emulator/v1/projects/${config.identityProject}/oobCodes`,
+            { signal: AbortSignal.timeout(10_000) },
+          );
+          const codes = (
+            (await response.json()) as {
+              oobCodes: {
+                email: string;
+                oobCode: string;
+                requestType: string;
+              }[];
+            }
+          ).oobCodes.filter(
+            (entry) =>
+              entry.email === email && entry.requestType === 'VERIFY_EMAIL',
+          );
+          assert.ok(codes.length > 0, 'No verification code was issued');
+          return codes[codes.length - 1]!.oobCode;
+        };
+        const email = `register-${randomUUID()}@example.test`;
+        const password = 'a long enough passphrase 1';
+
+        const accepted = await register(email, password);
+        assert.deepEqual(accepted.body.data, { status: 'ACCEPTED' });
+        const pending = await database.prisma.member.findFirstOrThrow({
+          where: { email },
+        });
+        assert.equal(pending.status, 'PENDING');
+        assert.equal(pending.active, false);
+        assert.equal(pending.role, 'AUTHOR');
+        assert.equal(await emails(email, 'VERIFY_EMAIL'), 1);
+        const row = await database.prisma.emailOutbox.findFirstOrThrow({
+          where: { toEmail: email },
+        });
+        assert.equal(row.memberId, pending.id);
+        assert.equal(row.invitationId, null);
+        assert.equal(row.status, 'SENT');
+        assert.equal(row.payloadCiphertext, null);
+
+        // The same address again: identical answer, no second member.
+        assert.deepEqual((await register(email, password)).body.data, {
+          status: 'ACCEPTED',
+        });
+        assert.equal(
+          await database.prisma.member.count({ where: { email } }),
+          1,
+        );
+        // Invalid input is rejected without creating anything.
+        const other = `short-${randomUUID()}@example.test`;
+        assert.equal(
+          (await register(other, 'too short', 422)).body.error.code,
+          'VALIDATION_FAILED',
+        );
+        assert.equal(
+          await database.prisma.member.count({ where: { email: other } }),
+          0,
+        );
+
+        // Sign-in before verification is refused, after it the pending member is still refused.
+        const signIn = () =>
+          rest('signInWithPassword', {
+            email,
+            password,
+            returnSecureToken: true,
+          });
+        await exchangeToken((await signIn()).idToken!, 401);
+        await rest('update', { oobCode: await oobCode(email) });
+        const verified = (await signIn()).idToken!;
+        assert.equal(
+          (await exchangeToken(verified, 403)).body.error.code,
+          'ACCOUNT_PENDING',
+        );
+
+        // Approval (done through the admin API elsewhere) lets the same credential in.
+        await database.prisma.member.update({
+          where: { id: pending.id },
+          data: { active: true, status: 'ACTIVE' },
+        });
+        const session = await exchangeToken((await signIn()).idToken!, 200);
+        assert.equal(session.body.data.member.id, pending.id);
+
+        // A verified owner registering again is only told the account exists.
+        await register(email, password);
+        assert.equal(await emails(email, 'ACCOUNT_EXISTS_NOTICE'), 1);
+        assert.equal(
+          await database.prisma.member.count({ where: { email } }),
+          1,
+        );
+
+        // Resending: unverified accounts get a new link, unknown addresses get the same answer.
+        const second = `resend-${randomUUID()}@example.test`;
+        await register(second, password);
+        await resend(second);
+        assert.equal(await emails(second, 'VERIFY_EMAIL'), 2);
+        const unknown = `unknown-${randomUUID()}@example.test`;
+        assert.deepEqual((await resend(unknown)).body.data, {
+          status: 'ACCEPTED',
+        });
+        assert.equal(await emails(unknown, 'VERIFY_EMAIL'), 0);
+        assert.equal(
+          await database.prisma.member.count({ where: { email: unknown } }),
+          0,
+        );
+      },
+    );
+    await t.test(
+      'password recovery and credential changes revoke sessions and notify the owner',
+      async () => {
+        const noBreach = new BreachCheck(async () => new Response(''));
+        app.get(AccountsService).breach = noBreach;
+        app.get(AccountSecurityService).breach = noBreach;
+        const oobCodes = async (type: string) => {
+          const response = await fetch(
+            `http://auth:9099/emulator/v1/projects/${config.identityProject}/oobCodes`,
+            { signal: AbortSignal.timeout(10_000) },
+          );
+          return (
+            (await response.json()) as {
+              oobCodes: {
+                email: string;
+                oobCode: string;
+                requestType: string;
+              }[];
+            }
+          ).oobCodes.filter((entry) => entry.requestType === type);
+        };
+        const emails = (email: string, kind: string) =>
+          database.prisma.emailOutbox.count({
+            where: { toEmail: email, kind },
+          });
+        const attempt = (email: string, password: string) =>
+          fetch(
+            `http://auth:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=disposable`,
+            {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({
+                email,
+                password,
+                returnSecureToken: true,
+              }),
+              signal: AbortSignal.timeout(10_000),
+            },
+          );
+        const idToken = async (email: string, password: string) =>
+          (
+            (await (await attempt(email, password)).json()) as {
+              idToken: string;
+            }
+          ).idToken;
+        // Each exchange and credential change spends the member's identity allowance (five a minute).
+        let limited = '';
+        const refill = () =>
+          limited
+            ? database.prisma.rateLimitBucket.deleteMany({
+                where: { memberId: limited },
+              })
+            : undefined;
+        const post = async (
+          operation: string,
+          path: string,
+          status: number,
+          body: unknown,
+          session?: string,
+        ) => {
+          await refill();
+          return request(operation, path, status, {
+            method: 'POST',
+            body,
+            session,
+          });
+        };
+
+        const email = `recover-${randomUUID()}@example.test`;
+        const first = 'the first long passphrase';
+        const second = 'the second long passphrase';
+        const third = 'the third long passphrase';
+        const created = await admin.createUser({
+          email,
+          emailVerified: true,
+          password: first,
+        });
+        const row = await database.prisma.member.create({
+          data: {
+            identityUid: created.uid,
+            email,
+            displayName: 'Recovery member',
+            handle: `recover-${randomUUID()}`,
+            role: 'AUTHOR',
+          },
+        });
+        limited = row.id;
+        const openSession = async (password: string, address = email) => {
+          await refill();
+          return (await exchangeToken(await idToken(address, password), 200))
+            .body.data.sessionCookie;
+        };
+
+        // Forgot: a known address gets one link; an unknown address gets the same answer and nothing.
+        let oldSession = await openSession(first);
+        // Revocation compares whole seconds, so a session minted this second would survive it.
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+        assert.deepEqual(
+          (
+            await post('forgotPassword', '/v1/auth/forgot-password', 202, {
+              email,
+            })
+          ).body.data,
+          { status: 'ACCEPTED' },
+        );
+        assert.equal(await emails(email, 'PASSWORD_RESET'), 1);
+        const nobody = `nobody-${randomUUID()}@example.test`;
+        assert.deepEqual(
+          (
+            await post('forgotPassword', '/v1/auth/forgot-password', 202, {
+              email: nobody,
+            })
+          ).body.data,
+          { status: 'ACCEPTED' },
+        );
+        assert.equal(await emails(nobody, 'PASSWORD_RESET'), 0);
+
+        // Reset: bad input and bad codes are refused; a good code sets the password and ends sessions.
+        const code = (await oobCodes('PASSWORD_RESET'))
+          .filter((c) => c.email === email)
+          .at(-1)!.oobCode;
+        assert.equal(
+          (
+            await post('resetPassword', '/v1/auth/reset-password', 422, {
+              code,
+              password: 'short',
+            })
+          ).body.error.code,
+          'VALIDATION_FAILED',
+        );
+        assert.equal(
+          (
+            await post('resetPassword', '/v1/auth/reset-password', 422, {
+              code: 'A'.repeat(40),
+              password: second,
+            })
+          ).body.error.code,
+          'VALIDATION_FAILED',
+        );
+        await post('resetPassword', '/v1/auth/reset-password', 202, {
+          code,
+          password: second,
+        });
+        assert.equal((await attempt(email, first)).status, 400);
+        assert.equal((await attempt(email, second)).status, 200);
+        assert.equal(await emails(email, 'PASSWORD_CHANGED_NOTICE'), 1);
+        await request('getMe', '/v1/me', 401, { session: oldSession });
+        // The same code cannot be used twice.
+        await post('resetPassword', '/v1/auth/reset-password', 422, {
+          code,
+          password: third,
+        });
+
+        // Change password: needs a fresh token for this account, then ends every session.
+        oldSession = await openSession(second);
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+        const proof = await idToken(email, second);
+        const stranger = (await google('stranger')).token;
+        await post(
+          'changePassword',
+          '/v1/me/password',
+          403,
+          { idToken: stranger, newPassword: third },
+          oldSession,
+        );
+        await post(
+          'changePassword',
+          '/v1/me/password',
+          422,
+          { idToken: proof, newPassword: 'short' },
+          oldSession,
+        );
+        await post(
+          'changePassword',
+          '/v1/me/password',
+          202,
+          { idToken: proof, newPassword: third },
+          oldSession,
+        );
+        await request('getMe', '/v1/me', 401, { session: oldSession });
+        assert.equal((await attempt(email, second)).status, 400);
+        assert.equal((await attempt(email, third)).status, 200);
+        assert.equal(await emails(email, 'PASSWORD_CHANGED_NOTICE'), 2);
+
+        // Change email: link to the new address, notice to the old one, nothing changes until confirmed.
+        const session = await openSession(third);
+        const changed = `changed-${randomUUID()}@example.test`;
+        await post(
+          'requestEmailChange',
+          '/v1/me/email-change',
+          422,
+          { idToken: await idToken(email, third), newEmail: email },
+          session,
+        );
+        await post(
+          'requestEmailChange',
+          '/v1/me/email-change',
+          202,
+          { idToken: await idToken(email, third), newEmail: changed },
+          session,
+        );
+        assert.equal(await emails(changed, 'EMAIL_CHANGE_VERIFY'), 1);
+        assert.equal(await emails(email, 'EMAIL_CHANGE_NOTICE'), 1);
+        assert.equal(
+          (
+            await database.prisma.member.findUniqueOrThrow({
+              where: { id: row.id },
+            })
+          ).email,
+          email,
+        );
+        await rest('update', {
+          oobCode: (await oobCodes('VERIFY_AND_CHANGE_EMAIL')).at(-1)!.oobCode,
+        });
+        // The next sign-in under the new address carries the change into the member row.
+        const confirmed = await openSession(third, changed);
+        assert.ok(confirmed);
+        assert.equal(
+          (
+            await database.prisma.member.findUniqueOrThrow({
+              where: { id: row.id },
+            })
+          ).email,
+          changed,
+        );
+        // An address that already has an account is answered the same way, without a link.
+        const taken = (await google('taken')).email;
+        const before = await emails(taken, 'EMAIL_CHANGE_VERIFY');
+        await post(
+          'requestEmailChange',
+          '/v1/me/email-change',
+          202,
+          { idToken: await idToken(changed, third), newEmail: taken },
+          confirmed,
+        );
+        assert.equal(await emails(taken, 'EMAIL_CHANGE_VERIFY'), before);
+      },
+    );
+    await t.test(
+      'an administrator can email password setup links to members still on Google',
+      async () => {
+        const noBreach = new BreachCheck(async () => new Response(''));
+        app.get(AccountsService).breach = noBreach;
+        const oobCode = async (email: string) => {
+          const response = await fetch(
+            `http://auth:9099/emulator/v1/projects/${config.identityProject}/oobCodes`,
+            { signal: AbortSignal.timeout(10_000) },
+          );
+          const codes = (
+            (await response.json()) as {
+              oobCodes: {
+                email: string;
+                oobCode: string;
+                requestType: string;
+              }[];
+            }
+          ).oobCodes.filter(
+            (entry) =>
+              entry.email === email && entry.requestType === 'PASSWORD_RESET',
+          );
+          assert.ok(codes.length > 0, 'No setup code was issued');
+          return codes[codes.length - 1]!.oobCode;
+        };
+        const setupMail = (email: string) =>
+          database.prisma.emailOutbox.count({
+            where: { toEmail: email, kind: 'PASSWORD_SET' },
+          });
+        const asAdmin = await google('setup-admin');
+        await database.prisma.member.create({
+          data: {
+            identityUid: asAdmin.uid,
+            email: asAdmin.email,
+            displayName: 'Setup admin',
+            handle: `setup-admin-${randomUUID()}`,
+            role: 'ADMIN',
+          },
+        });
+        const legacy = await google('legacy-member');
+        const row = await database.prisma.member.create({
+          data: {
+            identityUid: legacy.uid,
+            email: legacy.email,
+            displayName: 'Legacy member',
+            handle: `legacy-${randomUUID()}`,
+            role: 'AUTHOR',
+          },
+        });
+        const author = await google('plain-author');
+        await database.prisma.member.create({
+          data: {
+            identityUid: author.uid,
+            email: author.email,
+            displayName: 'Plain author',
+            handle: `plain-${randomUUID()}`,
+            role: 'AUTHOR',
+          },
+        });
+        // Only administrators may send them.
+        await request(
+          'sendPasswordSetup',
+          '/v1/admin/members/password-setup',
+          403,
+          {
+            method: 'POST',
+            token: author.token,
+            body: {},
+          },
+        );
+        const sent = await request(
+          'sendPasswordSetup',
+          '/v1/admin/members/password-setup',
+          200,
+          { method: 'POST', token: asAdmin.token, body: {} },
+        );
+        const result = sent.body.data as unknown as {
+          queued: number;
+          skipped: number;
+        };
+        assert.ok(result.queued >= 1);
+        assert.equal(await setupMail(legacy.email), 1);
+        const mail = await database.prisma.emailOutbox.findFirstOrThrow({
+          where: { toEmail: legacy.email, kind: 'PASSWORD_SET' },
+        });
+        assert.equal(mail.memberId, row.id);
+        assert.equal(mail.status, 'SENT');
+        // A member who already has a password is left alone.
+        const withPassword = await database.prisma.emailOutbox.count({
+          where: { kind: 'PASSWORD_SET', toEmail: { startsWith: 'recover-' } },
+        });
+        assert.equal(withPassword, 0);
+
+        // The link adds a password to the same account: same uid, same member, same content.
+        const password = 'a long passphrase for migration';
+        await request('resetPassword', '/v1/auth/reset-password', 202, {
+          method: 'POST',
+          body: { code: await oobCode(legacy.email), password },
+        });
+        const user = await admin.getUserByEmail(legacy.email);
+        assert.equal(user.uid, legacy.uid);
+        assert.ok(
+          user.providerData.some((entry) => entry.providerId === 'password'),
+        );
+        const signedIn = await fetch(
+          'http://auth:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=disposable',
+          {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              email: legacy.email,
+              password,
+              returnSecureToken: true,
+            }),
+            signal: AbortSignal.timeout(10_000),
+          },
+        );
+        assert.equal(signedIn.status, 200);
+        const { idToken } = (await signedIn.json()) as { idToken: string };
+        const session = await exchangeToken(idToken, 200);
+        assert.equal(session.body.data.member.id, row.id);
+        // Once it has a password the member is skipped by a second run.
+        const again = await request(
+          'sendPasswordSetup',
+          '/v1/admin/members/password-setup',
+          200,
+          { method: 'POST', token: asAdmin.token, body: {} },
+        );
+        assert.equal(await setupMail(legacy.email), 1);
+        assert.ok(
+          (again.body.data as unknown as { skipped: number }).skipped >= 1,
+        );
+      },
+    );
     await request('getApiMeta', '/v1/meta', 200);
     const report = coverage('backend', executed);
-    assert.equal(report.executed, 4);
+    assert.equal(report.executed, 11);
     assert.equal(report.pending.length, 48);
     assert.equal(report.complete, false);
     const runId = process.env.BLOGPOST_IDENTITY_RUN_ID;

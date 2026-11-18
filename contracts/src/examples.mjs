@@ -276,8 +276,11 @@ export function exampleData(operation) {
         : id === 'updateMe'
           ? { ...me, displayName: 'Updated author', version: 2 }
           : me,
+    AccountRequestAccepted: { status: 'ACCEPTED' },
+    PasswordSetupResult: { queued: 3, skipped: 1 },
     AdminMember: {
       ...me,
+      status: 'ACTIVE',
       ...(id === 'updateMember' ? { role: 'EDITOR', version: 2 } : {}),
       createdAt: at,
       updatedAt: at,
@@ -431,6 +434,31 @@ export function requestExample(operation) {
   const bodyBySchema = {
     DraftContentInput: savedDraft,
     WebSessionInput: { idToken: 'SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL' },
+    RegisterAccountInput: {
+      email: 'new.member@example.test',
+      password: 'SYNTHETIC-FIXTURE-PASSWORD',
+      captchaToken: 'SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL',
+    },
+    ForgotPasswordInput: {
+      email: 'new.member@example.test',
+      captchaToken: 'SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL',
+    },
+    ResetPasswordInput: {
+      code: 'SYNTHETIC_FIXTURE_CODE_0123456789',
+      password: 'SYNTHETIC-FIXTURE-PASSWORD',
+    },
+    ChangePasswordInput: {
+      idToken: 'SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL',
+      newPassword: 'SYNTHETIC-FIXTURE-PASSWORD',
+    },
+    RequestEmailChangeInput: {
+      idToken: 'SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL',
+      newEmail: 'changed.member@example.test',
+    },
+    ResendVerificationInput: {
+      email: 'new.member@example.test',
+      captchaToken: 'SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL',
+    },
     UpdateMeInput: { displayName: 'Updated author' },
     AcceptInvitationInput: { token: invitationToken },
     AvailabilityInput: { postIds: [ids.post] },
@@ -563,6 +591,7 @@ export const errorCodes = {
   403: [
     'INSUFFICIENT_PERMISSION',
     'ACCESS_REVOKED',
+    'ACCOUNT_PENDING',
     'INVITATION_ACCOUNT_MISMATCH',
     'CSRF_VALIDATION_FAILED',
   ],
@@ -589,6 +618,7 @@ export const errorCodes = {
   415: ['UNSUPPORTED_MEDIA_TYPE'],
   422: [
     'VALIDATION_FAILED',
+    'CAPTCHA_FAILED',
     'MARKDOWN_UNSUPPORTED',
     'SEARCH_QUERY_NOT_SEARCHABLE',
   ],

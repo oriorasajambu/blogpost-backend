@@ -26,6 +26,12 @@ const exampleValues = Object.freeze({
   CURSOR_SIGNING_KEY:
     'replace-with-a-separate-random-64-character-lowercase-hex-key',
 });
+/**
+ * Rules an exception may name. Each exception allows exactly one literal for exactly one rule:
+ * generic-api-key for public digests, gcp-api-key for the public Firebase web API key that the
+ * reviewed environment profile must carry (it identifies the project and grants no access).
+ */
+const EXCEPTION_RULES = ['generic-api-key', 'gcp-api-key'];
 export function securityConfiguration(policy, now = new Date()) {
   if (
     policy.schemaVersion !== 1 ||
@@ -41,7 +47,7 @@ export function securityConfiguration(policy, now = new Date()) {
   for (const item of policy.exceptions) {
     if (
       Object.keys(item).sort().join(',') !== 'expires,literal,reason,rule' ||
-      item.rule !== 'generic-api-key' ||
+      !EXCEPTION_RULES.includes(item.rule) ||
       typeof item.reason !== 'string' ||
       item.reason.length < 20 ||
       typeof item.literal !== 'string' ||
@@ -52,18 +58,19 @@ export function securityConfiguration(policy, now = new Date()) {
     )
       throw new Error('Scanner exception is invalid or expired.');
   }
-  if (policy.exceptions.length)
-    lines.push(
-      '[[rules]]',
-      'id = "generic-api-key"',
-      '[[rules.allowlists]]',
-      'regexTarget = "secret"',
-      'regexes = [' +
-        policy.exceptions
-          .map((item) => "'''^" + item.literal + "$'''")
-          .join(',') +
-        ']',
-    );
+  for (const rule of EXCEPTION_RULES) {
+    const literals = policy.exceptions.filter((item) => item.rule === rule);
+    if (literals.length)
+      lines.push(
+        '[[rules]]',
+        'id = "' + rule + '"',
+        '[[rules.allowlists]]',
+        'regexTarget = "secret"',
+        'regexes = [' +
+          literals.map((item) => "'''^" + item.literal + "$'''").join(',') +
+          ']',
+      );
+  }
   return lines.join('\n') + '\n';
 }
 export function validateEnvironmentExample(text) {

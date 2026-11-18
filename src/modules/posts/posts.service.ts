@@ -416,7 +416,7 @@ export class PostsService {
           ].sort();
           const locked = await tx.$queryRaw<
             MemberRow[]
-          >(Prisma.sql`SELECT id, "identityUid", email, "displayName", handle, bio, role::text AS role, active, version
+          >(Prisma.sql`SELECT id, "identityUid", email, "displayName", handle, bio, role::text AS role, active, status::text AS status, version
           FROM blogpost."Member" WHERE id IN (${Prisma.join(ids.map((id) => Prisma.sql`${id}::uuid`))}) ORDER BY id FOR UPDATE`);
           const actor = activeMember(
             locked.find((member) => member.id === candidate.id),

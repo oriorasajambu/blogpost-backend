@@ -157,6 +157,7 @@ export class MockState {
         handle: `synthetic-${name}`,
         displayName: `Synthetic ${name}`,
         bio: '',
+        status: 'ACTIVE',
         email: `${name}@example.test`,
         role,
         active: true,
@@ -686,6 +687,44 @@ export class MockState {
         },
       };
     }
+    if (id === 'registerAccount' || id === 'resendVerificationEmail') {
+      if (actorId !== undefined) fail(400, 'AMBIGUOUS_CREDENTIALS');
+      // The real API answers identically whether or not the address is registered.
+      if (body.captchaToken === 'mock-captcha-fail')
+        fail(422, 'CAPTCHA_FAILED');
+      return { data: { status: 'ACCEPTED' } };
+    }
+    if (id === 'forgotPassword') {
+      if (actorId !== undefined) fail(400, 'AMBIGUOUS_CREDENTIALS');
+      if (body.captchaToken === 'mock-captcha-fail')
+        fail(422, 'CAPTCHA_FAILED');
+      return { data: { status: 'ACCEPTED' } };
+    }
+    if (id === 'resetPassword') {
+      if (actorId !== undefined) fail(400, 'AMBIGUOUS_CREDENTIALS');
+      // The real API rejects expired, used and unknown codes the same way.
+      if ((body.code as string).startsWith('mock-expired-'))
+        fail(422, 'VALIDATION_FAILED');
+      return { data: { status: 'ACCEPTED' } };
+    }
+    if (id === 'changePassword' || id === 'requestEmailChange') {
+      if (!(body.idToken as string).startsWith('mock-'))
+        fail(401, 'INVALID_CREDENTIAL');
+      if ((body.idToken as string).startsWith('mock-stale-'))
+        fail(401, 'AUTHENTICATION_EXPIRED');
+      if (this.identify(body.idToken as string) !== actor!.id)
+        fail(403, 'INSUFFICIENT_PERMISSION');
+      this.throttle(actor!.id, id);
+      return { data: { status: 'ACCEPTED' } };
+    }
+    if (id === 'sendPasswordSetup') {
+      this.throttle(actor!.id, id);
+      // Members who already have a password are skipped; the mock has no credentials, so it counts active ones.
+      const active = [...this.members.values()].filter(
+        (member) => member.active,
+      );
+      return { data: { queued: active.length, skipped: 0 } };
+    }
     if (id === 'getMe') return { data: this.me(actor!) };
     if (id === 'updateMe') {
       const displayName =
@@ -730,6 +769,7 @@ export class MockState {
         handle: 'synthetic-invited',
         displayName: 'Synthetic invited',
         bio: '',
+        status: 'ACTIVE',
         email: invitation.email,
         role: invitation.role,
         active: true,
@@ -1007,7 +1047,8 @@ export class MockState {
         [...this.members.values()].filter(
           (member) =>
             (!query.role || member.role === query.role) &&
-            (query.active === undefined || member.active === query.active),
+            (query.active === undefined || member.active === query.active) &&
+            (!query.memberStatus || member.status === query.memberStatus),
         ),
         query,
         id,
@@ -1035,6 +1076,8 @@ export class MockState {
         fail(409, 'LAST_ADMIN_REQUIRED');
       if (role !== member.role || active !== member.active) {
         member.role = role;
+        if (active !== member.active)
+          member.status = active ? 'ACTIVE' : 'DISABLED';
         member.active = active;
         member.version++;
         member.updatedAt = this.iso();
@@ -1100,7 +1143,7 @@ export class MockState {
   }
 
   private me(member: Member): DTO<'Me'> {
-    const { createdAt, updatedAt, ...result } = member;
+    const { createdAt, updatedAt, status, ...result } = member;
     return structuredClone(result);
   }
   private publicSummary(article: DTO<'PublicPost'>): DTO<'PublicPostSummary'> {

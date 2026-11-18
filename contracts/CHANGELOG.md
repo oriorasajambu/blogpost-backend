@@ -11,4 +11,10 @@
 
 - Added `Invitation.delivery` (`InvitationDelivery`): invitation email status (`NOT_REQUESTED`, `QUEUED`, `SENT`, `FAILED`, `CANCELLED`), attempt count and timestamps. Email is optional per deployment; without it every invitation reports `NOT_REQUESTED` and the copy-link flow is unchanged.
 
+- Added email/password registration: `registerAccount` and `resendVerificationEmail` (anonymous, server proxy only, `202 AccountRequestAccepted`, identical for existing and new addresses), `AdminMember.status` (`MemberStatus`: `PENDING`, `ACTIVE`, `DISABLED`) with a `memberStatus` filter on `listMembers`, and the `ACCOUNT_PENDING` (403) and `CAPTCHA_FAILED` (422) error codes. The catalog now has 54 operations.
+
+- Added password recovery and credential changes: `forgotPassword` and `resetPassword` (anonymous, server proxy only), and `changePassword` and `requestEmailChange` (active member, each proving recent authentication with a fresh identity token). All answer `202 AccountRequestAccepted`. The catalog now has 58 operations.
+
+- Added `sendPasswordSetup` (administrator) and `PasswordSetupResult`: emails every active member who has no password yet a one-time link to set one, for the move away from Google sign-in. The catalog now has 59 operations.
+
 This remains draft authoring history. Owner review, explicit immutable publication and actual provider/client application-release gates remain open. No previously published contract exists for a historical baseline comparison.

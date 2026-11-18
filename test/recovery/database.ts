@@ -70,11 +70,18 @@ assert.deepEqual(
     '202610260004_media_upload_leases',
     '202610270005_maintenance_tombstones',
     '202611160006_email_outbox',
+    '202611180007_auth_lifecycle',
   ],
 );
-// MaintenanceCheckpoint is job state; EmailOutbox arrives with the rehearsed (newest) migration.
+// MaintenanceCheckpoint is job state and EmailOutbox is never populated by this rehearsal; AnonymousRateLimit
+// arrives with the rehearsed (newest) migration.
 const tables = [...APP_TABLES]
-  .filter((name) => !['MaintenanceCheckpoint', 'EmailOutbox'].includes(name))
+  .filter(
+    (name) =>
+      !['MaintenanceCheckpoint', 'EmailOutbox', 'AnonymousRateLimit'].includes(
+        name,
+      ),
+  )
   .sort();
 const ids = {
   post: '30000000-0000-4000-8000-000000000001',
@@ -199,6 +206,33 @@ async function snapshot(db: pg.Pool, columns?: Columns): Promise<Snapshot> {
     client.release(true);
   }
 }
+/**
+ * pg_dump writes a predicate over a varchar column with explicit casts and extra parentheses, and a
+ * restore deparses the same predicate with different cast and bracket spelling (for example
+ * `::character varying::text` instead of `]::text[]`). The two are equivalent, so casts, brackets and
+ * whitespace are dropped when comparing a restored schema with the original. The upgraded database is
+ * still compared exactly with the committed baseline.
+ */
+const castNoise = /::character varying|::text\[\]|::text/g;
+const spelling = /[()\[\]\s]/g;
+function stable(definitions: Record<string, unknown[]>) {
+  return Object.fromEntries(
+    Object.entries(definitions).map(([name, rows]) => [
+      name,
+      rows.map((row) => {
+        const item = row as Record<string, unknown>;
+        return typeof item.definition === 'string'
+          ? {
+              ...item,
+              definition: item.definition
+                .replace(castNoise, '')
+                .replace(spelling, ''),
+            }
+          : item;
+      }),
+    ]),
+  );
+}
 async function unchanged(db: pg.Pool, prefix = false) {
   const actual = await snapshot(db, state.before.columns);
   assert.equal(
@@ -208,9 +242,11 @@ async function unchanged(db: pg.Pool, prefix = false) {
   );
   assert.deepEqual(actual.counts, state.before.counts);
   if (prefix) {
+    const observedStable = stable(actual.definitions),
+      expectedStable = stable(state.before.definitions);
     for (const name of Object.keys(state.before.definitions)) {
-      const observed = actual.definitions[name]!,
-        expected = state.before.definitions[name]!;
+      const observed = observedStable[name]!,
+        expected = expectedStable[name]!;
       if (digest(observed) === digest(expected)) continue;
       const priorHashes = new Set(expected.map((row) => digest(row))),
         nextHashes = new Set(observed.map((row) => digest(row)));
@@ -227,7 +263,7 @@ async function unchanged(db: pg.Pool, prefix = false) {
         }) ?? expected.find((row) => !nextHashes.has(digest(row)));
       assert.deepEqual(changed, prior, 'Restored schema differs: ' + name);
     }
-    assert.equal(actual.schemaDigest, state.before.schemaDigest);
+    assert.equal(digest(observedStable), digest(expectedStable));
     assert.equal(actual.historyDigest, state.before.historyDigest);
   } else
     assert.equal(actual.schemaDigest, (await expectedSchema()).schemaDigest);

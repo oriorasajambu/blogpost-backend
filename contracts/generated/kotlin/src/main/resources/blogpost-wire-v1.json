@@ -839,6 +839,10 @@
         "version"
       ]
     },
+    "MemberStatus": {
+      "type": "string",
+      "enum": ["PENDING", "ACTIVE", "DISABLED"]
+    },
     "AdminMember": {
       "type": "object",
       "properties": {
@@ -866,6 +870,7 @@
         "role": { "$ref": "#/components/schemas/Role" },
         "active": { "type": "boolean" },
         "version": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "status": { "$ref": "#/components/schemas/MemberStatus" },
         "createdAt": {
           "type": "string",
           "format": "date-time",
@@ -886,6 +891,7 @@
         "role",
         "active",
         "version",
+        "status",
         "createdAt",
         "updatedAt"
       ]
@@ -1199,6 +1205,11 @@
         "createdAt",
         "changes"
       ]
+    },
+    "AccountRequestAccepted": {
+      "type": "object",
+      "properties": { "status": { "type": "string", "enum": ["ACCEPTED"] } },
+      "required": ["status"]
     },
     "WebSession": {
       "type": "object",
@@ -1600,6 +1611,139 @@
         }
       },
       "required": ["idToken"],
+      "additionalProperties": false
+    },
+    "RegisterAccountInput": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 320,
+          "minLength": 3,
+          "format": "email"
+        },
+        "password": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 128,
+          "minLength": 12
+        },
+        "captchaToken": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 2048,
+          "minLength": 1
+        }
+      },
+      "required": ["email", "password"],
+      "additionalProperties": false
+    },
+    "PasswordSetupResult": {
+      "type": "object",
+      "properties": {
+        "queued": { "type": "integer", "minimum": 0 },
+        "skipped": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["queued", "skipped"]
+    },
+    "ForgotPasswordInput": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 320,
+          "minLength": 3,
+          "format": "email"
+        },
+        "captchaToken": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 2048,
+          "minLength": 1
+        }
+      },
+      "required": ["email"],
+      "additionalProperties": false
+    },
+    "ResetPasswordInput": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 512,
+          "minLength": 16,
+          "pattern": "^[A-Za-z0-9_-]{16,512}$"
+        },
+        "password": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 128,
+          "minLength": 12
+        }
+      },
+      "required": ["code", "password"],
+      "additionalProperties": false
+    },
+    "ChangePasswordInput": {
+      "type": "object",
+      "properties": {
+        "idToken": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 65536,
+          "minLength": 1
+        },
+        "newPassword": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 128,
+          "minLength": 12
+        }
+      },
+      "required": ["idToken", "newPassword"],
+      "additionalProperties": false
+    },
+    "RequestEmailChangeInput": {
+      "type": "object",
+      "properties": {
+        "idToken": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 65536,
+          "minLength": 1
+        },
+        "newEmail": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 320,
+          "minLength": 3,
+          "format": "email"
+        }
+      },
+      "required": ["idToken", "newEmail"],
+      "additionalProperties": false
+    },
+    "ResendVerificationInput": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 320,
+          "minLength": 3,
+          "format": "email"
+        },
+        "captchaToken": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 2048,
+          "minLength": 1
+        }
+      },
+      "required": ["email"],
       "additionalProperties": false
     },
     "UpdateMeInput": {
@@ -2322,6 +2466,198 @@
         "meta"
       ]
     },
+    "RegisterAccountEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 202 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/AccountRequestAccepted" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ResendVerificationEmailEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 202 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/AccountRequestAccepted" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ForgotPasswordEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 202 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/AccountRequestAccepted" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ResetPasswordEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 202 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/AccountRequestAccepted" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
     "GetMeEnvelope": {
       "type": "object",
       "properties": {
@@ -2403,6 +2739,102 @@
             "contractVersion": { "type": "string", "const": "1.0.0" },
             "pagination": { "type": "null" },
             "idempotency": { "$ref": "#/components/schemas/IdempotencyMeta" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "ChangePasswordEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 202 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/AccountRequestAccepted" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
+    "RequestEmailChangeEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 202 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/AccountRequestAccepted" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
           },
           "required": ["contractVersion", "pagination", "idempotency"]
         }
@@ -3782,6 +4214,54 @@
         "meta"
       ]
     },
+    "SendPasswordSetupEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/PasswordSetupResult" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
     "ListMembersEnvelope": {
       "type": "object",
       "properties": {
@@ -4425,6 +4905,60 @@
       "request": { "$ref": "#/components/schemas/WebSessionInput" },
       "response": { "$ref": "#/components/schemas/CreateWebSessionEnvelope" }
     },
+    "registerAccount": {
+      "method": "POST",
+      "path": "/v1/auth/register",
+      "operationId": "registerAccount",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 202,
+      "binary": false,
+      "resourceVersion": false,
+      "request": { "$ref": "#/components/schemas/RegisterAccountInput" },
+      "response": { "$ref": "#/components/schemas/RegisterAccountEnvelope" }
+    },
+    "resendVerificationEmail": {
+      "method": "POST",
+      "path": "/v1/auth/verify-email/resend",
+      "operationId": "resendVerificationEmail",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 202,
+      "binary": false,
+      "resourceVersion": false,
+      "request": { "$ref": "#/components/schemas/ResendVerificationInput" },
+      "response": {
+        "$ref": "#/components/schemas/ResendVerificationEmailEnvelope"
+      }
+    },
+    "forgotPassword": {
+      "method": "POST",
+      "path": "/v1/auth/forgot-password",
+      "operationId": "forgotPassword",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 202,
+      "binary": false,
+      "resourceVersion": false,
+      "request": { "$ref": "#/components/schemas/ForgotPasswordInput" },
+      "response": { "$ref": "#/components/schemas/ForgotPasswordEnvelope" }
+    },
+    "resetPassword": {
+      "method": "POST",
+      "path": "/v1/auth/reset-password",
+      "operationId": "resetPassword",
+      "access": "ANONYMOUS",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 202,
+      "binary": false,
+      "resourceVersion": false,
+      "request": { "$ref": "#/components/schemas/ResetPasswordInput" },
+      "response": { "$ref": "#/components/schemas/ResetPasswordEnvelope" }
+    },
     "getMe": {
       "method": "GET",
       "path": "/v1/me",
@@ -4450,6 +4984,32 @@
       "resourceVersion": true,
       "request": { "$ref": "#/components/schemas/UpdateMeInput" },
       "response": { "$ref": "#/components/schemas/UpdateMeEnvelope" }
+    },
+    "changePassword": {
+      "method": "POST",
+      "path": "/v1/me/password",
+      "operationId": "changePassword",
+      "access": "MEMBER",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 202,
+      "binary": false,
+      "resourceVersion": false,
+      "request": { "$ref": "#/components/schemas/ChangePasswordInput" },
+      "response": { "$ref": "#/components/schemas/ChangePasswordEnvelope" }
+    },
+    "requestEmailChange": {
+      "method": "POST",
+      "path": "/v1/me/email-change",
+      "operationId": "requestEmailChange",
+      "access": "MEMBER",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 202,
+      "binary": false,
+      "resourceVersion": false,
+      "request": { "$ref": "#/components/schemas/RequestEmailChangeInput" },
+      "response": { "$ref": "#/components/schemas/RequestEmailChangeEnvelope" }
     },
     "acceptInvitation": {
       "method": "POST",
@@ -4835,6 +5395,19 @@
       "resourceVersion": true,
       "request": { "$ref": "#/components/schemas/UpdateTaxonInput" },
       "response": { "$ref": "#/components/schemas/UpdateTagEnvelope" }
+    },
+    "sendPasswordSetup": {
+      "method": "POST",
+      "path": "/v1/admin/members/password-setup",
+      "operationId": "sendPasswordSetup",
+      "access": "ADMIN",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": { "$ref": "#/components/schemas/EmptyInput" },
+      "response": { "$ref": "#/components/schemas/SendPasswordSetupEnvelope" }
     },
     "listMembers": {
       "method": "GET",

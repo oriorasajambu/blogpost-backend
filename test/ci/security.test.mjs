@@ -57,6 +57,48 @@ test('scanner exceptions have exact bounded literals, reasons and an enforced ex
   unsafe.exceptions[0].literal = '.*';
   assert.throws(() => securityConfiguration(unsafe));
 });
+test('a gcp-api-key exception allows only its exact literal and leaves the generic rule alone', () => {
+  const now = new Date('2026-10-27T00:00:00Z');
+  const literal = 'AIzaSyAbCdEfGhIjKlMnOpQrStUvWxYz0123456';
+  const entry = {
+    rule: 'gcp-api-key',
+    literal,
+    reason:
+      'Public web API key of a project; identifies it and grants no access.',
+    expires: '2027-01-25',
+  };
+  const only = securityConfiguration(
+    { schemaVersion: 1, exceptions: [entry] },
+    now,
+  );
+  assert.ok(only.includes('id = "gcp-api-key"'));
+  assert.ok(only.includes("'''^" + literal + "$'''"));
+  assert.ok(!only.includes('id = "generic-api-key"'));
+  const both = securityConfiguration(
+    {
+      schemaVersion: 1,
+      exceptions: [
+        entry,
+        { ...entry, rule: 'generic-api-key', literal: 'a'.repeat(64) },
+      ],
+    },
+    now,
+  );
+  assert.equal((both.match(/\[\[rules\]\]/g) ?? []).length, 2);
+  for (const unsafe of [
+    { ...entry, rule: 'aws-access-token' },
+    { ...entry, rule: 'gcp-api-key', literal: 'AIza.*' },
+    { ...entry, literal: 'short' },
+    { ...entry, reason: 'too short' },
+    { ...entry, expires: '2026-10-01' },
+    { ...entry, extra: true },
+  ])
+    assert.throws(
+      () =>
+        securityConfiguration({ schemaVersion: 1, exceptions: [unsafe] }, now),
+      JSON.stringify(unsafe),
+    );
+});
 test('scanner downloads reject unsafe origins and redirects before networking', async () => {
   for (const url of [
     'http://github.com/x',

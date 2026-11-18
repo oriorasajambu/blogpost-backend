@@ -30,6 +30,16 @@ export interface EmailProfile {
   dispatchAudience: string;
   dispatchInvoker: string;
   secretVersions: { RESEND_API_KEY: string; EMAIL_PAYLOAD_KEY: string };
+  /**
+   * Optional: public registration, password reset and email change. Needs the email block, a
+   * public identity web API key (not a secret) and the Turnstile secret key.
+   */
+  accounts?: {
+    identityWebApiKey: string;
+    turnstileSecretVersion: string;
+    /** Set false at the cutover to stop accepting Google credentials; defaults to true. */
+    googleSignIn?: boolean;
+  };
 }
 export type EmailSecretName = keyof EmailProfile['secretVersions'];
 export const EMAIL_SECRET_REFERENCE_NAMES: Readonly<
@@ -139,6 +149,16 @@ export function cloudRuntimeBinding(
       secrets[name] = ref;
       literals[EMAIL_SECRET_REFERENCE_NAMES[name as EmailSecretName]] = ref;
     }
+    if (profile.email.accounts) {
+      literals.IDENTITY_WEB_API_KEY = profile.email.accounts.identityWebApiKey;
+      literals.TURNSTILE_SECRET_REF =
+        profile.email.accounts.turnstileSecretVersion;
+      secrets.TURNSTILE_SECRET_KEY =
+        profile.email.accounts.turnstileSecretVersion;
+      literals.GOOGLE_SIGN_IN_ENABLED = String(
+        profile.email.accounts.googleSignIn ?? true,
+      );
+    }
   }
   return {
     literals,
@@ -231,18 +251,46 @@ function emailProfile(
   otherSecrets: readonly string[],
 ): EmailProfile {
   // All-or-nothing: a partial block must fail rather than half-enable email.
+  const hasAccounts =
+    !!value &&
+    typeof value === 'object' &&
+    Object.prototype.hasOwnProperty.call(value, 'accounts');
   const e = shape(value, [
     'from',
     'dispatchAudience',
     'dispatchInvoker',
     'secretVersions',
+    ...(hasAccounts ? ['accounts'] : []),
   ]);
+  const accountSettings = hasAccounts
+    ? shape(e.accounts, [
+        'identityWebApiKey',
+        'turnstileSecretVersion',
+        ...(e.accounts &&
+        typeof e.accounts === 'object' &&
+        Object.prototype.hasOwnProperty.call(e.accounts, 'googleSignIn')
+          ? ['googleSignIn']
+          : []),
+      ])
+    : null;
+  if (
+    accountSettings &&
+    accountSettings.googleSignIn !== undefined &&
+    typeof accountSettings.googleSignIn !== 'boolean'
+  )
+    return invalid();
+  const turnstile = accountSettings
+    ? secretRef(accountSettings.turnstileSecretVersion, project)
+    : null;
   const refs = shape(e.secretVersions, ['RESEND_API_KEY', 'EMAIL_PAYLOAD_KEY']);
   const resend = secretRef(refs.RESEND_API_KEY, project);
   const payload = secretRef(refs.EMAIL_PAYLOAD_KEY, project);
-  const ids = [resend, payload, ...otherSecrets].map(
-    (ref) => ref.split('/versions/')[0],
-  );
+  const ids = [
+    resend,
+    payload,
+    ...(turnstile ? [turnstile] : []),
+    ...otherSecrets,
+  ].map((ref) => ref.split('/versions/')[0]);
   if (new Set(ids).size !== ids.length) return invalid();
   const invoker = serviceAccount(e.dispatchInvoker, project);
   // The scheduler identity must not be one of the runtime identities.
@@ -252,6 +300,21 @@ function emailProfile(
     dispatchAudience: origin(e.dispatchAudience),
     dispatchInvoker: invoker,
     secretVersions: { RESEND_API_KEY: resend, EMAIL_PAYLOAD_KEY: payload },
+    ...(accountSettings && turnstile
+      ? {
+          accounts: {
+            // Firebase web API keys are public identifiers; the pattern only keeps the value header-safe.
+            identityWebApiKey: text(
+              accountSettings.identityWebApiKey,
+              /^[A-Za-z0-9_-]{20,128}$/,
+            ),
+            turnstileSecretVersion: turnstile,
+            ...(accountSettings.googleSignIn === undefined
+              ? {}
+              : { googleSignIn: accountSettings.googleSignIn as boolean }),
+          },
+        }
+      : {}),
   };
 }
 export function normalizeCloudProfile(value: unknown): CloudProfile {

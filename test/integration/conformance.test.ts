@@ -48,7 +48,7 @@ test('metadata-only Nest HTTP conformance records its scoped coverage without cl
     }
     const report = coverage('backend', executed);
     assert.equal(report.complete, false);
-    assert.equal(report.pending.length, 51);
+    assert.equal(report.pending.length, 58);
   } finally {
     await app.close();
   }

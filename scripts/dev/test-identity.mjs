@@ -111,6 +111,7 @@ const appEnv = {
   EMAIL_FROM: 'Blogpost <no-reply@example.test>',
   EMAIL_PAYLOAD_KEY: '6'.repeat(64),
   EMAIL_COOLDOWN_SECONDS: '0',
+  IDENTITY_WEB_API_KEY: 'disposable',
 };
 const envArgs = (env) =>
   Object.entries(env).flatMap(([key, value]) => ['--env', `${key}=${value}`]);
@@ -542,7 +543,7 @@ try {
     observed.runId !== suffix ||
     observed.testProject !== project ||
     observed.contractSha256 !== baked.contractSha256 ||
-    observed.executed !== 4 ||
+    observed.executed !== 11 ||
     observed.complete !== false
   )
     throw new Error('Unexpected isolated conformance evidence');

@@ -11,6 +11,7 @@ import { APP_CONFIG, type AppConfig } from '../../platform/config/config.js';
 import { ApiError } from '../../platform/errors/api-error.js';
 import { invalid } from './identity.service.js';
 import type {
+  ActionCodeKind,
   IdentityEvidence,
   IdentityGateway,
   IdentityUser,
@@ -62,6 +63,9 @@ function user(record: UserRecord): IdentityUser {
     tenantId: record.tenantId ?? undefined,
     googleProviders: record.providerData
       .filter((provider) => provider.providerId === 'google.com')
+      .map((provider) => ({ uid: provider.uid, email: provider.email })),
+    passwordProviders: record.providerData
+      .filter((provider) => provider.providerId === 'password')
       .map((provider) => ({ uid: provider.uid, email: provider.email })),
   };
 }
@@ -138,6 +142,7 @@ export class FirebaseIdentityGateway
       emailVerified: claims.email_verified,
       provider: claims.firebase?.sign_in_provider,
       googleIdentities: claims.firebase?.identities?.['google.com'],
+      passwordIdentities: claims.firebase?.identities?.['email'],
       tenant: claims.firebase?.tenant,
       authTime: claims.auth_time,
       issuedAt: claims.iat,
@@ -176,6 +181,116 @@ export class FirebaseIdentityGateway
   }
   userByEmail(email: string): Promise<IdentityUser> {
     return this.execute(async (auth) => user(await auth.getUserByEmail(email)));
+  }
+  findByEmail(email: string): Promise<IdentityUser | null> {
+    return this.execute(async (auth) => {
+      try {
+        return user(await auth.getUserByEmail(email));
+      } catch (error) {
+        if ((error as { code?: string })?.code === 'auth/user-not-found')
+          return null;
+        throw error;
+      }
+    });
+  }
+  createPasswordUser(
+    email: string,
+    password: string,
+  ): Promise<{ uid: string } | 'EXISTS'> {
+    return this.execute(async (auth) => {
+      try {
+        const created = await auth.createUser({
+          email,
+          password,
+          emailVerified: false,
+          disabled: false,
+        });
+        return { uid: created.uid };
+      } catch (error) {
+        if ((error as { code?: string })?.code === 'auth/email-already-exists')
+          return 'EXISTS' as const;
+        throw error;
+      }
+    });
+  }
+  actionCode(
+    kind: ActionCodeKind,
+    email: string,
+    newEmail?: string,
+  ): Promise<string> {
+    return this.execute(async (auth) => {
+      const link =
+        kind === 'VERIFY_EMAIL'
+          ? await auth.generateEmailVerificationLink(email)
+          : kind === 'PASSWORD_RESET'
+            ? await auth.generatePasswordResetLink(email)
+            : await auth.generateVerifyAndChangeEmailLink(email, newEmail!);
+      // Only the one-time code is kept; the link itself points at Firebase's hosted handler.
+      const code = new URL(link).searchParams.get('oobCode');
+      if (!code) throw dependency();
+      return code;
+    });
+  }
+  async resetPassword(code: string, password: string): Promise<string> {
+    const key = this.config.identityWebApiKey;
+    let base: string;
+    try {
+      this.client(); // enforces the emulator/project rules before any request
+      if (!key) throw dependency();
+      base = this.config.identityEmulatorHost
+        ? `http://${this.config.identityEmulatorHost}/identitytoolkit.googleapis.com`
+        : 'https://identitytoolkit.googleapis.com';
+    } catch (error) {
+      throw failure(error);
+    }
+    let response: Response;
+    try {
+      response = await fetch(
+        `${base}/v1/accounts:resetPassword?key=${encodeURIComponent(key)}`,
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ oobCode: code, newPassword: password }),
+          signal: AbortSignal.timeout(8000),
+        },
+      );
+    } catch {
+      throw dependency();
+    }
+    const body = (await response.json().catch(() => ({}))) as {
+      email?: unknown;
+      error?: { message?: unknown };
+    };
+    if (!response.ok) {
+      const message = String(body.error?.message ?? '');
+      const field = /^(INVALID|EXPIRED)_OOB_CODE/.test(message)
+        ? '/code'
+        : message.startsWith('WEAK_PASSWORD')
+          ? '/password'
+          : null;
+      if (field)
+        throw new ApiError(
+          422,
+          'VALIDATION_FAILED',
+          'Invalid input',
+          'Correct the indicated field.',
+          [{ location: 'body', field, code: 'INVALID_VALUE', params: {} }],
+        );
+      throw dependency();
+    }
+    if (typeof body.email !== 'string') throw dependency();
+    return body.email.trim().toLowerCase();
+  }
+  setPassword(uid: string, password: string): Promise<void> {
+    return this.execute(async (auth) => {
+      await auth.updateUser(uid, { password });
+    });
+  }
+  deleteUser(uid: string): Promise<void> {
+    return this.execute((auth) => auth.deleteUser(uid));
+  }
+  revokeSessions(uid: string): Promise<void> {
+    return this.execute((auth) => auth.revokeRefreshTokens(uid));
   }
   async onModuleDestroy(): Promise<void> {
     if (this.app) await deleteApp(this.app);

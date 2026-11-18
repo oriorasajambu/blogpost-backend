@@ -440,6 +440,7 @@ export class MaintenanceService {
       for (const sql of [
         'DELETE FROM blogpost."Invitation" WHERE id IN (SELECT id FROM blogpost."Invitation" WHERE "expiresAt" <= clock_timestamp() ORDER BY "expiresAt", id LIMIT $1)',
         'DELETE FROM blogpost."RateLimitBucket" WHERE ctid IN (SELECT ctid FROM blogpost."RateLimitBucket" WHERE "expiresAt" <= clock_timestamp() ORDER BY "expiresAt" LIMIT $1)',
+        'DELETE FROM blogpost."AnonymousRateLimit" WHERE ctid IN (SELECT ctid FROM blogpost."AnonymousRateLimit" WHERE "expiresAt" <= clock_timestamp() ORDER BY "expiresAt" LIMIT $1)',
         'DELETE FROM blogpost."AuditEvent" WHERE id IN (SELECT id FROM blogpost."AuditEvent" WHERE "createdAt" < clock_timestamp()-interval \'90 days\' ORDER BY "createdAt", id LIMIT $1)',
         'DELETE FROM blogpost."MediaUploadAttempt" WHERE id IN (SELECT id FROM blogpost."MediaUploadAttempt" WHERE "cleanedAt" < clock_timestamp()-interval \'24 hours\' OR ("abandonedAt" IS NULL AND "completedAt" < clock_timestamp()-interval \'24 hours\') ORDER BY "createdAt", id LIMIT $1)',
       ]) {

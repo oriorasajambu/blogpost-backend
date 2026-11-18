@@ -30,13 +30,13 @@ export async function bootstrapAdmin(
       'Invalid administrator',
       'Provide a valid display name and stable handle.',
     );
-  const account = await identity.googleAccount(input.email);
+  const account = await identity.account(input.email);
   if (account.uid !== input.uid)
     throw new ApiError(
       401,
       'INVALID_CREDENTIAL',
       'Identity mismatch',
-      'The supplied UID and verified email must identify the same Google account.',
+      'The supplied UID and verified email must identify the same account.',
     );
   try {
     return await members.database.prisma.$transaction(

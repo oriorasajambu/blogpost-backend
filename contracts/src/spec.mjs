@@ -155,7 +155,11 @@ export function operationParameters(operation) {
     );
   if (operation.managed) result.push(query('active', bool));
   if (operation.members)
-    result.push(query('role', ref('Role')), query('active', bool));
+    result.push(
+      query('role', ref('Role')),
+      query('active', bool),
+      query('memberStatus', ref('MemberStatus')),
+    );
   if (operation.invitations)
     result.push(query('status', ref('InvitationStatus')));
   if (operation.audit)

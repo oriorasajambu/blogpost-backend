@@ -88,6 +88,38 @@
     "idempotent": false
   },
   {
+    "method": "POST",
+    "path": "/v1/auth/register",
+    "operationId": "registerAccount",
+    "access": "ANONYMOUS",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "POST",
+    "path": "/v1/auth/verify-email/resend",
+    "operationId": "resendVerificationEmail",
+    "access": "ANONYMOUS",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "POST",
+    "path": "/v1/auth/forgot-password",
+    "operationId": "forgotPassword",
+    "access": "ANONYMOUS",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "POST",
+    "path": "/v1/auth/reset-password",
+    "operationId": "resetPassword",
+    "access": "ANONYMOUS",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
     "method": "GET",
     "path": "/v1/me",
     "operationId": "getMe",
@@ -102,6 +134,22 @@
     "access": "MEMBER",
     "expectedVersion": true,
     "idempotent": true
+  },
+  {
+    "method": "POST",
+    "path": "/v1/me/password",
+    "operationId": "changePassword",
+    "access": "MEMBER",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
+    "method": "POST",
+    "path": "/v1/me/email-change",
+    "operationId": "requestEmailChange",
+    "access": "MEMBER",
+    "expectedVersion": false,
+    "idempotent": false
   },
   {
     "method": "POST",
@@ -334,6 +382,14 @@
     "access": "EDITOR",
     "expectedVersion": true,
     "idempotent": true
+  },
+  {
+    "method": "POST",
+    "path": "/v1/admin/members/password-setup",
+    "operationId": "sendPasswordSetup",
+    "access": "ADMIN",
+    "expectedVersion": false,
+    "idempotent": false
   },
   {
     "method": "GET",

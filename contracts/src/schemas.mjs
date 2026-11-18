@@ -242,8 +242,10 @@ export const schemas = {
     feedback: nullable(text(2000, 1)),
   }),
   Me: object(profileFields),
+  MemberStatus: enumeration('PENDING', 'ACTIVE', 'DISABLED'),
   AdminMember: object({
     ...profileFields,
+    status: ref('MemberStatus'),
     createdAt: dateTime,
     updatedAt: dateTime,
   }),
@@ -325,6 +327,7 @@ export const schemas = {
     createdAt: dateTime,
     changes: { type: 'object' },
   }),
+  AccountRequestAccepted: object({ status: enumeration('ACCEPTED') }),
   WebSession: {
     ...object({
       sessionCookie: {
@@ -428,6 +431,61 @@ export const schemas = {
   Health: object({ status: enumeration('ok', 'unavailable') }),
   EmptyInput: input({}),
   WebSessionInput: input({ idToken: text(65536, 1) }),
+  RegisterAccountInput: input(
+    {
+      email: { ...text(320, 3), format: 'email' },
+      password: {
+        ...text(128, 12),
+        description:
+          'At least 12 and at most 128 characters; checked against known breaches. Never logged or stored by the API.',
+      },
+      captchaToken: text(2048, 1),
+    },
+    ['email', 'password'],
+  ),
+  PasswordSetupResult: object({ queued: integer(), skipped: integer() }),
+  ForgotPasswordInput: input(
+    {
+      email: { ...text(320, 3), format: 'email' },
+      captchaToken: text(2048, 1),
+    },
+    ['email'],
+  ),
+  ResetPasswordInput: input({
+    code: {
+      ...text(512, 16),
+      pattern: '^[A-Za-z0-9_-]{16,512}$',
+      description: 'One-time code from the reset email link.',
+    },
+    password: {
+      ...text(128, 12),
+      description:
+        'At least 12 and at most 128 characters; checked against known breaches.',
+    },
+  }),
+  ChangePasswordInput: input({
+    idToken: {
+      ...text(65536, 1),
+      description:
+        'Fresh identity token from entering the current password; proves recent authentication.',
+    },
+    newPassword: text(128, 12),
+  }),
+  RequestEmailChangeInput: input({
+    idToken: {
+      ...text(65536, 1),
+      description:
+        'Fresh identity token from entering the current password; proves recent authentication.',
+    },
+    newEmail: { ...text(320, 3), format: 'email' },
+  }),
+  ResendVerificationInput: input(
+    {
+      email: { ...text(320, 3), format: 'email' },
+      captchaToken: text(2048, 1),
+    },
+    ['email'],
+  ),
   UpdateMeInput: {
     ...input({ displayName: nonblank(80), bio: nullable(text(500)) }, []),
     minProperties: 1,

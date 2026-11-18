@@ -14,6 +14,7 @@ export const memberSelection = {
   bio: true,
   role: true,
   active: true,
+  status: true,
   version: true,
 } as const;
 export function activeMember(member: MemberRow | null | undefined): MemberRow {
@@ -23,6 +24,13 @@ export function activeMember(member: MemberRow | null | undefined): MemberRow {
       'INSUFFICIENT_PERMISSION',
       'Staff access required',
       'An invitation is required for staff access.',
+    );
+  if (member.status === 'PENDING')
+    throw new ApiError(
+      403,
+      'ACCOUNT_PENDING',
+      'Awaiting approval',
+      'An administrator has not approved this account yet.',
     );
   if (!member.active)
     throw new ApiError(
@@ -91,7 +99,7 @@ export class MembersRepository {
     const rows = await tx.$queryRaw<
       MemberRow[]
     >`SELECT id, "identityUid", email, "displayName", handle,
-      bio, role::text AS role, active, version FROM blogpost."Member" WHERE "identityUid" = ${uid} FOR UPDATE`;
+      bio, role::text AS role, active, status::text AS status, version FROM blogpost."Member" WHERE "identityUid" = ${uid} FOR UPDATE`;
     return activeMember(rows[0]);
   }
 }
