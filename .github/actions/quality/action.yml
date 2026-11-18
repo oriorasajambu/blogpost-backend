@@ -64,14 +64,15 @@ runs:
     # generator's @redocly/openapi-core pins minimatch 5.1.9) and the dev/CI-only
     # Firebase emulator image (docker/auth) fail only on high+ until fixes for
     # GHSA-g3hv-75wg-m249 (minimatch) and GHSA-3g3m-2fjr-6pw4 (glob) ship
-    # upstream; restore moderate then (added 2026-11-03).
+    # upstream; restore moderate then (added 2026-11-03). docker/auth and tools/mock also
+    # allow the advisories listed in config/ci/audit-exceptions.json, each until it expires.
     - shell: bash
       run: npm audit --omit=dev --audit-level=moderate
     - shell: bash
       run: npm audit --audit-level=high
     - shell: bash
-      run: npm audit --prefix docker/auth --audit-level=high
+      run: npm run audit:auth
     - shell: bash
       run: npm audit --prefix docker/operations --audit-level=moderate
     - shell: bash
-      run: npm audit --prefix tools/mock --audit-level=moderate
+      run: npm run audit:mock

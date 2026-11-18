@@ -212,15 +212,16 @@ export function recoveryChecks(environment, baseSha) {
     // generator's @redocly/openapi-core pins minimatch 5.1.9) and the dev/CI-only
     // Firebase emulator image (docker/auth) fail only on high+ until fixes for
     // GHSA-g3hv-75wg-m249 (minimatch) and GHSA-3g3m-2fjr-6pw4 (glob) ship
-    // upstream; restore moderate then (added 2026-11-03).
+    // upstream; restore moderate then (added 2026-11-03). docker/auth and tools/mock also
+    // allow the advisories listed in config/ci/audit-exceptions.json, each until it expires.
     ['npm', ['audit', '--omit=dev', '--audit-level=moderate']],
     ['npm', ['audit', '--audit-level=high']],
-    ['npm', ['audit', '--prefix', 'docker/auth', '--audit-level=high']],
+    ['npm', ['run', 'audit:auth']],
     [
       'npm',
       ['audit', '--prefix', 'docker/operations', '--audit-level=moderate'],
     ],
-    ['npm', ['audit', '--prefix', 'tools/mock', '--audit-level=moderate']],
+    ['npm', ['run', 'audit:mock']],
   ];
 }
 // Cloud Build workers run Docker Engine 20.10, whose embedded BuildKit lacks
