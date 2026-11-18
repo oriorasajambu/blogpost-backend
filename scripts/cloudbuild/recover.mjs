@@ -431,7 +431,7 @@ export async function runRecovery({
     if (
       sql.status !== 'PASSED' ||
       sql.complete !== true ||
-      sql.executed !== 52 ||
+      sql.executed !== inventory.length ||
       ![
         'identitySqlSuitePassed',
         'foundationIntegrationSuitePassed',

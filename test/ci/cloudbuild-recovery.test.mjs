@@ -43,7 +43,7 @@ async function recovery(
   );
   actual.apiOrigin = selected.plannedOrigins.api;
   actual.webOrigin = selected.plannedOrigins.web;
-  const operations = Array.from({ length: 52 }, (_, i) => ({
+  const operations = Array.from({ length: 59 }, (_, i) => ({
     operationId: 'syntheticOperation' + i,
   }));
   const f = await merged(t, 'rc', async (f) => {
@@ -113,7 +113,7 @@ async function recovery(
         const report = {
           status: 'PASSED',
           complete: true,
-          executed: 52,
+          executed: 59,
           runId: 'abcdef012345',
           databaseOperatorTests: 12,
           candidate: provenance,
