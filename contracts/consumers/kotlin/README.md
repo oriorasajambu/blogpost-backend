@@ -1,6 +1,6 @@
 # Kotlin wire consumer (draft)
 
-The generated DTOs and Retrofit coroutine interfaces in `../../generated/kotlin/` cover all 58 application operations. The handwritten boundary in this directory validates JSON before Gson creates Kotlin objects, then checks the envelope against HTTP status and response headers. This is a standalone JVM contract consumer, not an integrated Android feature or a released SDK.
+The generated DTOs and Retrofit coroutine interfaces in `../../generated/kotlin/` cover all 59 application operations. The handwritten boundary in this directory validates JSON before Gson creates Kotlin objects, then checks the envelope against HTTP status and response headers. This is a standalone JVM contract consumer, not an integrated Android feature or a released SDK.
 
 The fixture project uses the approved Android scaffold baseline: Kotlin 2.4.0, Gradle 9.6.1, Retrofit 3.0.0, OkHttp 5.4.0, Gson 2.14.0 and coroutines 1.11.0. A JDK 17 runs the build; generated and handwritten classes target Java 11. JUnit tests inspect the actual class-file versions. No Android classes or SDK are required for this fixture.
 

@@ -549,6 +549,7 @@ Slugs stay immutable after creation. Archive prevents new publication selection 
 | Method/path                                         | Access/input                 | Success data                | Operation ID         |
 | --------------------------------------------------- | ---------------------------- | --------------------------- | -------------------- |
 | `GET /v1/admin/members`                             | Admin; cursor/role/active    | `AdminMember[]`             | `listMembers`        |
+| `POST /v1/admin/members/password-setup`             | Admin; empty body; no V,K    | `PasswordSetupResult`       | `sendPasswordSetup`  |
 | `GET /v1/admin/members/{memberId}`                  | Admin                        | `AdminMember`               | `getMember`          |
 | `PATCH /v1/admin/members/{memberId}`                | Admin; V,K; role/active      | `AdminMember`               | `updateMember`       |
 | `PATCH /v1/admin/posts/{postId}/author`             | Admin; V,K; `{authorId}`     | `WorkspacePost`             | `reassignPostAuthor` |

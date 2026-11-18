@@ -286,6 +286,7 @@ test('cloud account sign-up is enabled only by the complete accounts block insid
     EMAIL_PAYLOAD_KEY: '4'.repeat(64),
     IDENTITY_WEB_API_KEY: accounts.identityWebApiKey,
     TURNSTILE_SECRET_REF: accounts.turnstileSecretVersion,
+    GOOGLE_SIGN_IN_ENABLED: 'true',
     TURNSTILE_SECRET_KEY: '1x0000000000000000000000000000000AA',
   };
   const config = readConfig(env, 'api', provenance);
@@ -313,11 +314,55 @@ test('cloud account sign-up is enabled only by the complete accounts block insid
     TURNSTILE_SECRET_KEY,
     IDENTITY_WEB_API_KEY,
     TURNSTILE_SECRET_REF,
+    GOOGLE_SIGN_IN_ENABLED,
     ...plain
   } = env;
   void TURNSTILE_SECRET_KEY;
+  void GOOGLE_SIGN_IN_ENABLED;
   void IDENTITY_WEB_API_KEY;
   void TURNSTILE_SECRET_REF;
+  // The cutover switch: on by default, a reviewed profile value afterwards, and never stray.
+  assert.equal(config.googleSignIn, true);
+  const cutover = {
+    ...provenance,
+    configuration: normalizeCloudProfile({
+      ...base,
+      email: { ...emailBlock, accounts: { ...accounts, googleSignIn: false } },
+    }),
+  };
+  assert.equal(
+    cloudRuntimeBinding(cutover, 'api').literals.GOOGLE_SIGN_IN_ENABLED,
+    'false',
+  );
+  assert.equal(
+    readConfig({ ...env, GOOGLE_SIGN_IN_ENABLED: 'false' }, 'api', cutover)
+      .googleSignIn,
+    false,
+  );
+  // The environment must repeat the reviewed value exactly.
+  assert.throws(() => readConfig(env, 'api', cutover));
+  assert.throws(() =>
+    normalizeCloudProfile({
+      ...base,
+      email: { ...emailBlock, accounts: { ...accounts, googleSignIn: 'no' } },
+    }),
+  );
+  assert.throws(() =>
+    readConfig(
+      { ...plain, GOOGLE_SIGN_IN_ENABLED: 'false' },
+      'api',
+      noAccounts,
+    ),
+  );
+  assert.equal(readConfig(developmentEnv).googleSignIn, true);
+  assert.equal(
+    readConfig({ ...developmentEnv, AUTH_GOOGLE_ENABLED: 'false' })
+      .googleSignIn,
+    false,
+  );
+  assert.throws(() =>
+    readConfig({ ...developmentEnv, AUTH_GOOGLE_ENABLED: 'maybe' }),
+  );
   const off = readConfig(plain, 'api', noAccounts);
   assert.equal(off.captchaSecret, null);
   assert.equal(off.identityWebApiKey, null);

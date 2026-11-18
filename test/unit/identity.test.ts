@@ -173,6 +173,29 @@ test('identity policy accepts a verified password account and rejects unverified
   );
 });
 
+test('after the cutover Google credentials are refused while password accounts keep working', async () => {
+  const cutover = (value: IdentityEvidence) =>
+    new IdentityService(
+      {
+        verify: async () => value,
+        createSession: async () => {
+          throw new Error('unused');
+        },
+        userByEmail: async () => value.user,
+      } as unknown as IdentityGateway,
+      readConfig({ ...developmentEnv, AUTH_GOOGLE_ENABLED: 'false' }),
+    );
+  await assert.rejects(
+    cutover(evidence()).verify('synthetic-token', 'id-token'),
+    code('INVALID_CREDENTIAL'),
+  );
+  assert.equal(
+    (await cutover(passwordEvidence()).verify('synthetic-token', 'id-token'))
+      .email,
+    'author@example.test',
+  );
+});
+
 test('recent authentication and session lifetime/kind checks are independent of SQL roles', async () => {
   const old = { ...evidence(), authTime: Math.floor(Date.now() / 1000) - 301 };
   await assert.rejects(

@@ -13,6 +13,7 @@ const methods = new Map<string, readonly string[]>([
   ['/v1/me/email-change', ['POST', 'OPTIONS']],
   ['/v1/invitations/accept', ['POST', 'OPTIONS']],
   ['/v1/admin/members', ['GET', 'HEAD', 'OPTIONS']],
+  ['/v1/admin/members/password-setup', ['POST', 'OPTIONS']],
   ['/v1/admin/invitations', ['GET', 'HEAD', 'POST', 'OPTIONS']],
   ['/v1/admin/audit-events', ['GET', 'HEAD', 'OPTIONS']],
   ['/v1/posts', ['GET', 'HEAD', 'POST', 'OPTIONS']],

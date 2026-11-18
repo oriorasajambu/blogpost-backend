@@ -1453,9 +1453,143 @@ test(
         assert.equal(await emails(taken, 'EMAIL_CHANGE_VERIFY'), before);
       },
     );
+    await t.test(
+      'an administrator can email password setup links to members still on Google',
+      async () => {
+        const noBreach = new BreachCheck(async () => new Response(''));
+        app.get(AccountsService).breach = noBreach;
+        const oobCode = async (email: string) => {
+          const response = await fetch(
+            `http://auth:9099/emulator/v1/projects/${config.identityProject}/oobCodes`,
+            { signal: AbortSignal.timeout(10_000) },
+          );
+          const codes = (
+            (await response.json()) as {
+              oobCodes: {
+                email: string;
+                oobCode: string;
+                requestType: string;
+              }[];
+            }
+          ).oobCodes.filter(
+            (entry) =>
+              entry.email === email && entry.requestType === 'PASSWORD_RESET',
+          );
+          assert.ok(codes.length > 0, 'No setup code was issued');
+          return codes[codes.length - 1]!.oobCode;
+        };
+        const setupMail = (email: string) =>
+          database.prisma.emailOutbox.count({
+            where: { toEmail: email, kind: 'PASSWORD_SET' },
+          });
+        const asAdmin = await google('setup-admin');
+        await database.prisma.member.create({
+          data: {
+            identityUid: asAdmin.uid,
+            email: asAdmin.email,
+            displayName: 'Setup admin',
+            handle: `setup-admin-${randomUUID()}`,
+            role: 'ADMIN',
+          },
+        });
+        const legacy = await google('legacy-member');
+        const row = await database.prisma.member.create({
+          data: {
+            identityUid: legacy.uid,
+            email: legacy.email,
+            displayName: 'Legacy member',
+            handle: `legacy-${randomUUID()}`,
+            role: 'AUTHOR',
+          },
+        });
+        const author = await google('plain-author');
+        await database.prisma.member.create({
+          data: {
+            identityUid: author.uid,
+            email: author.email,
+            displayName: 'Plain author',
+            handle: `plain-${randomUUID()}`,
+            role: 'AUTHOR',
+          },
+        });
+        // Only administrators may send them.
+        await request(
+          'sendPasswordSetup',
+          '/v1/admin/members/password-setup',
+          403,
+          {
+            method: 'POST',
+            token: author.token,
+            body: {},
+          },
+        );
+        const sent = await request(
+          'sendPasswordSetup',
+          '/v1/admin/members/password-setup',
+          200,
+          { method: 'POST', token: asAdmin.token, body: {} },
+        );
+        const result = sent.body.data as unknown as {
+          queued: number;
+          skipped: number;
+        };
+        assert.ok(result.queued >= 1);
+        assert.equal(await setupMail(legacy.email), 1);
+        const mail = await database.prisma.emailOutbox.findFirstOrThrow({
+          where: { toEmail: legacy.email, kind: 'PASSWORD_SET' },
+        });
+        assert.equal(mail.memberId, row.id);
+        assert.equal(mail.status, 'SENT');
+        // A member who already has a password is left alone.
+        const withPassword = await database.prisma.emailOutbox.count({
+          where: { kind: 'PASSWORD_SET', toEmail: { startsWith: 'recover-' } },
+        });
+        assert.equal(withPassword, 0);
+
+        // The link adds a password to the same account: same uid, same member, same content.
+        const password = 'a long passphrase for migration';
+        await request('resetPassword', '/v1/auth/reset-password', 202, {
+          method: 'POST',
+          body: { code: await oobCode(legacy.email), password },
+        });
+        const user = await admin.getUserByEmail(legacy.email);
+        assert.equal(user.uid, legacy.uid);
+        assert.ok(
+          user.providerData.some((entry) => entry.providerId === 'password'),
+        );
+        const signedIn = await fetch(
+          'http://auth:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=disposable',
+          {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              email: legacy.email,
+              password,
+              returnSecureToken: true,
+            }),
+            signal: AbortSignal.timeout(10_000),
+          },
+        );
+        assert.equal(signedIn.status, 200);
+        const { idToken } = (await signedIn.json()) as { idToken: string };
+        const session = await exchangeToken(idToken, 200);
+        assert.equal(session.body.data.member.id, row.id);
+        // Once it has a password the member is skipped by a second run.
+        const again = await request(
+          'sendPasswordSetup',
+          '/v1/admin/members/password-setup',
+          200,
+          { method: 'POST', token: asAdmin.token, body: {} },
+        );
+        assert.equal(await setupMail(legacy.email), 1);
+        assert.ok(
+          (again.body.data as unknown as { skipped: number }).skipped >= 1,
+        );
+      },
+    );
     await request('getApiMeta', '/v1/meta', 200);
     const report = coverage('backend', executed);
-    assert.equal(report.executed, 10);
+    assert.equal(report.executed, 11);
     assert.equal(report.pending.length, 48);
     assert.equal(report.complete, false);
     const runId = process.env.BLOGPOST_IDENTITY_RUN_ID;

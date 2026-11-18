@@ -37,6 +37,8 @@ export interface EmailProfile {
   accounts?: {
     identityWebApiKey: string;
     turnstileSecretVersion: string;
+    /** Set false at the cutover to stop accepting Google credentials; defaults to true. */
+    googleSignIn?: boolean;
   };
 }
 export type EmailSecretName = keyof EmailProfile['secretVersions'];
@@ -153,6 +155,9 @@ export function cloudRuntimeBinding(
         profile.email.accounts.turnstileSecretVersion;
       secrets.TURNSTILE_SECRET_KEY =
         profile.email.accounts.turnstileSecretVersion;
+      literals.GOOGLE_SIGN_IN_ENABLED = String(
+        profile.email.accounts.googleSignIn ?? true,
+      );
     }
   }
   return {
@@ -258,8 +263,22 @@ function emailProfile(
     ...(hasAccounts ? ['accounts'] : []),
   ]);
   const accountSettings = hasAccounts
-    ? shape(e.accounts, ['identityWebApiKey', 'turnstileSecretVersion'])
+    ? shape(e.accounts, [
+        'identityWebApiKey',
+        'turnstileSecretVersion',
+        ...(e.accounts &&
+        typeof e.accounts === 'object' &&
+        Object.prototype.hasOwnProperty.call(e.accounts, 'googleSignIn')
+          ? ['googleSignIn']
+          : []),
+      ])
     : null;
+  if (
+    accountSettings &&
+    accountSettings.googleSignIn !== undefined &&
+    typeof accountSettings.googleSignIn !== 'boolean'
+  )
+    return invalid();
   const turnstile = accountSettings
     ? secretRef(accountSettings.turnstileSecretVersion, project)
     : null;
@@ -290,6 +309,9 @@ function emailProfile(
               /^[A-Za-z0-9_-]{20,128}$/,
             ),
             turnstileSecretVersion: turnstile,
+            ...(accountSettings.googleSignIn === undefined
+              ? {}
+              : { googleSignIn: accountSettings.googleSignIn as boolean }),
           },
         }
       : {}),

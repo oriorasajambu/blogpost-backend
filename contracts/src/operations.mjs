@@ -469,6 +469,14 @@ export const operations = [
       ),
     ];
   }),
+  op(
+    'post',
+    '/v1/admin/members/password-setup',
+    'sendPasswordSetup',
+    'PasswordSetupResult',
+    'ADMIN',
+    { body: 'EmptyInput', implemented: true },
+  ),
   op('get', '/v1/admin/members', 'listMembers', 'AdminMember', 'ADMIN', {
     implemented: true,
     collection: 'cursor',

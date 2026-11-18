@@ -33,6 +33,8 @@ export interface AppConfig {
   captchaSecret: string | null;
   /** Public web API key; lets the API complete a password reset against Identity Platform. */
   identityWebApiKey: string | null;
+  /** False after the cutover: Google credentials are refused even if the provider is still enabled. */
+  googleSignIn: boolean;
   configurationDigest: string;
   runtimeInputDigest: string;
   build: BuildProvenance;
@@ -266,6 +268,17 @@ export function readConfig(
     : null;
   if (identityWebApiKey !== null && !/^[!-~]{1,256}$/.test(identityWebApiKey))
     throw new Error('Invalid IDENTITY_WEB_API_KEY');
+  // The cutover switch: a profile literal in the cloud (default on), an environment value locally.
+  const googleSwitch = cloud
+    ? env.GOOGLE_SIGN_IN_ENABLED
+    : env.AUTH_GOOGLE_ENABLED;
+  if (cloud && !accountsBlock && googleSwitch)
+    throw new Error(
+      'The Google sign-in switch requires the profile accounts block',
+    );
+  if (googleSwitch !== undefined && !['true', 'false'].includes(googleSwitch))
+    throw new Error('Invalid Google sign-in switch');
+  const googleSignIn = googleSwitch !== 'false';
   const port = Number(env.PORT ?? '8080');
   if (!Number.isInteger(port) || port < 1 || port > 65535)
     throw new Error('Invalid PORT');
@@ -305,6 +318,7 @@ export function readConfig(
     email,
     captchaSecret,
     identityWebApiKey,
+    googleSignIn,
     configurationDigest,
     runtimeInputDigest,
     build,

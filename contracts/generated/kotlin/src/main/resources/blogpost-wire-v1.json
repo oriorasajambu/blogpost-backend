@@ -1639,6 +1639,14 @@
       "required": ["email", "password"],
       "additionalProperties": false
     },
+    "PasswordSetupResult": {
+      "type": "object",
+      "properties": {
+        "queued": { "type": "integer", "minimum": 0 },
+        "skipped": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["queued", "skipped"]
+    },
     "ForgotPasswordInput": {
       "type": "object",
       "properties": {
@@ -4206,6 +4214,54 @@
         "meta"
       ]
     },
+    "SendPasswordSetupEnvelope": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        },
+        "responseKey": { "type": "string", "const": "SUCCESS" },
+        "statusCode": { "type": "integer", "const": 200 },
+        "traceId": {
+          "type": "string",
+          "x-unicodeScalarText": true,
+          "maxLength": 32,
+          "minLength": 32,
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "message": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "x-unicodeScalarText": true },
+            "descriptions": { "type": "string", "x-unicodeScalarText": true }
+          },
+          "required": ["title", "descriptions"]
+        },
+        "data": { "$ref": "#/components/schemas/PasswordSetupResult" },
+        "error": { "type": "null" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "contractVersion": { "type": "string", "const": "1.0.0" },
+            "pagination": { "type": "null" },
+            "idempotency": { "type": "null" }
+          },
+          "required": ["contractVersion", "pagination", "idempotency"]
+        }
+      },
+      "required": [
+        "timestamp",
+        "responseKey",
+        "statusCode",
+        "traceId",
+        "message",
+        "data",
+        "error",
+        "meta"
+      ]
+    },
     "ListMembersEnvelope": {
       "type": "object",
       "properties": {
@@ -5339,6 +5395,19 @@
       "resourceVersion": true,
       "request": { "$ref": "#/components/schemas/UpdateTaxonInput" },
       "response": { "$ref": "#/components/schemas/UpdateTagEnvelope" }
+    },
+    "sendPasswordSetup": {
+      "method": "POST",
+      "path": "/v1/admin/members/password-setup",
+      "operationId": "sendPasswordSetup",
+      "access": "ADMIN",
+      "expectedVersion": false,
+      "idempotent": false,
+      "status": 200,
+      "binary": false,
+      "resourceVersion": false,
+      "request": { "$ref": "#/components/schemas/EmptyInput" },
+      "response": { "$ref": "#/components/schemas/SendPasswordSetupEnvelope" }
     },
     "listMembers": {
       "method": "GET",

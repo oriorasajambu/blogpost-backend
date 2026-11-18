@@ -4,15 +4,15 @@
   "files": [
     {
       "path": "contracts/CHANGELOG.md",
-      "sha256": "3ae66c975b9814ee76de76c5d64ad88fadf490195b9d387295ff44922d4bd93d"
+      "sha256": "ca58e609c711759123d5dfb89ba9f90cc9371d184123cd9b56eefeb174e9fc2a"
     },
     {
       "path": "contracts/CONTRACT.md",
-      "sha256": "3d9d4820fa3e8a3f4cfcb04911c5983942ca0a916205a7ff39cc176192ee3612"
+      "sha256": "400c936843c03989503c1409d61ef497e8302fae0fc64e92738445238d91fdec"
     },
     {
       "path": "contracts/README.md",
-      "sha256": "d52dae5f7de3ce09685ce5d23987d5ad3b396f95fa68046bdf6fbb5b8565389d"
+      "sha256": "857e8d9a07e49a3648e30d21557b6d618d53a1399a35eed1c603eb5628e025c4"
     },
     {
       "path": "contracts/compatibility-report.json",
@@ -20,7 +20,7 @@
     },
     {
       "path": "contracts/consumers/kotlin/README.md",
-      "sha256": "db226e6a28c3a85492289b36de60ae4e3c40a510518cbb43917ed23ea4b9d5d1"
+      "sha256": "523bec648f01be1f011c6ed5685ee5efd7b16e0e96958e6ae36503ed08a3541b"
     },
     {
       "path": "contracts/consumers/kotlin/consumer-rules.pro",
@@ -615,6 +615,14 @@
       "sha256": "2c9f048bc1410c0700d6828081a5090c7fe995b00b225ca077a9fed268c1aa41"
     },
     {
+      "path": "contracts/fixtures/operations/sendPasswordSetup.request.json",
+      "sha256": "bf7c3f0660a89913f87844630c7a939b54831154db34243ef8505323cdb01e85"
+    },
+    {
+      "path": "contracts/fixtures/operations/sendPasswordSetup.response.json",
+      "sha256": "036b69cb5cc0a0ce43a935e6aa61f31d13173e4d10adfbf861aa9a7518e4d0ee"
+    },
+    {
       "path": "contracts/fixtures/operations/stagePostMedia.request.json",
       "sha256": "baf5a1fb0b76291c0f9556fafb4333bf44ceeedeab4f3cb528a18fddd9c9309f"
     },
@@ -688,11 +696,11 @@
     },
     {
       "path": "contracts/generated/kotlin/generation.json",
-      "sha256": "98eb26bef31d0c2670a72237baf6377bb9f0cd006ee95dca382f2a412cc57c78"
+      "sha256": "e9c178d507009c2fa4ad06fa8e8495aa3fde70878ed75491f61d5c723d8ae396"
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/AdminApi.kt",
-      "sha256": "f6e2d1a13a0f935781716d361cae356fdcca3396e0642702b40b8e6cf8e71b01"
+      "sha256": "9b820053a2f9b524b8567202d0f69088be7857b3951121ec12717740689252b2"
     },
     {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/api/AuthApi.kt",
@@ -1043,6 +1051,10 @@
       "sha256": "0f33ef711c5bac09493e40a65aafcd1b0f361dc18cb16e857637d5c7b5de25cf"
     },
     {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/PasswordSetupResult.kt",
+      "sha256": "559d9ffffcc79e17ee682855481c74e54d1e36da4ae72962b4b88c3980aa1e9c"
+    },
+    {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/PublicAuthor.kt",
       "sha256": "d7f7019481c8947d052d7bcab4dd571b90390ac7223a342c348e1a945f0fdcd0"
     },
@@ -1175,6 +1187,10 @@
       "sha256": "cbf0959d24c1d6e1b7cb7a5a822466174e26382577f9deae2cd90ad2ee409a7f"
     },
     {
+      "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/SendPasswordSetupEnvelope.kt",
+      "sha256": "a608ec04c3028345f1f7602b3652910cffb328e45704d0c86dc7c5546a4c955c"
+    },
+    {
       "path": "contracts/generated/kotlin/src/main/kotlin/com/blogpost/contract/generated/model/SlugResolution.kt",
       "sha256": "cc2ce05602928eb12e116e79b5779b5807f573c715fee9f143045e14e282ec75"
     },
@@ -1264,35 +1280,35 @@
     },
     {
       "path": "contracts/generated/kotlin/src/main/resources/blogpost-wire-v1.json",
-      "sha256": "ee69f80c96193447817f839ba5c14ebf0ad36e4851dca666d2fb9760dc7018eb"
+      "sha256": "09c793202e824946f160d659339150a3eeac08fb8c7130bdf4ccbd4daf8dd2a5"
     },
     {
       "path": "contracts/generated/typescript/api-v1.d.ts",
-      "sha256": "6b67d6730759e2bcba5badee2ab52bd86a886c33584346d2e9aea259366694d4"
+      "sha256": "1831335eaedc6cd76c451ce748385ac6ee19c3495ff347ff23677750fcab2942"
     },
     {
       "path": "contracts/openapi-v1.json",
-      "sha256": "97fbc700473eb157687ca88450c426415093f2e05438fa6055afa36605f89978"
+      "sha256": "2fe546c2f814624995d2f3bf9d0d56056bfe88dec3f763bbb4060d78a8f5b9bd"
     },
     {
       "path": "contracts/openapi-v1.yaml",
-      "sha256": "0868baca52691b79c7083d88ff9144c5e3237e5eff94e3066e83d1ce34e239ca"
+      "sha256": "1db51f44615225051dd4c1b686afe188c7abe1d677d7966509e1a64076559988"
     },
     {
       "path": "contracts/operation-inventory.json",
-      "sha256": "1a3bc62639c7bb5c9f0daa1c8192606a73865dd9c5465b25c4939b1bbe9ec7e0"
+      "sha256": "9c69a84af888ac5a5ba5cef7723454949025068f8448f454d2e0e28795437fb4"
     },
     {
       "path": "contracts/src/examples.mjs",
-      "sha256": "d4cdc3e55a13cc59dbdbf7bda2f1342e1243ca6a976e901aa91dd84ee83ea546"
+      "sha256": "2b633994e541a71556492380c336802baddd58b6e353357d05fe3c7216678726"
     },
     {
       "path": "contracts/src/operations.mjs",
-      "sha256": "b0796bc8be768e5ab2cd86dbd63a7fabc176405b1b30ee9fb5369f8011272738"
+      "sha256": "01d2c016b7baa6810db26b84917c3545093eb5652c8c655c69365de783c3639b"
     },
     {
       "path": "contracts/src/schemas.mjs",
-      "sha256": "fd1263661980afda356d0b1cba226d4ed64d75155c53e1257f26f23f4db33c96"
+      "sha256": "582c64af2913ac41699c0d1e07056064608502337d18a4a61fae750aa8863026"
     },
     {
       "path": "contracts/src/spec.mjs",

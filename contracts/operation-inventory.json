@@ -384,6 +384,14 @@
     "idempotent": true
   },
   {
+    "method": "POST",
+    "path": "/v1/admin/members/password-setup",
+    "operationId": "sendPasswordSetup",
+    "access": "ADMIN",
+    "expectedVersion": false,
+    "idempotent": false
+  },
+  {
     "method": "GET",
     "path": "/v1/admin/members",
     "operationId": "listMembers",

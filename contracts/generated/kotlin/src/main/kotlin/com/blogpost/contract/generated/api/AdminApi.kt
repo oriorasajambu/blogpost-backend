@@ -15,6 +15,7 @@ import com.blogpost.contract.generated.model.ReassignPostAuthorEnvelope
 import com.blogpost.contract.generated.model.ReissueInvitationEnvelope
 import com.blogpost.contract.generated.model.RevokeInvitationEnvelope
 import com.blogpost.contract.generated.model.Role
+import com.blogpost.contract.generated.model.SendPasswordSetupEnvelope
 import com.blogpost.contract.generated.model.UpdateMemberEnvelope
 import com.blogpost.contract.generated.model.UpdateMemberInput
 import com.google.gson.annotations.SerializedName
@@ -174,6 +175,20 @@ interface AdminApi {
 , @Body body: WireRequest<kotlin.Any>
 , @Header("traceparent") traceparent: kotlin.String? = null
 ): Response<WirePayload<RevokeInvitationEnvelope>>
+
+
+    /** POST v1/admin/members/password-setup; decode through the validated wire boundary. */
+    @WireOperation("sendPasswordSetup")
+
+    @POST("v1/admin/members/password-setup")
+    suspend fun sendPasswordSetup(@Header("X-Device-ID") xDeviceID: kotlin.String
+, @Header("X-Device-OS") xDeviceOS: kotlin.String
+, @Header("X-Device-Version") xDeviceVersion: kotlin.String
+, @Header("X-App-Version") xAppVersion: kotlin.String
+, @Header("X-App-Language") xAppLanguage: kotlin.String
+, @Body body: WireRequest<kotlin.Any>
+, @Header("traceparent") traceparent: kotlin.String? = null
+): Response<WirePayload<SendPasswordSetupEnvelope>>
 
 
     /** PATCH v1/admin/members/{memberId}; decode through the validated wire boundary. */

@@ -277,6 +277,7 @@ export function exampleData(operation) {
           ? { ...me, displayName: 'Updated author', version: 2 }
           : me,
     AccountRequestAccepted: { status: 'ACCEPTED' },
+    PasswordSetupResult: { queued: 3, skipped: 1 },
     AdminMember: {
       ...me,
       status: 'ACTIVE',

@@ -13431,6 +13431,182 @@
         }
       }
     },
+    "/v1/admin/members/password-setup": {
+      "post": {
+        "operationId": "sendPasswordSetup",
+        "tags": ["admin"],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/X-Device-ID"
+          },
+          {
+            "$ref": "#/components/parameters/X-Device-OS"
+          },
+          {
+            "$ref": "#/components/parameters/X-Device-Version"
+          },
+          {
+            "$ref": "#/components/parameters/X-App-Version"
+          },
+          {
+            "$ref": "#/components/parameters/X-App-Language"
+          },
+          {
+            "$ref": "#/components/parameters/Traceparent"
+          }
+        ],
+        "security": [
+          {
+            "IdentityPlatformToken": []
+          },
+          {
+            "WebSession": []
+          }
+        ],
+        "x-access": "ADMIN",
+        "x-runtime-implemented": true,
+        "x-idempotency-required": false,
+        "x-expected-version-required": false,
+        "x-success-schema": "SendPasswordSetupEnvelope",
+        "x-request-example": {
+          "method": "POST",
+          "path": "/v1/admin/members/password-setup",
+          "headers": {
+            "X-Device-ID": "8d5ca46a-7f59-4f64-9d91-fedc41b59e7a",
+            "X-Device-OS": "ANDROID",
+            "X-Device-Version": "unknown",
+            "X-App-Version": "0.0.0+fixture.1",
+            "X-App-Language": "en",
+            "Authorization": "Bearer SYNTHETIC_FIXTURE_NOT_A_CREDENTIAL"
+          },
+          "query": {},
+          "body": {}
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyInput"
+              },
+              "examples": {
+                "valid": {
+                  "value": {}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PasswordSetupResult",
+            "headers": {
+              "X-Trace-ID": {
+                "schema": {
+                  "type": "string",
+                  "x-unicodeScalarText": true,
+                  "maxLength": 32,
+                  "minLength": 32,
+                  "pattern": "^[a-f0-9]{32}$"
+                },
+                "description": "Matches the envelope traceId."
+              },
+              "X-API-Contract-Version": {
+                "schema": {
+                  "type": "string",
+                  "const": "1.0.0"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string",
+                  "const": "nosniff"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendPasswordSetupEnvelope"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "timestamp": "2026-10-25T08:20:30.123Z",
+                      "responseKey": "SUCCESS",
+                      "statusCode": 200,
+                      "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+                      "message": {
+                        "title": "Request completed",
+                        "descriptions": "The request completed successfully."
+                      },
+                      "data": {
+                        "queued": 3,
+                        "skipped": 1
+                      },
+                      "error": null,
+                      "meta": {
+                        "contractVersion": "1.0.0",
+                        "pagination": null,
+                        "idempotency": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "405": {
+            "$ref": "#/components/responses/Error405"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "410": {
+            "$ref": "#/components/responses/Error410"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "504": {
+            "$ref": "#/components/responses/Error504"
+          }
+        }
+      }
+    },
     "/v1/admin/members": {
       "get": {
         "operationId": "listMembers",
@@ -18509,6 +18685,20 @@
         "required": ["email", "password"],
         "additionalProperties": false
       },
+      "PasswordSetupResult": {
+        "type": "object",
+        "properties": {
+          "queued": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "skipped": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": ["queued", "skipped"]
+      },
       "ForgotPasswordInput": {
         "type": "object",
         "properties": {
@@ -22190,6 +22380,77 @@
               },
               "idempotency": {
                 "$ref": "#/components/schemas/IdempotencyMeta"
+              }
+            },
+            "required": ["contractVersion", "pagination", "idempotency"]
+          }
+        },
+        "required": [
+          "timestamp",
+          "responseKey",
+          "statusCode",
+          "traceId",
+          "message",
+          "data",
+          "error",
+          "meta"
+        ]
+      },
+      "SendPasswordSetupEnvelope": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+          },
+          "responseKey": {
+            "type": "string",
+            "const": "SUCCESS"
+          },
+          "statusCode": {
+            "type": "integer",
+            "const": 200
+          },
+          "traceId": {
+            "type": "string",
+            "x-unicodeScalarText": true,
+            "maxLength": 32,
+            "minLength": 32,
+            "pattern": "^[a-f0-9]{32}$"
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "x-unicodeScalarText": true
+              },
+              "descriptions": {
+                "type": "string",
+                "x-unicodeScalarText": true
+              }
+            },
+            "required": ["title", "descriptions"]
+          },
+          "data": {
+            "$ref": "#/components/schemas/PasswordSetupResult"
+          },
+          "error": {
+            "type": "null"
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "contractVersion": {
+                "type": "string",
+                "const": "1.0.0"
+              },
+              "pagination": {
+                "type": "null"
+              },
+              "idempotency": {
+                "type": "null"
               }
             },
             "required": ["contractVersion", "pagination", "idempotency"]

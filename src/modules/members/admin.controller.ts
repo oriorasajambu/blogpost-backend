@@ -2,9 +2,11 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Inject,
   Param,
   Patch,
+  Post,
   Req,
   Res,
   UseGuards,
@@ -15,8 +17,9 @@ import { MemberGuard, principal } from '../identity/member.guard.js';
 import { AdminGuard } from './admin.guard.js';
 import { AdminMembersService, memberPatch } from './admin-members.service.js';
 import { AuditService } from './audit.service.js';
+import { PasswordSetupService } from '../accounts/password-setup.service.js';
 import { cursorQuery } from '../../platform/http/cursor.js';
-import { uuidInput } from '../../platform/http/input.js';
+import { objectInput, uuidInput } from '../../platform/http/input.js';
 import { noQuery } from '../../platform/http/query.js';
 import { writePreconditions } from '../../platform/http/preconditions.js';
 import type { OperationResult } from '../../platform/database/operation.js';
@@ -40,6 +43,8 @@ export class AdminController {
   constructor(
     @Inject(AdminMembersService) private readonly members: AdminMembersService,
     @Inject(AuditService) private readonly audit: AuditService,
+    @Inject(PasswordSetupService)
+    private readonly passwordSetup: PasswordSetupService,
   ) {}
   @Get('members')
   @ApiOperation({ operationId: 'listMembers' })
@@ -53,6 +58,21 @@ export class AdminController {
     );
     response.locals.pagination = result.pagination;
     return result.data;
+  }
+  @Post('members/password-setup')
+  @HttpCode(200)
+  @ApiOperation({ operationId: 'sendPasswordSetup' })
+  sendPasswordSetup(
+    @Body() value: unknown,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    noQuery(request);
+    objectInput(value, []);
+    return this.passwordSetup.sendAll(
+      principal(request).identity,
+      response.locals.traceId as string,
+    );
   }
   @Get('members/:memberId')
   @ApiOperation({ operationId: 'getMember' })

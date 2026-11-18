@@ -73,6 +73,7 @@ export class IdentityService {
     if (evidence.provider !== 'google.com' && evidence.provider !== 'password')
       throw invalid();
     const provider = evidence.provider;
+    if (provider === 'google.com' && !this.config.googleSignIn) throw invalid();
     const user = identityUser(evidence.user, provider);
     const issuer =
       kind === 'id-token'
@@ -162,6 +163,14 @@ export class IdentityService {
       expiresAt: new Date(verified.expiresAt * 1000).toISOString(),
       identity: verified,
     };
+  }
+  /** The first administrator may use either provider; the account must be verified and enabled. */
+  async account(email: string): Promise<{ uid: string; email: string }> {
+    const user = await this.gateway.userByEmail(normalizeIdentityEmail(email));
+    return identityUser(
+      user,
+      user.googleProviders.length ? 'google.com' : 'password',
+    );
   }
   async googleAccount(email: string): Promise<{ uid: string; email: string }> {
     return googleUser(

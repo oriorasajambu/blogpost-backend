@@ -1844,7 +1844,46 @@ test('password recovery and credential changes validate proof and never reveal a
   );
 });
 
-test('every one of the 58 authored application operations has executed a schema-valid success', () => {
+test('administrators can email password setup links; others cannot', async (t) => {
+  const { call } = setup(t);
+  const result = parse<DTO<'PasswordSetupResult'>>(
+    await call(
+      'POST',
+      '/v1/admin/members/password-setup',
+      {},
+      undefined,
+      undefined,
+      'admin',
+    ),
+  );
+  assert.ok(result.data.queued >= 1);
+  assert.equal(result.data.skipped, 0);
+  for (const user of ['author', 'editor'])
+    parse(
+      await call(
+        'POST',
+        '/v1/admin/members/password-setup',
+        {},
+        undefined,
+        undefined,
+        user,
+      ),
+      403,
+    );
+  parse(
+    await call(
+      'POST',
+      '/v1/admin/members/password-setup',
+      {},
+      undefined,
+      undefined,
+      null,
+    ),
+    401,
+  );
+});
+
+test('every one of the 59 authored application operations has executed a schema-valid success', () => {
   assert.equal(coverage('mock', exercisedOperations).complete, true);
   assert.deepEqual(
     operations

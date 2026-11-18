@@ -717,6 +717,14 @@ export class MockState {
       this.throttle(actor!.id, id);
       return { data: { status: 'ACCEPTED' } };
     }
+    if (id === 'sendPasswordSetup') {
+      this.throttle(actor!.id, id);
+      // Members who already have a password are skipped; the mock has no credentials, so it counts active ones.
+      const active = [...this.members.values()].filter(
+        (member) => member.active,
+      );
+      return { data: { queued: active.length, skipped: 0 } };
+    }
     if (id === 'getMe') return { data: this.me(actor!) };
     if (id === 'updateMe') {
       const displayName =

@@ -443,6 +443,7 @@ export const schemas = {
     },
     ['email', 'password'],
   ),
+  PasswordSetupResult: object({ queued: integer(), skipped: integer() }),
   ForgotPasswordInput: input(
     {
       email: { ...text(320, 3), format: 'email' },

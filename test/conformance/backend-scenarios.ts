@@ -10,6 +10,7 @@ export const backendScenarios = new Map<
   ['getApiMeta', 'ANONYMOUS_READ_FIXTURE'],
   ['createWebSession', 'ISOLATED_IDENTITY_SQL_FIXTURE'],
   ['registerAccount', 'ISOLATED_IDENTITY_SQL_FIXTURE'],
+  ['sendPasswordSetup', 'ISOLATED_IDENTITY_SQL_FIXTURE'],
   ['forgotPassword', 'ISOLATED_IDENTITY_SQL_FIXTURE'],
   ['resetPassword', 'ISOLATED_IDENTITY_SQL_FIXTURE'],
   ['changePassword', 'ISOLATED_IDENTITY_SQL_FIXTURE'],

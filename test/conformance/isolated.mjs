@@ -25,7 +25,7 @@ if (
   (await stat(path)).mtimeMs < started ||
   report.status !== 'PASSED' ||
   report.complete !== true ||
-  report.executed !== 58 ||
+  report.executed !== 59 ||
   report.pending.length
 )
   throw new Error('Full conformance report is missing, stale or incomplete');
